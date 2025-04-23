@@ -2,7 +2,7 @@
 export const navItems = [
     {
       title: "Home",
-      url: "/",
+      url: "/home",
     },
     {
       title: "Popular",

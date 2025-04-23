@@ -106,32 +106,52 @@ const sendShopToken = require("../utils/shopToken");
 //   })
 // );
 
+
+
+
+
+
+
+
 // create shop without activation process
 router.post(
   "/create-shop",
   catchAsyncErrors(async (req, res, next) => {
     try {
-      const { email } = req.body;
+      const {
+        email,
+        name,
+        password,
+        avatar,
+        zipCode,
+        address,
+        phoneNumber,
+        city,
+        country,
+      } = req.body;
+
       const sellerEmail = await Shop.findOne({ email });
       if (sellerEmail) {
         return next(new ErrorHandler("User already exists", 400));
       }
 
-      const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+      const myCloud = await cloudinary.v2.uploader.upload(avatar, {
         folder: "avatars",
       });
 
       const seller = await Shop.create({
-        name: req.body.name,
-        email: email,
-        password: req.body.password,
+        name,
+        email,
+        password,
         avatar: {
           public_id: myCloud.public_id,
           url: myCloud.secure_url,
         },
-        address: req.body.address,
-        phoneNumber: req.body.phoneNumber,
-        zipCode: req.body.zipCode,
+        address,
+        phoneNumber,
+        zipCode,
+        city,
+        country,
       });
 
       sendShopToken(seller, 201, res);
@@ -173,37 +193,6 @@ router.post(
   })
 );
 
-// login shop
-router.post(
-  "/login-shop",
-  catchAsyncErrors(async (req, res, next) => {
-    try {
-      const { email, password } = req.body;
-
-      if (!email || !password) {
-        return next(new ErrorHandler("Please provide the all fields!", 400));
-      }
-
-      const user = await Shop.findOne({ email }).select("+password");
-
-      if (!user) {
-        return next(new ErrorHandler("User doesn't exists!", 400));
-      }
-
-      const isPasswordValid = await user.comparePassword(password);
-
-      if (!isPasswordValid) {
-        return next(
-          new ErrorHandler("Please provide the correct information", 400)
-        );
-      }
-
-      sendShopToken(user, 201, res);
-    } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
-    }
-  })
-);
 
 // load shop
 router.get(
@@ -298,29 +287,41 @@ router.put(
   })
 );
 
-// update seller info
+// Backend (Express route to handle seller info update)
+
 router.put(
   "/update-seller-info",
   isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      const { name, description, address, phoneNumber, zipCode } = req.body;
+      const {
+        name,
+        description,
+        address,
+        phoneNumber,
+        zipCode,
+        city,
+        country,
+      } = req.body;
 
-      const shop = await Shop.findOne(req.seller._id);
+      const shop = await Shop.findById(req.seller._id);
 
       if (!shop) {
-        return next(new ErrorHandler("User not found", 400));
+        return next(new ErrorHandler("Seller not found", 404));
       }
 
-      shop.name = name;
-      shop.description = description;
-      shop.address = address;
-      shop.phoneNumber = phoneNumber;
-      shop.zipCode = zipCode;
+      // Update allowed fields
+      if (name !== undefined) shop.name = name;
+      if (description !== undefined) shop.description = description;
+      if (address !== undefined) shop.address = address;
+      if (phoneNumber !== undefined) shop.phoneNumber = phoneNumber;
+      if (zipCode !== undefined) shop.zipCode = zipCode;
+      if (city !== undefined) shop.city = city;  // Ensure the 'city' is updated here
+      if (country !== undefined) shop.country = country;
 
       await shop.save();
 
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         shop,
       });
@@ -329,6 +330,8 @@ router.put(
     }
   })
 );
+
+
 
 // all sellers --- for admin
 router.get(

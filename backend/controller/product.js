@@ -25,23 +25,24 @@ router.post(
         } else {
           images = req.body.images;
         }
-      
+
         const imagesLinks = [];
-      
+
         for (let i = 0; i < images.length; i++) {
           const result = await cloudinary.v2.uploader.upload(images[i], {
             folder: "products",
           });
-      
+
           imagesLinks.push({
             public_id: result.public_id,
             url: result.secure_url,
           });
         }
-      
+
         const productData = req.body;
         productData.images = imagesLinks;
         productData.shop = shop;
+        productData.city = shop.city;  // Save the shop's city in the product
 
         const product = await Product.create(productData);
 
@@ -55,6 +56,7 @@ router.post(
     }
   })
 );
+
 
 // get all products of a shop
 router.get(

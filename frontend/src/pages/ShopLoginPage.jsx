@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import ShopLogin from "../components/Shop/ShopLogin";
 import Footer from '../components/Layout/Footer';
-import Header from '../components/Layout/Header';
+import Header2 from '../components/Layout/Header2';
 
 const ShopLoginPage = () => {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const ShopLoginPage = () => {
   }, [isLoading,isSeller])
   return (
     <div>
-      <Header />
+      <Header2 />
       <ShopLogin />
       <Footer />
     </div>

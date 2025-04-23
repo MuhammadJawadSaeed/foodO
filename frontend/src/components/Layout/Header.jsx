@@ -77,10 +77,6 @@ const Header = ({ activeHeading }) => {
                 <h1 className="text-[36px] font-semibold text-gray-700  ">food</h1>
                 <h1 className="text-[38px] font-semibold text-orange-500">O</h1>
               </div>
-              {/* <img
-                src="https://shopo.quomodothemes.website/assets/images/logo.svg"
-                alt=""
-              /> */}
             </Link>
           </div>
           <div>
@@ -232,11 +228,10 @@ const Header = ({ activeHeading }) => {
           </div>
           <div>
             <Link to="/">
-              <img
-                src="https://shopo.quomodothemes.website/assets/images/logo.svg"
-                alt=""
-                className="mt-3 cursor-pointer"
-              />
+              <div className="flex items-center">
+                <h1 className="text-[36px] font-semibold text-gray-700  ">food</h1>
+                <h1 className="text-[38px] font-semibold text-orange-500">O</h1>
+              </div>
             </Link>
           </div>
           <div>

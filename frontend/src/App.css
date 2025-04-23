@@ -71,3 +71,88 @@ input[type=number] {
   scrollbar-width: thin;
   scrollbar-color: #f97316 #f3f4f6;
 }
+.location:hover{
+  background-color: rgb(231, 228, 228);
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.cart:hover{
+  background-color: rgb(231, 228, 228);
+  cursor: pointer;
+  border-radius: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.signup:hover{
+  background-color: rgb(209, 81, 12);
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+/* shadow-[10px_10px_20px_#babecc,-10px_-10px_20px_#ffffff] */
+
+/* ========================footer================================================ */
+.foooter-link-box{
+  /* display: block; */
+}
+.footer-link {
+  position: relative;
+  border-bottom: 1.5px solid gray ;
+  /* text-decoration:underline; */
+  font-size: 18px;
+  font-weight: 500;
+  font-family: "Open Sans", sans-serif;
+  color: rgb(96, 96, 96); /* Equivalent to text-black-600 in Tailwind */
+}
+
+.footer-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2.5px;
+  width: 0; /* Initially set width to 0 */
+  background-color: black;
+  transition: all 0.3s ease; /* Smooth transition effect */
+}
+
+.footer-link:hover::after {
+  width: 100%; /* Full width on hover */
+}
+
+
+/* =======================================home========================= */
+
+.hero {
+  width: 100%;
+  height: 90vh;
+  background: linear-gradient(rgba(12, 3, 51, 0.3), rgba(12, 3, 51, 0.3));
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.backvideo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the video fills the container */
+  z-index: -1;
+}
+
+.content {
+  color: #fff; /* White text color for better contrast */
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  z-index: 1; /* Places content above the video */
+}
+.home-cotation{
+  color: black;
+  font-size:33px;
+  font-weight: 700;
+  align-items: center;
+}

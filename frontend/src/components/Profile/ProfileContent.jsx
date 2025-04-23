@@ -355,7 +355,7 @@ const AllRefundOrders = () => {
       row.push({
         id: item._id,
         itemsQty: item.cart.length,
-        total: "US$ " + item.totalPrice,
+        total: "PKR " + item.totalPrice,
         status: item.status,
       });
     });
@@ -440,7 +440,7 @@ const TrackOrder = () => {
       row.push({
         id: item._id,
         itemsQty: item.cart.length,
-        total: "US$ " + item.totalPrice,
+        total: "PKR " + item.totalPrice,
         status: item.status,
       });
     });
@@ -537,7 +537,7 @@ const ChangePassword = () => {
 
 const Address = () => {
   const [open, setOpen] = useState(false);
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("Pakistan");
   const [city, setCity] = useState("");
   const [zipCode, setZipCode] = useState();
   const [address1, setAddress1] = useState("");
@@ -593,7 +593,7 @@ const Address = () => {
     <div className="w-full px-5">
       {open && (
         <div className="fixed w-full h-screen bg-[#0000004b] top-0 left-0 flex items-center justify-center ">
-          <div className="w-[35%] h-[80vh] bg-white rounded shadow relative overflow-y-scroll">
+          <div className="w-[35%] top-4 h-[80vh] bg-white rounded shadow relative overflow-y-scroll">
             <div className="w-full flex justify-end p-3">
               <RxCross1
                 size={30}
@@ -607,7 +607,7 @@ const Address = () => {
             <div className="w-full">
               <form aria-required onSubmit={handleSubmit} className="w-full">
                 <div className="w-full block p-4">
-                  <div className="w-full pb-2">
+                  {/* <div className="w-full pb-2">
                     <label className="block pb-2">Country</label>
                     <select
                       name=""
@@ -630,9 +630,9 @@ const Address = () => {
                           </option>
                         ))}
                     </select>
-                  </div>
+                  </div> */}
 
-                  <div className="w-full pb-2">
+                  {/* <div className="w-full pb-2">
                     <label className="block pb-2">Choose your City</label>
                     <select
                       name=""
@@ -655,9 +655,48 @@ const Address = () => {
                           </option>
                         ))}
                     </select>
+                  </div> */}
+                  {/* Country (only Pakistan) */}
+                  <div className="w-full pb-2">
+                    <label className="block pb-2">Country</label>
+                    <select
+                      value={country}
+                      disabled
+                      className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-500 cursor-not-allowed"
+                    >
+                      <option value="PK">Pakistan</option>
+                    </select>
                   </div>
 
+                  {/* City (State/Province) */}
                   <div className="w-full pb-2">
+                    <label className="block pb-2">Choose your City</label>
+                    <select
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-[95%] border h-[40px] rounded-[5px]"
+                    >
+                      <option value="">Choose your city</option>
+                      <option value="Karachi">Karachi</option>
+                      <option value="Lahore">Lahore</option>
+                      <option value="Islamabad">Islamabad</option>
+                      <option value="Rawalpindi">Rawalpindi</option>
+                      <option value="Faisalabad">Faisalabad</option>
+                      <option value="Multan">Multan</option>
+                      <option value="Peshawar">Peshawar</option>
+                      <option value="Quetta">Quetta</option>
+                      <option value="Sialkot">Sialkot</option>
+                      <option value="Hyderabad">Hyderabad</option>
+                      <option value="Gujranwala">Gujranwala</option>
+                      <option value="Bahawalpur">Bahawalpur</option>
+                      <option value="Sargodha">Sargodha</option>
+                      <option value="Abbottabad">Abbottabad</option>
+                      <option value="Mardan">Mardan</option>
+                      <option value="Mirpur">Mirpur</option>
+                    </select>
+                  </div>
+
+                  <div className="w-[95%] pb-2">
                     <label className="block pb-2">Address 1</label>
                     <input
                       type="address"
@@ -667,7 +706,7 @@ const Address = () => {
                       onChange={(e) => setAddress1(e.target.value)}
                     />
                   </div>
-                  <div className="w-full pb-2">
+                  <div className="w-[95%] pb-2">
                     <label className="block pb-2">Address 2</label>
                     <input
                       type="address"
@@ -678,7 +717,7 @@ const Address = () => {
                     />
                   </div>
 
-                  <div className="w-full pb-2">
+                  <div className="w-[95%] pb-2">
                     <label className="block pb-2">Zip Code</label>
                     <input
                       type="number"
@@ -714,10 +753,10 @@ const Address = () => {
                     </select>
                   </div>
 
-                  <div className=" w-full pb-2">
+                  <div className=" w-[40%] pb-2">
                     <input
                       type="submit"
-                      className={`${styles.input} mt-5 cursor-pointer`}
+                      className={`${styles.input} bg-orange-500 text-white font-semibold mt-5 cursor-pointer`}
                       required
                       readOnly
                     />

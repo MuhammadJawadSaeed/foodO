@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import ShopCreate from "../components/Shop/ShopCreate";
-import Header from '../components/Layout/Header';
+import Header2 from '../components/Layout/Header2';
 import Footer from '../components/Layout/Footer';
 
 const ShopCreatePage = () => {
@@ -16,7 +16,7 @@ const ShopCreatePage = () => {
   }, [])
   return (
     <div>
-      <Header />
+      <Header2 />
       <ShopCreate />
       <Footer />
     </div>

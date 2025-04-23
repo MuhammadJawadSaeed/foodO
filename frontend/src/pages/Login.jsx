@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Login from "../components/Login/Login.jsx";
-import Header from '../components/Layout/Header.jsx';
+import Header2 from '../components/Layout/Header2.jsx';
 import Footer from '../components/Layout/Footer.jsx';
 
 const LoginPage = () => {
@@ -17,7 +17,7 @@ const LoginPage = () => {
   
   return (
     <div>
-      <Header />
+      <Header2 />
       <Login />
       <Footer />
     </div>

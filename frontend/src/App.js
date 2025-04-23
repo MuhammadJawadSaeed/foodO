@@ -6,6 +6,7 @@ import {
   SignupPage,
   ActivationPage,
   HomePage,
+  StartPage,
   ProductsPage,
   BestSellingPage,
   FAQPage,
@@ -29,7 +30,6 @@ import {
   ShopPreviewPage,
   ShopAllOrders,
   ShopOrderDetails,
-  ShopAllRefunds,
   ShopSettingsPage,
   ShopWithDrawMoneyPage,
   ShopInboxPage,
@@ -87,7 +87,8 @@ const App = () => {
         </Elements>
       )}
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<StartPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/sign-up" element={<SignupPage />} />
         <Route
@@ -187,15 +188,6 @@ const App = () => {
             </SellerProtectedRoute>
           }
         />
-        <Route
-          path="/dashboard-refunds"
-          element={
-            <SellerProtectedRoute>
-              <ShopAllRefunds />
-            </SellerProtectedRoute>
-          }
-        />
-
         <Route
           path="/order/:id"
           element={

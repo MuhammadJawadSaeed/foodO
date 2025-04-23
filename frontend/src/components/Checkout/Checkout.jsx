@@ -207,43 +207,93 @@ const ShippingInfo = ({
           </div>
         </div>
 
-        <div className="w-full flex pb-3">
-          <div className="w-[50%]">
-            <label className="block pb-2">Country</label>
-            <select
-              className="w-[95%] border h-[40px] rounded-[5px]"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-            >
-              <option className="block pb-2" value="">
-                Choose your country
-              </option>
-              {Country &&
-                Country.getAllCountries().map((item) => (
-                  <option key={item.isoCode} value={item.isoCode}>
-                    {item.name}
-                  </option>
-                ))}
-            </select>
-          </div>
-          <div className="w-[50%]">
-            <label className="block pb-2">City</label>
-            <select
-              className="w-[95%] border h-[40px] rounded-[5px]"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-            >
-              <option className="block pb-2" value="">
-                Choose your City
-              </option>
-              {State &&
-                State.getStatesOfCountry(country).map((item) => (
-                  <option key={item.isoCode} value={item.isoCode}>
-                    {item.name}
-                  </option>
-                ))}
-            </select>
-          </div>
+        {/* Country (only Pakistan)
+        <div className="w-full pb-2">
+          <label className="block pb-2">Country</label>
+          <select
+            value={country}
+            disabled
+            className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-500 cursor-not-allowed"
+          >
+            <option value="PK">Pakistan</option>
+          </select>
+        </div>
+
+        {/* City (State/Province) */}
+        {/* <div className="w-full pb-2">
+          <label className="block pb-2">Choose your City</label>
+          <select
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="w-[95%] border h-[40px] rounded-[5px]"
+          >
+            <option value="">Choose your city</option>
+            <option value="Karachi">Karachi</option>
+            <option value="Lahore">Lahore</option>
+            <option value="Islamabad">Islamabad</option>
+            <option value="Rawalpindi">Rawalpindi</option>
+            <option value="Faisalabad">Faisalabad</option>
+            <option value="Multan">Multan</option>
+            <option value="Peshawar">Peshawar</option>
+            <option value="Quetta">Quetta</option>
+            <option value="Sialkot">Sialkot</option>
+            <option value="Hyderabad">Hyderabad</option>
+            <option value="Gujranwala">Gujranwala</option>
+            <option value="Bahawalpur">Bahawalpur</option>
+            <option value="Sargodha">Sargodha</option>
+            <option value="Abbottabad">Abbottabad</option>
+            <option value="Mardan">Mardan</option>
+            <option value="Mirpur">Mirpur</option>
+          </select>
+        </div>  */}
+        <div className="w-full pb-2">
+          <label className="block pb-2">Country</label>
+          <select
+            name=""
+            id=""
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            className="w-[95%] border h-[40px] rounded-[5px]"
+          >
+            <option value="" className="block border pb-2">
+              choose your country
+            </option>
+            {Country &&
+              Country.getAllCountries().map((item) => (
+                <option
+                  className="block pb-2"
+                  key={item.isoCode}
+                  value={item.isoCode}
+                >
+                  {item.name}
+                </option>
+              ))}
+          </select>
+        </div>
+
+        <div className="w-full pb-2">
+          <label className="block pb-2">Choose your City</label>
+          <select
+            name=""
+            id=""
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="w-[95%] border h-[40px] rounded-[5px]"
+          >
+            <option value="" className="block border pb-2">
+              choose your city
+            </option>
+            {State &&
+              State.getStatesOfCountry(country).map((item) => (
+                <option
+                  className="block pb-2"
+                  key={item.isoCode}
+                  value={item.isoCode}
+                >
+                  {item.name}
+                </option>
+              ))}
+          </select>
         </div>
 
         <div className="w-full flex pb-3">
@@ -272,7 +322,7 @@ const ShippingInfo = ({
         <div></div>
       </form>
       <h5
-        className="text-[18px] cursor-pointer inline-block"
+        className="text-[18px] cursor-pointer text-orange-500 inline-block"
         onClick={() => setUserInfo(!userInfo)}
       >
         Choose From saved address
@@ -316,12 +366,12 @@ const CartData = ({
     <div className="w-full bg-[#fff] rounded-md p-5 pb-8">
       <div className="flex justify-between">
         <h3 className="text-[16px] font-[400] text-[#000000a4]">subtotal:</h3>
-        <h5 className="text-[18px] font-[600]">${subTotalPrice}</h5>
+        <h5 className="text-[18px] font-[600]">PKR{subTotalPrice}</h5>
       </div>
       <br />
       <div className="flex justify-between">
         <h3 className="text-[16px] font-[400] text-[#000000a4]">shipping:</h3>
-        <h5 className="text-[18px] font-[600]">${shipping.toFixed(2)}</h5>
+        <h5 className="text-[18px] font-[600]">PKR{shipping.toFixed(2)}</h5>
       </div>
       <br />
       <div className="flex justify-between border-b pb-3">
@@ -330,7 +380,7 @@ const CartData = ({
           - {discountPercentenge ? "$" + discountPercentenge.toString() : null}
         </h5>
       </div>
-      <h5 className="text-[18px] font-[600] text-end pt-3">${totalPrice}</h5>
+      <h5 className="text-[18px] font-[600] text-end pt-3">PKR{totalPrice}</h5>
       <br />
       <form onSubmit={handleSubmit}>
         <input

@@ -99,11 +99,11 @@ const ProductCard = ({ data, isEvent }) => {
                   {data.originalPrice === 0
                     ? data.originalPrice
                     : data.discountPrice}
-                  $
+                  PKR
                 </h5>
                 {data.originalPrice && (
                   <h4 className="text-gray-400 text-xs line-through ml-1">
-                    {data.originalPrice}$
+                    {data.originalPrice}PKR
                   </h4>
                 )}
               </div>

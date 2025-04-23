@@ -70,6 +70,10 @@ const productSchema = new mongoose.Schema({
     type: Object,
     required: true,
   },
+  city: {  // New field to store the shop's city
+    type: String,
+    required: true,
+  },
   sold_out: {
     type: Number,
     default: 0,

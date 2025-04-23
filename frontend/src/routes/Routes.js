@@ -2,6 +2,7 @@ import LoginPage from "../pages/Login";
 import SignupPage from "../pages/SignupPage";
 import ActivationPage from "../pages/ActivationPage";
 import HomePage from "../pages/HomePage";
+import StartPage from "../pages/StartPage";
 import ProductsPage from "../pages/ProductsPage";
 import BestSellingPage from "../pages/BestSellingPage";
 import FAQPage from "../pages/FAQPage";
@@ -22,6 +23,7 @@ export {
     SignupPage,
     ActivationPage,
     HomePage,
+    StartPage,
     ProductsPage,
     BestSellingPage,
     FAQPage,

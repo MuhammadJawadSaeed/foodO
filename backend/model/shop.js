@@ -46,6 +46,15 @@ const shopSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  city: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "City",
+    required: true,
+  },
+  country: {
+    type: String,
+    required: true,
+  },
   withdrawMethod: {
     type: Object,
   },
@@ -53,7 +62,7 @@ const shopSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  transections: [
+  transactions: [
     {
       amount: {
         type: Number,
@@ -95,7 +104,7 @@ shopSchema.methods.getJwtToken = function () {
   });
 };
 
-// comapre password
+// Compare password
 shopSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };

@@ -252,7 +252,7 @@
 
 // export default ShopCreate;
 
-import { React, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -260,6 +260,8 @@ import styles from "../../styles/styles";
 import { server } from "../../server";
 import { toast } from "react-toastify";
 import { RxAvatar } from "react-icons/rx";
+import { State } from "country-state-city";
+
 
 const ShopCreate = () => {
   const [email, setEmail] = useState("");
@@ -267,13 +269,22 @@ const ShopCreate = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [address, setAddress] = useState("");
   const [zipCode, setZipCode] = useState("");
+  const [city, setCity] = useState("");
+  const [country] = useState("PK"); // Hardcoded Pakistan ISO
   const [avatar, setAvatar] = useState(null);
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
 
+  // Set default city on component mount
+  useEffect(() => {
+    const states = State.getStatesOfCountry("PK");
+    if (states.length > 0) {
+      setCity(states[0].name);
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     try {
       const res = await axios.post(`${server}/shop/create-shop`, {
         name,
@@ -283,6 +294,8 @@ const ShopCreate = () => {
         zipCode,
         address,
         phoneNumber,
+        city,
+        country,
       });
       toast.success(res.data.message);
       setName("");
@@ -292,6 +305,7 @@ const ShopCreate = () => {
       setZipCode("");
       setAddress("");
       setPhoneNumber("");
+      setCity("");
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
     }
@@ -317,10 +331,9 @@ const ShopCreate = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-[35rem]">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Shop Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Shop Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Shop Name</label>
               <input
                 type="text"
                 required
@@ -330,10 +343,9 @@ const ShopCreate = () => {
               />
             </div>
 
+            {/* Phone Number */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Phone Number</label>
               <input
                 type="text"
                 required
@@ -343,10 +355,9 @@ const ShopCreate = () => {
               />
             </div>
 
+            {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Email address</label>
               <input
                 type="email"
                 required
@@ -356,10 +367,9 @@ const ShopCreate = () => {
               />
             </div>
 
+            {/* Address */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Address
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Address</label>
               <input
                 type="text"
                 required
@@ -369,10 +379,9 @@ const ShopCreate = () => {
               />
             </div>
 
+            {/* Zip Code */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Zip Code
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Zip Code</label>
               <input
                 type="text"
                 required
@@ -382,10 +391,50 @@ const ShopCreate = () => {
               />
             </div>
 
+            {/* Country (only Pakistan) */}
+            <div className="w-full pb-2">
+              <label className="block pb-2">Country</label>
+              <select
+                value={country}
+                disabled
+                className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-500 cursor-not-allowed"
+              >
+                <option value="PK">Pakistan</option>
+              </select>
+            </div>
+
+            {/* City (State/Province) */}
+            <div className="w-full pb-2">
+              <label className="block pb-2">Choose your City</label>
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-[95%] border h-[40px] rounded-[5px]"
+              >
+                <option value="">Choose your city</option>
+                <option value="Karachi">Karachi</option>
+                <option value="Lahore">Lahore</option>
+                <option value="Islamabad">Islamabad</option>
+                <option value="Rawalpindi">Rawalpindi</option>
+                <option value="Faisalabad">Faisalabad</option>
+                <option value="Multan">Multan</option>
+                <option value="Peshawar">Peshawar</option>
+                <option value="Quetta">Quetta</option>
+                <option value="Sialkot">Sialkot</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Gujranwala">Gujranwala</option>
+                <option value="Bahawalpur">Bahawalpur</option>
+                <option value="Sargodha">Sargodha</option>
+                <option value="Abbottabad">Abbottabad</option>
+                <option value="Mardan">Mardan</option>
+                <option value="Mirpur">Mirpur</option>
+              </select>
+            </div>
+
+
+            {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Password</label>
               <div className="relative">
                 <input
                   type={visible ? "text" : "password"}
@@ -410,33 +459,25 @@ const ShopCreate = () => {
               </div>
             </div>
 
+            {/* Avatar */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Avatar
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Avatar</label>
               <div className="mt-2 flex items-center">
                 <span className="inline-block h-8 w-8 rounded-full overflow-hidden">
                   {avatar ? (
-                    <img
-                      src={avatar}
-                      alt="avatar"
-                      className="h-full w-full object-cover rounded-full"
-                    />
+                    <img src={avatar} alt="avatar" className="h-full w-full object-cover rounded-full" />
                   ) : (
                     <RxAvatar className="h-8 w-8" />
                   )}
                 </span>
                 <label className="ml-5 flex items-center px-4 py-2 border border-orange-500 rounded-md shadow-sm text-sm font-medium text-orange-500 bg-white hover:bg-orange-200">
                   Upload
-                  <input
-                    type="file"
-                    onChange={handleFileInputChange}
-                    className="sr-only"
-                  />
+                  <input type="file" onChange={handleFileInputChange} className="sr-only" />
                 </label>
               </div>
             </div>
 
+            {/* Submit Button */}
             <div>
               <button
                 type="submit"
@@ -445,6 +486,8 @@ const ShopCreate = () => {
                 Submit
               </button>
             </div>
+
+            {/* Sign In Link */}
             <div className={`${styles.noramlFlex} w-full`}>
               <h4>Already have an account?</h4>
               <Link to="/shop-login" className="text-orange-500 pl-2">

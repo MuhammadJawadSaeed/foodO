@@ -17,6 +17,8 @@ const ShopSettings = () => {
   const [address, setAddress] = useState(seller && seller.address);
   const [phoneNumber, setPhoneNumber] = useState(seller && seller.phoneNumber);
   const [zipCode, setZipcode] = useState(seller && seller.zipCode);
+  const [city, setCity] = useState(seller && seller.city);
+  const [country, setCountry] = useState(seller && seller.country);
 
   const dispatch = useDispatch();
 
@@ -50,6 +52,9 @@ const ShopSettings = () => {
   const updateHandler = async (e) => {
     e.preventDefault();
 
+    // Log to ensure city value is updated correctly
+    console.log("City value:", city);
+
     await axios
       .put(
         `${server}/shop/update-seller-info`,
@@ -59,11 +64,13 @@ const ShopSettings = () => {
           zipCode,
           phoneNumber,
           description,
+          city,  // Ensure the city field is sent in the request
+          country,
         },
         { withCredentials: true }
       )
       .then((res) => {
-        toast.success("Shop info updated succesfully!");
+        toast.success("Shop info updated successfully!");
         dispatch(loadSeller());
       })
       .catch((error) => {
@@ -95,7 +102,7 @@ const ShopSettings = () => {
           </div>
         </div>
 
-        {/* shop info */}
+        {/* Shop info form */}
         <form
           aria-aria-required={true}
           className="flex flex-col items-center"
@@ -167,6 +174,36 @@ const ShopSettings = () => {
               placeholder={seller?.zipCode}
               value={zipCode}
               onChange={(e) => setZipcode(e.target.value)}
+              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+              required
+            />
+          </div>
+
+          {/* New Fields - City */}
+          <div className="w-[100%] flex items-center flex-col 800px:w-[50%] mt-5">
+            <div className="w-full pl-[3%]">
+              <label className="block pb-2">City</label>
+            </div>
+            <input
+              type="text"
+              placeholder={seller?.city || "Enter city"}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+              required
+            />
+          </div>
+
+          {/* New Fields - Country */}
+          <div className="w-[100%] flex items-center flex-col 800px:w-[50%] mt-5">
+            <div className="w-full pl-[3%]">
+              <label className="block pb-2">Country</label>
+            </div>
+            <input
+              type="text"
+              placeholder={seller?.country || "Enter country"}
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
               className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
               required
             />
