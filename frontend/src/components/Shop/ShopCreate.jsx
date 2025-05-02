@@ -255,13 +255,11 @@
 import React, { useState, useEffect } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { Link } from "react-router-dom";
-import axios from "axios";
-import styles from "../../styles/styles";
 import { server } from "../../server";
+import axios from "axios";
 import { toast } from "react-toastify";
 import { RxAvatar } from "react-icons/rx";
-import { State } from "country-state-city";
-
+import { State } from "country-state-city"; // Import for handling cities
 
 const ShopCreate = () => {
   const [email, setEmail] = useState("");
@@ -269,17 +267,17 @@ const ShopCreate = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [address, setAddress] = useState("");
   const [zipCode, setZipCode] = useState("");
-  const [city, setCity] = useState("");
-  const [country] = useState("PK"); // Hardcoded Pakistan ISO
-  const [avatar, setAvatar] = useState(null);
+  const [city, setCity] = useState(""); // Default city
+  const [country, setCountry] = useState("PK"); // Pakistan as default country
+  const [avatar, setAvatar] = useState(null); // Avatar for shop
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
 
-  // Set default city on component mount
+  // Set default city on component mount using useEffect
   useEffect(() => {
     const states = State.getStatesOfCountry("PK");
     if (states.length > 0) {
-      setCity(states[0].name);
+      setCity(states[0].name); // Set default city if available
     }
   }, []);
 
@@ -298,6 +296,7 @@ const ShopCreate = () => {
         country,
       });
       toast.success(res.data.message);
+      // Clear the form after submission
       setName("");
       setEmail("");
       setPassword("");
@@ -305,8 +304,10 @@ const ShopCreate = () => {
       setZipCode("");
       setAddress("");
       setPhoneNumber("");
-      setCity("");
+      setCity(""); // Optional, depending on whether you want to reset city
+      setCountry("PK"); // Keep country as Pakistan by default
     } catch (error) {
+      // Check if the error response exists and handle accordingly
       toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
@@ -315,10 +316,10 @@ const ShopCreate = () => {
     const reader = new FileReader();
     reader.onload = () => {
       if (reader.readyState === 2) {
-        setAvatar(reader.result);
+        setAvatar(reader.result); // Set avatar URL after loading file
       }
     };
-    reader.readAsDataURL(e.target.files[0]);
+    reader.readAsDataURL(e.target.files[0]); // Read file
   };
 
   return (
@@ -333,7 +334,9 @@ const ShopCreate = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Shop Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Shop Name</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Shop Name
+              </label>
               <input
                 type="text"
                 required
@@ -345,7 +348,9 @@ const ShopCreate = () => {
 
             {/* Phone Number */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Phone Number
+              </label>
               <input
                 type="text"
                 required
@@ -357,7 +362,9 @@ const ShopCreate = () => {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Email address</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Email address
+              </label>
               <input
                 type="email"
                 required
@@ -369,7 +376,9 @@ const ShopCreate = () => {
 
             {/* Address */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Address</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Address
+              </label>
               <input
                 type="text"
                 required
@@ -381,7 +390,9 @@ const ShopCreate = () => {
 
             {/* Zip Code */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Zip Code</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Zip Code
+              </label>
               <input
                 type="text"
                 required
@@ -391,7 +402,7 @@ const ShopCreate = () => {
               />
             </div>
 
-            {/* Country (only Pakistan) */}
+            {/* Country (Only Pakistan) */}
             <div className="w-full pb-2">
               <label className="block pb-2">Country</label>
               <select
@@ -403,15 +414,16 @@ const ShopCreate = () => {
               </select>
             </div>
 
-            {/* City (State/Province) */}
+            {/* City */}
             <div className="w-full pb-2">
-              <label className="block pb-2">Choose your City</label>
+              <label className="block pb-2">City</label>
               <select
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => setCity(e.target.value)} // City selection
                 className="w-[95%] border h-[40px] rounded-[5px]"
               >
                 <option value="">Choose your city</option>
+                {/* Add more cities as needed */}
                 <option value="Karachi">Karachi</option>
                 <option value="Lahore">Lahore</option>
                 <option value="Islamabad">Islamabad</option>
@@ -431,10 +443,11 @@ const ShopCreate = () => {
               </select>
             </div>
 
-
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={visible ? "text" : "password"}
@@ -461,18 +474,28 @@ const ShopCreate = () => {
 
             {/* Avatar */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Avatar</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Avatar
+              </label>
               <div className="mt-2 flex items-center">
                 <span className="inline-block h-8 w-8 rounded-full overflow-hidden">
                   {avatar ? (
-                    <img src={avatar} alt="avatar" className="h-full w-full object-cover rounded-full" />
+                    <img
+                      src={avatar}
+                      alt="avatar"
+                      className="h-full w-full object-cover rounded-full"
+                    />
                   ) : (
                     <RxAvatar className="h-8 w-8" />
                   )}
                 </span>
                 <label className="ml-5 flex items-center px-4 py-2 border border-orange-500 rounded-md shadow-sm text-sm font-medium text-orange-500 bg-white hover:bg-orange-200">
                   Upload
-                  <input type="file" onChange={handleFileInputChange} className="sr-only" />
+                  <input
+                    type="file"
+                    onChange={handleFileInputChange}
+                    className="sr-only"
+                  />
                 </label>
               </div>
             </div>
@@ -488,7 +511,7 @@ const ShopCreate = () => {
             </div>
 
             {/* Sign In Link */}
-            <div className={`${styles.noramlFlex} w-full`}>
+            <div className="flex w-full items-center justify-center">
               <h4>Already have an account?</h4>
               <Link to="/shop-login" className="text-orange-500 pl-2">
                 Sign in
@@ -502,3 +525,4 @@ const ShopCreate = () => {
 };
 
 export default ShopCreate;
+

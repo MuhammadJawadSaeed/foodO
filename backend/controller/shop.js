@@ -138,7 +138,7 @@ router.post(
       const myCloud = await cloudinary.v2.uploader.upload(avatar, {
         folder: "avatars",
       });
-
+      
       const seller = await Shop.create({
         name,
         email,
@@ -427,5 +427,4 @@ router.delete(
     }
   })
 );
-
 module.exports = router;

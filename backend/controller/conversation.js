@@ -1,43 +1,59 @@
-const Conversation = require("../model/conversation");
+const express = require("express");
+const mongoose = require("mongoose");
+const Conversation = require("../models/conversation");
+const Message = require("../models/message");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
-const express = require("express");
-const { isSeller, isAuthenticated } = require("../middleware/auth");
+const { isAuthenticated, isSeller } = require("../middleware/auth");
+
 const router = express.Router();
 
-// create a new conversation
+// Create New Conversation
 router.post(
   "/create-new-conversation",
   catchAsyncErrors(async (req, res, next) => {
     try {
       const { groupTitle, userId, sellerId } = req.body;
 
-      const isConversationExist = await Conversation.findOne({ groupTitle });
+      if (!userId || !sellerId) {
+        return next(new ErrorHandler("User ID and Seller ID are required", 400));
+      }
 
-      if (isConversationExist) {
-        const conversation = isConversationExist;
-        res.status(201).json({
-          success: true,
-          conversation,
-        });
-      } else {
-        const conversation = await Conversation.create({
-          members: [userId, sellerId],
-          groupTitle: groupTitle,
-        });
+      const existingConversation = await Conversation.findOne({
+        members: {
+          $all: [
+            mongoose.Types.ObjectId(userId),
+            mongoose.Types.ObjectId(sellerId),
+          ],
+          $size: 2,
+        },
+      });
 
-        res.status(201).json({
+      if (existingConversation) {
+        return res.status(200).json({
           success: true,
-          conversation,
+          message: "Conversation already exists",
+          conversation: existingConversation,
         });
       }
+
+      const newConversation = await Conversation.create({
+        members: [userId, sellerId],
+        groupTitle,
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "New conversation created",
+        conversation: newConversation,
+      });
     } catch (error) {
-      return next(new ErrorHandler(error.response.message), 500);
+      return next(new ErrorHandler(error.message, 500));
     }
   })
 );
 
-// get seller conversations
+// Get All Seller Conversations
 router.get(
   "/get-all-conversation-seller/:id",
   isSeller,
@@ -47,20 +63,19 @@ router.get(
         members: {
           $in: [req.params.id],
         },
-      }).sort({ updatedAt: -1, createdAt: -1 });
+      }).sort({ updatedAt: -1 });
 
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         conversations,
       });
     } catch (error) {
-      return next(new ErrorHandler(error), 500);
+      return next(new ErrorHandler(error.message, 500));
     }
   })
 );
 
-
-// get user conversations
+// Get All User Conversations
 router.get(
   "/get-all-conversation-user/:id",
   isAuthenticated,
@@ -70,36 +85,37 @@ router.get(
         members: {
           $in: [req.params.id],
         },
-      }).sort({ updatedAt: -1, createdAt: -1 });
+      }).sort({ updatedAt: -1 });
 
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         conversations,
       });
     } catch (error) {
-      return next(new ErrorHandler(error), 500);
+      return next(new ErrorHandler(error.message, 500));
     }
   })
 );
 
-// update the last message
+// Update Last Message
 router.put(
   "/update-last-message/:id",
   catchAsyncErrors(async (req, res, next) => {
     try {
       const { lastMessage, lastMessageId } = req.body;
 
-      const conversation = await Conversation.findByIdAndUpdate(req.params.id, {
-        lastMessage,
-        lastMessageId,
-      });
+      const conversation = await Conversation.findByIdAndUpdate(
+        req.params.id,
+        { lastMessage, lastMessageId },
+        { new: true }
+      );
 
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         conversation,
       });
     } catch (error) {
-      return next(new ErrorHandler(error), 500);
+      return next(new ErrorHandler(error.message, 500));
     }
   })
 );
