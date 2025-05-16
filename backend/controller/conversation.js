@@ -1,59 +1,43 @@
-const express = require("express");
-const mongoose = require("mongoose");
 const Conversation = require("../model/conversation");
-const Message = require("../model/messages");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
-const { isAuthenticated, isSeller } = require("../middleware/auth");
-
+const express = require("express");
+const { isSeller, isAuthenticated } = require("../middleware/auth");
 const router = express.Router();
 
-// Create New Conversation
+// create a new conversation
 router.post(
   "/create-new-conversation",
   catchAsyncErrors(async (req, res, next) => {
     try {
       const { groupTitle, userId, sellerId } = req.body;
 
-      if (!userId || !sellerId) {
-        return next(new ErrorHandler("User ID and Seller ID are required", 400));
-      }
+      const isConversationExist = await Conversation.findOne({ groupTitle });
 
-      const existingConversation = await Conversation.findOne({
-        members: {
-          $all: [
-            mongoose.Types.ObjectId(userId),
-            mongoose.Types.ObjectId(sellerId),
-          ],
-          $size: 2,
-        },
-      });
-
-      if (existingConversation) {
-        return res.status(200).json({
+      if (isConversationExist) {
+        const conversation = isConversationExist;
+        res.status(201).json({
           success: true,
-          message: "Conversation already exists",
-          conversation: existingConversation,
+          conversation,
+        });
+      } else {
+        const conversation = await Conversation.create({
+          members: [userId, sellerId],
+          groupTitle: groupTitle,
+        });
+
+        res.status(201).json({
+          success: true,
+          conversation,
         });
       }
-
-      const newConversation = await Conversation.create({
-        members: [userId, sellerId],
-        groupTitle,
-      });
-
-      res.status(201).json({
-        success: true,
-        message: "New conversation created",
-        conversation: newConversation,
-      });
     } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
+      return next(new ErrorHandler(error.response.message), 500);
     }
   })
 );
 
-// Get All Seller Conversations
+// get seller conversations
 router.get(
   "/get-all-conversation-seller/:id",
   isSeller,
@@ -63,19 +47,20 @@ router.get(
         members: {
           $in: [req.params.id],
         },
-      }).sort({ updatedAt: -1 });
+      }).sort({ updatedAt: -1, createdAt: -1 });
 
-      res.status(200).json({
+      res.status(201).json({
         success: true,
         conversations,
       });
     } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
+      return next(new ErrorHandler(error), 500);
     }
   })
 );
 
-// Get All User Conversations
+
+// get user conversations
 router.get(
   "/get-all-conversation-user/:id",
   isAuthenticated,
@@ -85,37 +70,36 @@ router.get(
         members: {
           $in: [req.params.id],
         },
-      }).sort({ updatedAt: -1 });
+      }).sort({ updatedAt: -1, createdAt: -1 });
 
-      res.status(200).json({
+      res.status(201).json({
         success: true,
         conversations,
       });
     } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
+      return next(new ErrorHandler(error), 500);
     }
   })
 );
 
-// Update Last Message
+// update the last message
 router.put(
   "/update-last-message/:id",
   catchAsyncErrors(async (req, res, next) => {
     try {
       const { lastMessage, lastMessageId } = req.body;
 
-      const conversation = await Conversation.findByIdAndUpdate(
-        req.params.id,
-        { lastMessage, lastMessageId },
-        { new: true }
-      );
+      const conversation = await Conversation.findByIdAndUpdate(req.params.id, {
+        lastMessage,
+        lastMessageId,
+      });
 
-      res.status(200).json({
+      res.status(201).json({
         success: true,
         conversation,
       });
     } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
+      return next(new ErrorHandler(error), 500);
     }
   })
 );
