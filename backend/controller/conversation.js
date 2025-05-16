@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const Conversation = require("../models/conversation");
-const Message = require("../models/message");
+const Conversation = require("../model/conversation");
+const Message = require("../model/messages");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const { isAuthenticated, isSeller } = require("../middleware/auth");

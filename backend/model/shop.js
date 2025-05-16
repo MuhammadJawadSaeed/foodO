@@ -47,9 +47,7 @@ const shopSchema = new mongoose.Schema({
     required: true,
   },
   city: {
-    type: mongoose.Schema.Types.ObjectId,
-    // type: String,
-    ref: "City",
+    type: String,
     required: true,
   },
   country: {

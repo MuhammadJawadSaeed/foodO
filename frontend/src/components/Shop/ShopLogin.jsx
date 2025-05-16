@@ -12,27 +12,51 @@ const ShopLogin = () => {
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
 
-    await axios
-      .post(
-        `${server}/shop/login-shop`,
-        {
-          email,
-          password,
-        },
-        { withCredentials: true }
-      )
-      .then((res) => {
-        toast.success("Login Success!");
-        navigate("/dashboard");
-        window.location.reload(true);
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message);
-      });
-  };
+  //   await axios
+  //     .post(
+  //       `${server}/shop/login-shop`,
+  //       {
+  //         email,
+  //         password,
+  //       },
+  //       { withCredentials: true }
+  //     )
+  //     .then((res) => {
+  //       toast.success("Login Success!");
+  //       navigate("/dashboard");
+  //       window.location.reload(true);
+  //     })
+  //     .catch((err) => {
+  //       toast.error(err.response.data.message);
+  //     });
+  // };
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  await axios
+    .post(
+      `${server}/shop/login-shop`,
+      {
+        email,
+        password,
+      },
+      { withCredentials: true }
+    )
+    .then((res) => {
+      toast.success("Login Success!");
+      navigate("/dashboard");
+      window.location.reload(true);
+    })
+    .catch((err) => {
+      const message =
+        err.response?.data?.message || "Something went wrong. Please try again.";
+      toast.error(message);
+    });
+};
 
   return (
     <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">

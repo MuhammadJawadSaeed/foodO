@@ -6,6 +6,9 @@ import {
   AiOutlineShoppingCart,
 } from "react-icons/ai";
 import { RxCross1 } from "react-icons/rx";
+import axios from "axios";
+import { server } from "../../../server";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import styles from "../../../styles/styles";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,10 +24,32 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   const { wishlist } = useSelector((state) => state.wishlist);
   const dispatch = useDispatch();
   const [count, setCount] = useState(1);
+  const { user, isAuthenticated } = useSelector((state) => state.user);
   const [click, setClick] = useState(false);
+  const navigate = useNavigate();
   //   const [select, setSelect] = useState(false);
 
-  const handleMessageSubmit = () => {};
+  const handleMessageSubmit = async () => {
+      if (isAuthenticated) {
+        const groupTitle = data._id + user._id;
+        const userId = user._id;
+        const sellerId = data.shop._id;
+        await axios
+          .post(`${server}/conversation/create-new-conversation`, {
+            groupTitle,
+            userId,
+            sellerId,
+          })
+          .then((res) => {
+            navigate(`/inbox?${res.data.conversation._id}`);
+          })
+          .catch((error) => {
+            toast.error(error.response.data.message);
+          });
+      } else {
+        toast.error("Please login to create a conversation");
+      }
+    };
 
   const decrementCount = () => {
     if (count > 1) {
@@ -82,11 +107,11 @@ const ProductDetailsCard = ({ setOpen, data }) => {
 
             <div className="block w-full 800px:flex">
               <div className="w-full 800px:w-[50%]">
-                <img src={`${data.images && data.images[0]?.url}`} alt="" />
+                <img className="w-[85%] m-2 rounded-md" src={`${data.images && data.images[0]?.url}`} alt="" />
                 <div className="flex">
                   <Link to={`/shop/preview/${data.shop._id}`} className="flex">
                     <img
-                      src={`${data.images && data.images[0]?.url}`}
+                      src={`${data?.shop?.avatar?.url}`}
                       alt=""
                       className="w-[50px] h-[50px] rounded-full mr-2"
                     />
@@ -99,14 +124,16 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                   </Link>
                 </div>
                 <div
-                  className={`${styles.button} bg-[#000] mt-4 rounded-[4px] h-11`}
+                  className={`${styles.button} bg-[#000] mt-3 w-[70%] ml-8 rounded-[2px] h-11`}
                   onClick={handleMessageSubmit}
                 >
                   <span className="text-[#fff] flex items-center">
                     Send Message <AiOutlineMessage className="ml-1" />
                   </span>
                 </div>
-                <h5 className="text-[16px] text-[red] mt-5">(50) Sold out</h5>
+                <span className="text-green-600 text-xs">
+                  ({data?.sold_out} sold)
+                </span>
               </div>
 
               <div className="w-full 800px:w-[50%] pt-5 pl-[5px] pr-[5px]">
@@ -161,7 +188,7 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                   </div>
                 </div>
                 <div
-                  className={`${styles.button} mt-6 rounded-[4px] h-11 flex items-center`}
+                  className={`${styles.button} mt-10 ml-8 rounded-[2px] w-[70%] h-11 flex items-center`}
                   onClick={() => addToCartHandler(data._id)}
                 >
                   <span className="text-[#fff] flex items-center">
