@@ -1,17 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import styles from "../../../styles/styles";
 
 const Hero = () => {
   const location = useLocation();
   const selectedCityFromLocalStorage = localStorage.getItem("selectedCity");
-  const selectedCity = location.state?.selectedCity || selectedCityFromLocalStorage || "Your City";
+  const selectedCity =
+    location.state?.selectedCity || selectedCityFromLocalStorage || "Your City";
+  const [isMobile, setIsMobile] = useState(false);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640); // Tailwind sm breakpoint = 640px
+    };
+
+    handleResize(); // Initial check on mount
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   return (
     <div
       className={`relative min-h-[50vh] 800px:min-h-[70vh] w-full bg-[#f1efef] bg-no-repeat ${styles.noramlFlex}`}
       style={{
-        backgroundImage: "url('/images/grill.png')",
+        backgroundImage: isMobile ? "none" : "url('/images/grill.png')",
         backgroundPosition: "right center", // Move image to the right
         backgroundSize: "contain", // Ensure the image fits properly
       }}
@@ -20,7 +32,8 @@ const Hero = () => {
         <h1
           className={`text-[30px] leading-[1.2] 800px:text-[40px] text-[#272727] font-[700] capitalize`}
         >
-          Food delivery from {selectedCity}'s<br /> home kitchens
+          Food delivery from {selectedCity}'s
+          <br /> home kitchens
         </h1>
         <Link to="/products" className="inline-block">
           <div className={`${styles.button} mt-5`}>

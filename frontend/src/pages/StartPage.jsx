@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect,useState } from "react";
 import { assets } from "../Assests/assets";
 import styles from "../styles/styles";
 import Footer from "../components/Layout/Footer";
@@ -11,6 +11,19 @@ import { useNavigate } from "react-router-dom";
 const StartPage = () => {
   const [selectedCity, setSelectedCity] = useState("");
   const { isSeller } = useSelector((state) => state.seller);
+  // State to track if device is mobile (width < 640px)
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640); // Tailwind sm breakpoint = 640px
+    };
+
+    handleResize(); // Initial check on mount
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const navigate = useNavigate();
 
   const handleCityClick = (city) => {
@@ -23,8 +36,8 @@ const StartPage = () => {
       <Header2 activeHeading={1} />
       <div
         className={`relative min-h-[50vh] 800px:min-h-[70vh] w-full bg-[#f1efef] bg-no-repeat ${styles.noramlFlex}`}
-        style={{
-          backgroundImage: "url('/images/grill.png')",
+         style={{
+          backgroundImage: isMobile ? "none" : "url('/images/grill.png')",
           backgroundPosition: "right center", // Move image to the right
           backgroundSize: "contain", // Ensure the image fits properly
         }}
