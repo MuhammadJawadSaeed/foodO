@@ -20,7 +20,19 @@ const TrackOrder = () => {
     <div className="w-full h-[80vh] flex justify-center items-center">
       {" "}
       <>
-        {data && data?.status === "Processing" ? (
+        {data && data?.status === "Pending" ? (
+          <h1 className="text-[20px]">
+            Your order is waiting for shop confirmation.
+          </h1>
+        ) : data?.status === "Confirmed by Shop" ? (
+          <h1 className="text-[20px]">
+            Your order has been confirmed! Delivery partner is being assigned.
+          </h1>
+        ) : data?.status === "Cancelled" ? (
+          <h1 className="text-[20px] text-red-600">
+            Your order has been cancelled by the shop.
+          </h1>
+        ) : data?.status === "Processing" ? (
           <h1 className="text-[20px]">Your Order is processing in shop.</h1>
         ) : data?.status === "Transferred to delivery partner" ? (
           <h1 className="text-[20px]">

@@ -26,9 +26,11 @@ const AllOrders = () => {
       minWidth: 130,
       flex: 0.7,
       cellClassName: (params) => {
-        return params.getValue(params.id, "status") === "Delivered"
-          ? "greenColor"
-          : "redColor";
+        const status = params.getValue(params.id, "status");
+        if (status === "Delivered") return "greenColor";
+        if (status === "Pending") return "orangeColor";
+        if (status === "Cancelled") return "redColor";
+        return "blueColor";
       },
     },
     {

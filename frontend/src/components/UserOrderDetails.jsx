@@ -11,6 +11,10 @@ import { RxCross1 } from "react-icons/rx";
 import { AiFillStar, AiOutlineStar } from "react-icons/ai";
 import axios from "axios";
 import { toast } from "react-toastify";
+import io from "socket.io-client";
+
+const ENDPOINT = "http://localhost:8000";
+let socket;
 
 const UserOrderDetails = () => {
   const { orders } = useSelector((state) => state.order);
@@ -20,15 +24,52 @@ const UserOrderDetails = () => {
   const [comment, setComment] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
   const [rating, setRating] = useState(1);
+  const [orderStatus, setOrderStatus] = useState("");
   const { isAuthenticated } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const { id } = useParams();
+
+  const data = orders && orders.find((item) => item._id === id);
+
+  // Socket connection for real-time updates
+  useEffect(() => {
+    socket = io(ENDPOINT);
+
+    if (user && user._id) {
+      // Join as user
+      socket.emit("join", {
+        userId: user._id,
+        userType: "user",
+      });
+      console.log("User connected to socket:", user._id);
+    }
+
+    // Listen for order delivered event
+    socket.on("order-delivered", (data) => {
+      console.log("Order delivered event received:", data);
+      if (data.orderId === id) {
+        toast.success("🎉 Your order has been delivered successfully!");
+        setOrderStatus("Delivered");
+        // Refresh orders
+        dispatch(getAllOrdersOfUser(user._id));
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user, id, dispatch]);
 
   useEffect(() => {
     dispatch(getAllOrdersOfUser(user._id));
   }, [dispatch, user._id]);
 
-  const data = orders && orders.find((item) => item._id === id);
+  // Set initial status
+  useEffect(() => {
+    if (data && data.status) {
+      setOrderStatus(data.status);
+    }
+  }, [data]);
 
   const reviewHandler = async (e) => {
     await axios
@@ -76,6 +117,29 @@ const UserOrderDetails = () => {
     }
   };
 
+  // Status badge UI
+  const getStatusBadge = (status) => {
+    let color = "bg-gray-400";
+    let text = status;
+    if (status === "Pending") color = "bg-yellow-500";
+    if (status === "Confirmed by Shop") color = "bg-blue-500";
+    if (status === "Cancelled") color = "bg-red-600";
+    if (status === "Processing") color = "bg-blue-400"; // Backward compatibility
+    if (status === "Delivered") color = "bg-green-600";
+    if (status === "Processing refund") color = "bg-orange-400";
+    if (status === "Refund Success") color = "bg-green-400";
+    if (status === "Transferred to delivery partner") color = "bg-purple-500";
+    if (status === "Shipping" || status === "On the way") color = "bg-cyan-500";
+    if (status === "Received") color = "bg-green-400";
+    return (
+      <span
+        className={`inline-block px-4 py-1 rounded-full text-white text-sm font-semibold ${color}`}
+      >
+        {text}
+      </span>
+    );
+  };
+
   return (
     <div className={`py-4 min-h-screen ${styles.section}`}>
       <div className="w-full flex items-center justify-between">
@@ -83,6 +147,9 @@ const UserOrderDetails = () => {
           <BsFillBagFill size={30} color="crimson" />
           <h1 className="pl-2 text-[25px]">Order Details</h1>
         </div>
+        {/* Status badge at top right - uses orderStatus for real-time updates */}
+        {(orderStatus || data?.status) &&
+          getStatusBadge(orderStatus || data?.status)}
       </div>
 
       <div className="w-full flex items-center justify-between pt-6">
@@ -104,7 +171,7 @@ const UserOrderDetails = () => {
               <img
                 src={`${item.images[0]?.url}`}
                 alt=""
-                className="w-[80x] h-[80px]"
+                className="w-[80px] h-[80px]"
               />
               <div className="w-full">
                 <h5 className="pl-3 text-[20px]">{item.name}</h5>
@@ -221,9 +288,10 @@ const UserOrderDetails = () => {
         <div className="w-full 800px:w-[60%]">
           <h4 className="pt-3 text-[20px] font-[600]">Shipping Address:</h4>
           <h4 className="pt-3 text-[20px]">
-            {data?.shippingAddress.address1 +
-              " " +
-              data?.shippingAddress.address2}
+            {data?.shippingAddress.address1}
+            {data?.shippingAddress.address2
+              ? ` ${data?.shippingAddress.address2}`
+              : ""}
           </h4>
           <h4 className=" text-[20px]">{data?.shippingAddress.country}</h4>
           <h4 className=" text-[20px]">{data?.shippingAddress.city}</h4>

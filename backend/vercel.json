@@ -1,10 +1,6 @@
 {
-    "version": 2,
-    "name":"e-shop-tutorial",
-    "builds":[
-        {"src":"server.js","use":"@vercel/node"}
-    ],
-    "routes":[
-        {"src":"/(.*)","dest":"/server.js"}
-    ]
+  "version": 2,
+  "name": "foodO",
+  "builds": [{ "src": "server.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/(.*)", "dest": "/server.js" }]
 }

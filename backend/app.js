@@ -13,7 +13,7 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
 // Allow CORS (for frontend requests)
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: ["http://localhost:3000", "http://localhost:5173"],
     credentials: true,
   })
 );
@@ -38,6 +38,8 @@ const order = require("./controller/order");
 const conversation = require("./controller/conversation");
 const message = require("./controller/message");
 const withdraw = require("./controller/withdraw");
+const captain = require("./controller/captainRoutes");
+const ride = require("./controller/rideRoutes");
 
 // Use routes
 app.use("/user", user);
@@ -49,6 +51,8 @@ app.use("/product", product);
 app.use("/coupon", coupon);
 app.use("/payment", payment);
 app.use("/withdraw", withdraw);
+app.use("/captain", captain);
+app.use("/rides", ride); // Changed from /ride to /rides to match frontend
 
 // Global Error Handling Middleware
 app.use(ErrorHandler);
