@@ -43,6 +43,15 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "ride",
   },
+  rideStatus: {
+    type: String,
+    enum: ["pending", "accepted", "started", "completed"],
+    default: "pending",
+  },
+  rideOTP: {
+    type: String,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),

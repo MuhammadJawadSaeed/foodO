@@ -162,7 +162,7 @@ module.exports.startRide = async ({ rideId, otp, captain }) => {
   return ride;
 };
 
-module.exports.endRide = async ({ rideId, captain }) => {
+module.exports.endRide = async ({ rideId, captain, completionEvidence }) => {
   if (!rideId) {
     throw new Error("Ride id is required");
   }
@@ -184,14 +184,30 @@ module.exports.endRide = async ({ rideId, captain }) => {
     throw new Error("Ride not ongoing");
   }
 
+  // Prepare update object
+  const updateData = {
+    status: "completed",
+    completedAt: new Date(),
+  };
+
+  // Add completion evidence if provided
+  if (completionEvidence) {
+    updateData.completionEvidence = completionEvidence;
+  }
+
   await rideModel.findOneAndUpdate(
     {
       _id: rideId,
     },
-    {
-      status: "completed",
-    }
+    updateData
   );
+
+  // Update ride object with new data
+  ride.status = "completed";
+  ride.completedAt = updateData.completedAt;
+  if (completionEvidence) {
+    ride.completionEvidence = completionEvidence;
+  }
 
   return ride;
 };
@@ -224,8 +240,8 @@ module.exports.getPendingRidesInRadius = async (
     throw new Error("Latitude and longitude are required");
   }
 
-  // Radius in km, default to 10km if not provided
-  const radiusInKm = radius || 10;
+  // Radius in km, default to 5km if not provided
+  const radiusInKm = radius || 5;
 
   try {
     // Get all pending rides
@@ -264,14 +280,19 @@ module.exports.getPendingRidesInRadius = async (
 
         if (isDummyCoords) {
           console.log(
-            `Ride ${ride._id}: Using dummy coordinates, including anyway`
+            `Ride ${ride._id}: Using dummy coordinates - INCLUDING anyway for testing`
           );
-          // Include ride with "N/A" distance since we don't have real coordinates
+          // Include rides with dummy coordinates since geocoding might not be working
           ridesInRadius.push({
             ...ride.toObject(),
-            distanceFromCaptain: "N/A",
+            distanceFromCaptain: "N/A (dummy coords)",
           });
         } else if (distance <= radiusInKm) {
+          console.log(
+            `Ride ${ride._id}: Within radius (${distance.toFixed(
+              2
+            )}km <= ${radiusInKm}km) - Including`
+          );
           ridesInRadius.push({
             ...ride.toObject(),
             distanceFromCaptain: distance.toFixed(2),
@@ -280,19 +301,14 @@ module.exports.getPendingRidesInRadius = async (
           console.log(
             `Ride ${ride._id}: Outside radius (${distance.toFixed(
               2
-            )}km > ${radiusInKm}km) - Including it anyway for now`
+            )}km > ${radiusInKm}km) - EXCLUDING`
           );
-          // Still include rides even if outside radius (for testing with dummy coords)
-          ridesInRadius.push({
-            ...ride.toObject(),
-            distanceFromCaptain: distance.toFixed(2),
-          });
+          // Don't include rides outside the radius
         }
       } catch (error) {
         console.log(`Error calculating distance for ride ${ride._id}:`, error);
-        // If error in getting coordinates, include the ride anyway
-        console.log(`Including ride ${ride._id} despite error`);
-        ridesInRadius.push(ride.toObject());
+        // If error in getting coordinates, skip the ride
+        console.log(`Excluding ride ${ride._id} due to error`);
       }
     }
 

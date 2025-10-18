@@ -83,10 +83,15 @@ const CaptainPendingRides = () => {
       );
 
       console.log("Ride accepted successfully:", response.data);
-      alert("Ride accepted! Redirecting to home...");
+      alert("Ride accepted! Starting ride confirmation...");
 
-      // Navigate to home where the confirm popup will show
-      navigate("/captain-home");
+      // Navigate to home with accepted ride data to show confirm popup
+      navigate("/captain-home", {
+        state: {
+          acceptedRide: response.data,
+          showConfirmPopup: true,
+        },
+      });
     } catch (error) {
       console.error("Error accepting ride:", error);
       alert(

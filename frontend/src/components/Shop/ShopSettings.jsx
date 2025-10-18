@@ -6,6 +6,7 @@ import styles from "../../styles/styles";
 import axios from "axios";
 import { loadSeller } from "../../redux/actions/user";
 import { toast } from "react-toastify";
+import pakistanCities from "../../static/pakistanCities";
 
 const ShopSettings = () => {
   const { seller } = useSelector((state) => state.seller);
@@ -18,6 +19,8 @@ const ShopSettings = () => {
   const [phoneNumber, setPhoneNumber] = useState(seller && seller.phoneNumber);
   const [zipCode, setZipcode] = useState(seller && seller.zipCode);
   const [city, setCity] = useState(seller && seller.city);
+  const [customCity, setCustomCity] = useState("");
+  const [useCustomCity, setUseCustomCity] = useState(false);
   const [country, setCountry] = useState(seller && seller.country);
 
   const dispatch = useDispatch();
@@ -52,8 +55,15 @@ const ShopSettings = () => {
   const updateHandler = async (e) => {
     e.preventDefault();
 
+    const finalCity = useCustomCity ? customCity : city;
+
+    if (!finalCity) {
+      toast.error("Please select or enter your city");
+      return;
+    }
+
     // Log to ensure city value is updated correctly
-    console.log("City value:", city);
+    console.log("City value:", finalCity);
 
     await axios
       .put(
@@ -64,7 +74,7 @@ const ShopSettings = () => {
           zipCode,
           phoneNumber,
           description,
-          city,  // Ensure the city field is sent in the request
+          city: finalCity, // Ensure the city field is sent in the request
           country,
         },
         { withCredentials: true }
@@ -182,16 +192,59 @@ const ShopSettings = () => {
           {/* New Fields - City */}
           <div className="w-[100%] flex items-center flex-col 800px:w-[50%] mt-5">
             <div className="w-full pl-[3%]">
-              <label className="block pb-2">City</label>
+              <label className="block pb-2">
+                City <span className="text-red-500">*</span>
+              </label>
             </div>
-            <input
-              type="text"
-              placeholder={seller?.city || "Enter city"}
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-              required
-            />
+
+            {/* Toggle between dropdown and custom input */}
+            <div className="w-[95%] flex items-center gap-3 mb-2">
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="radio"
+                  name="settingsCityOption"
+                  checked={!useCustomCity}
+                  onChange={() => setUseCustomCity(false)}
+                  className="cursor-pointer"
+                />
+                <span className="text-sm">Select from list</span>
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="radio"
+                  name="settingsCityOption"
+                  checked={useCustomCity}
+                  onChange={() => setUseCustomCity(true)}
+                  className="cursor-pointer"
+                />
+                <span className="text-sm">Type your city</span>
+              </label>
+            </div>
+
+            {!useCustomCity ? (
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+                required
+              >
+                <option value="">Choose your city</option>
+                {pakistanCities.map((cityName) => (
+                  <option key={cityName} value={cityName}>
+                    {cityName}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                placeholder="Enter your city name"
+                value={customCity}
+                onChange={(e) => setCustomCity(e.target.value)}
+                className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+                required
+              />
+            )}
           </div>
 
           {/* New Fields - Country */}
@@ -201,11 +254,9 @@ const ShopSettings = () => {
             </div>
             <input
               type="text"
-              placeholder={seller?.country || "Enter country"}
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-              required
+              value="Pakistan"
+              disabled
+              className={`${styles.input} !w-[95%] mb-4 800px:mb-0 bg-gray-100 cursor-not-allowed`}
             />
           </div>
 

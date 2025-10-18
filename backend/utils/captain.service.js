@@ -5,36 +5,60 @@ module.exports.createCaptain = async ({
   lastname,
   email,
   password,
-  color,
+  phoneNumber,
+  cnicNumber,
+  address,
+  city,
+  cnicImage,
+  drivingLicense,
+  vehicleImage,
+  profileImage,
   plate,
-  capacity,
   vehicleType,
 }) => {
   if (
     !firstname ||
     !email ||
     !password ||
-    !color ||
+    !phoneNumber ||
+    !cnicNumber ||
+    !address ||
+    !city ||
+    !cnicImage ||
+    !drivingLicense ||
+    !vehicleImage ||
     !plate ||
-    !capacity ||
     !vehicleType
   ) {
     throw new Error("All fields are required");
   }
-  const captain = captainModel.create({
+
+  const captainData = {
     fullname: {
       firstname,
       lastname,
     },
     email,
     password,
+    phoneNumber,
+    cnicNumber,
+    address,
+    city,
+    cnicImage,
+    drivingLicense,
+    vehicleImage,
     vehicle: {
-      color,
       plate,
-      capacity,
       vehicleType,
     },
-  });
+  };
+
+  // Add profile image if provided
+  if (profileImage) {
+    captainData.profileImage = profileImage;
+  }
+
+  const captain = captainModel.create(captainData);
 
   return captain;
 };

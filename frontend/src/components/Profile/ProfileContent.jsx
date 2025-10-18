@@ -23,6 +23,7 @@ import { useEffect } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { getAllOrdersOfUser } from "../../redux/actions/order";
+import pakistanCities from "../../static/pakistanCities";
 
 const ProfileContent = ({ active }) => {
   const { user, error, successMessage } = useSelector((state) => state.user);
@@ -539,6 +540,8 @@ const Address = () => {
   const [open, setOpen] = useState(false);
   const [country, setCountry] = useState("Pakistan");
   const [city, setCity] = useState("");
+  const [customCity, setCustomCity] = useState("");
+  const [useCustomCity, setUseCustomCity] = useState(false);
   const [zipCode, setZipCode] = useState();
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
@@ -561,13 +564,15 @@ const Address = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (addressType === "" || country === "" || city === "") {
+    const finalCity = useCustomCity ? customCity : city;
+
+    if (addressType === "" || country === "" || finalCity === "") {
       toast.error("Please fill all the fields!");
     } else {
       dispatch(
         updatUserAddress(
           country,
-          city,
+          finalCity,
           address1,
           address2,
           zipCode,
@@ -577,6 +582,8 @@ const Address = () => {
       setOpen(false);
       setCountry("");
       setCity("");
+      setCustomCity("");
+      setUseCustomCity(false);
       setAddress1("");
       setAddress2("");
       setZipCode(null);
@@ -659,41 +666,68 @@ const Address = () => {
                   {/* Country (only Pakistan) */}
                   <div className="w-full pb-2">
                     <label className="block pb-2">Country</label>
-                    <select
-                      value={country}
+                    <input
+                      type="text"
+                      value="Pakistan"
                       disabled
-                      className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-500 cursor-not-allowed"
-                    >
-                      <option value="PK">Pakistan</option>
-                    </select>
+                      className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-700 px-3 cursor-not-allowed"
+                    />
                   </div>
 
-                  {/* City (State/Province) */}
+                  {/* City - Select from list or type custom */}
                   <div className="w-full pb-2">
-                    <label className="block pb-2">Choose your City</label>
-                    <select
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="w-[95%] border h-[40px] rounded-[5px]"
-                    >
-                      <option value="">Choose your city</option>
-                      <option value="Karachi">Karachi</option>
-                      <option value="Lahore">Lahore</option>
-                      <option value="Islamabad">Islamabad</option>
-                      <option value="Rawalpindi">Rawalpindi</option>
-                      <option value="Faisalabad">Faisalabad</option>
-                      <option value="Multan">Multan</option>
-                      <option value="Peshawar">Peshawar</option>
-                      <option value="Quetta">Quetta</option>
-                      <option value="Sialkot">Sialkot</option>
-                      <option value="Hyderabad">Hyderabad</option>
-                      <option value="Gujranwala">Gujranwala</option>
-                      <option value="Bahawalpur">Bahawalpur</option>
-                      <option value="Sargodha">Sargodha</option>
-                      <option value="Abbottabad">Abbottabad</option>
-                      <option value="Mardan">Mardan</option>
-                      <option value="Mirpur">Mirpur</option>
-                    </select>
+                    <label className="block pb-2">
+                      City <span className="text-red-500">*</span>
+                    </label>
+
+                    {/* Toggle between dropdown and custom input */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="profileCityOption"
+                          checked={!useCustomCity}
+                          onChange={() => setUseCustomCity(false)}
+                          className="cursor-pointer"
+                        />
+                        <span className="text-sm">Select from list</span>
+                      </label>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="profileCityOption"
+                          checked={useCustomCity}
+                          onChange={() => setUseCustomCity(true)}
+                          className="cursor-pointer"
+                        />
+                        <span className="text-sm">Type your city</span>
+                      </label>
+                    </div>
+
+                    {!useCustomCity ? (
+                      <select
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        required
+                        className="w-[95%] border h-[40px] rounded-[5px] px-2"
+                      >
+                        <option value="">Choose your city</option>
+                        {pakistanCities.map((cityName) => (
+                          <option key={cityName} value={cityName}>
+                            {cityName}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={customCity}
+                        onChange={(e) => setCustomCity(e.target.value)}
+                        placeholder="Enter your city name"
+                        required
+                        className="w-[95%] border h-[40px] rounded-[5px] px-3"
+                      />
+                    )}
                   </div>
 
                   <div className="w-[95%] pb-2">

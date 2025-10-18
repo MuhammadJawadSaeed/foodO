@@ -260,6 +260,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { RxAvatar } from "react-icons/rx";
 import { State } from "country-state-city"; // Import for handling cities
+import pakistanCities from "../../static/pakistanCities";
+import PhoneInput from "../PhoneInput";
 
 const ShopCreate = () => {
   const [email, setEmail] = useState("");
@@ -267,22 +269,23 @@ const ShopCreate = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [address, setAddress] = useState("");
   const [zipCode, setZipCode] = useState("");
-  const [city, setCity] = useState(""); // Default city
-  const [country, setCountry] = useState("PK"); // Pakistan as default country
+  const [city, setCity] = useState(""); // City from dropdown
+  const [customCity, setCustomCity] = useState(""); // Custom typed city
+  const [useCustomCity, setUseCustomCity] = useState(false); // Toggle between dropdown and custom
+  const [country, setCountry] = useState("Pakistan"); // Pakistan as default country
   const [avatar, setAvatar] = useState(null); // Avatar for shop
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
 
-  // Set default city on component mount using useEffect
-  useEffect(() => {
-    const states = State.getStatesOfCountry("PK");
-    if (states.length > 0) {
-      setCity(states[0].name); // Set default city if available
-    }
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const finalCity = useCustomCity ? customCity : city;
+
+    if (!finalCity) {
+      toast.error("Please select or enter your city");
+      return;
+    }
+
     try {
       const res = await axios.post(`${server}/shop/create-shop`, {
         name,
@@ -292,7 +295,7 @@ const ShopCreate = () => {
         zipCode,
         address,
         phoneNumber,
-        city,
+        city: finalCity,
         country,
       });
       toast.success(res.data.message);
@@ -304,8 +307,10 @@ const ShopCreate = () => {
       setZipCode("");
       setAddress("");
       setPhoneNumber("");
-      setCity(""); // Optional, depending on whether you want to reset city
-      setCountry("PK"); // Keep country as Pakistan by default
+      setCity("");
+      setCustomCity("");
+      setUseCustomCity(false);
+      setCountry("Pakistan");
     } catch (error) {
       // Check if the error response exists and handle accordingly
       toast.error(error.response?.data?.message || "Something went wrong");
@@ -346,17 +351,16 @@ const ShopCreate = () => {
               />
             </div>
 
-            {/* Phone Number */}
+            {/* Phone Number - Professional Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Phone Number
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number *
               </label>
-              <input
-                type="text"
-                required
+              <PhoneInput
                 value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                onChange={setPhoneNumber}
+                placeholder="300 123 4567"
+                required
               />
             </div>
 
@@ -404,43 +408,73 @@ const ShopCreate = () => {
 
             {/* Country (Only Pakistan) */}
             <div className="w-full pb-2">
-              <label className="block pb-2">Country</label>
-              <select
-                value={country}
+              <label className="block pb-2 text-sm font-medium text-gray-700">
+                Country
+              </label>
+              <input
+                type="text"
+                value="Pakistan"
                 disabled
-                className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-500 cursor-not-allowed"
-              >
-                <option value="PK">Pakistan</option>
-              </select>
+                className="w-full border h-[40px] rounded-[5px] bg-gray-100 text-gray-700 px-3 cursor-not-allowed"
+              />
             </div>
 
-            {/* City */}
+            {/* City - Select from list or type custom */}
             <div className="w-full pb-2">
-              <label className="block pb-2">City</label>
-              <select
-                value={city}
-                onChange={(e) => setCity(e.target.value)} // City selection
-                className="w-[95%] border h-[40px] rounded-[5px]"
-              >
-                <option value="">Choose your city</option>
-                {/* Add more cities as needed */}
-                <option value="Karachi">Karachi</option>
-                <option value="Lahore">Lahore</option>
-                <option value="Islamabad">Islamabad</option>
-                <option value="Rawalpindi">Rawalpindi</option>
-                <option value="Faisalabad">Faisalabad</option>
-                <option value="Multan">Multan</option>
-                <option value="Peshawar">Peshawar</option>
-                <option value="Quetta">Quetta</option>
-                <option value="Sialkot">Sialkot</option>
-                <option value="Hyderabad">Hyderabad</option>
-                <option value="Gujranwala">Gujranwala</option>
-                <option value="Bahawalpur">Bahawalpur</option>
-                <option value="Sargodha">Sargodha</option>
-                <option value="Abbottabad">Abbottabad</option>
-                <option value="Mardan">Mardan</option>
-                <option value="Mirpur">Mirpur</option>
-              </select>
+              <label className="block pb-2 text-sm font-medium text-gray-700">
+                City <span className="text-red-500">*</span>
+              </label>
+
+              {/* Toggle between dropdown and custom input */}
+              <div className="flex items-center gap-3 mb-2">
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="shopCityOption"
+                    checked={!useCustomCity}
+                    onChange={() => setUseCustomCity(false)}
+                    className="cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-700">
+                    Select from list
+                  </span>
+                </label>
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="shopCityOption"
+                    checked={useCustomCity}
+                    onChange={() => setUseCustomCity(true)}
+                    className="cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-700">Type your city</span>
+                </label>
+              </div>
+
+              {!useCustomCity ? (
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  required
+                  className="w-full border h-[40px] rounded-[5px] px-3"
+                >
+                  <option value="">Choose your city</option>
+                  {pakistanCities.map((cityName) => (
+                    <option key={cityName} value={cityName}>
+                      {cityName}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={customCity}
+                  onChange={(e) => setCustomCity(e.target.value)}
+                  placeholder="Enter your city name"
+                  required
+                  className="w-full border h-[40px] rounded-[5px] px-3"
+                />
+              )}
             </div>
 
             {/* Password */}
@@ -525,4 +559,3 @@ const ShopCreate = () => {
 };
 
 export default ShopCreate;
-

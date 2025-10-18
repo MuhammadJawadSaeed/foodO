@@ -9,6 +9,7 @@ const cloudinary = require("cloudinary");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const ErrorHandler = require("../utils/ErrorHandler");
 const sendShopToken = require("../utils/shopToken");
+const { validateAndFormatPhone } = require("../utils/phoneValidator");
 
 // // create shop
 // router.post("/create-shop", catchAsyncErrors(async (req, res, next) => {
@@ -106,13 +107,6 @@ const sendShopToken = require("../utils/shopToken");
 //   })
 // );
 
-
-
-
-
-
-
-
 // create shop without activation process
 router.post(
   "/create-shop",
@@ -135,10 +129,29 @@ router.post(
         return next(new ErrorHandler("User already exists", 400));
       }
 
+      // Validate and format phone number
+      let formattedPhone;
+      if (phoneNumber) {
+        try {
+          formattedPhone = validateAndFormatPhone(phoneNumber);
+          // Check if phone number already exists
+          const phoneExists = await Shop.findOne({
+            phoneNumber: formattedPhone.local,
+          });
+          if (phoneExists) {
+            return next(
+              new ErrorHandler("Phone number already registered", 400)
+            );
+          }
+        } catch (error) {
+          return next(new ErrorHandler(error.message, 400));
+        }
+      }
+
       const myCloud = await cloudinary.v2.uploader.upload(avatar, {
         folder: "avatars",
       });
-      
+
       const seller = await Shop.create({
         name,
         email,
@@ -148,7 +161,7 @@ router.post(
           url: myCloud.secure_url,
         },
         address,
-        phoneNumber,
+        phoneNumber: formattedPhone ? formattedPhone.local : phoneNumber,
         zipCode,
         city,
         country,
@@ -192,7 +205,6 @@ router.post(
     }
   })
 );
-
 
 // load shop
 router.get(
@@ -314,9 +326,27 @@ router.put(
       if (name !== undefined) shop.name = name;
       if (description !== undefined) shop.description = description;
       if (address !== undefined) shop.address = address;
-      if (phoneNumber !== undefined) shop.phoneNumber = phoneNumber;
+
+      // Validate and format phone number if provided
+      if (phoneNumber !== undefined) {
+        try {
+          const formattedPhone = validateAndFormatPhone(phoneNumber);
+          // Check if phone number already used by another shop
+          const phoneExists = await Shop.findOne({
+            phoneNumber: formattedPhone.local,
+            _id: { $ne: req.seller._id },
+          });
+          if (phoneExists) {
+            return next(new ErrorHandler("Phone number already in use", 400));
+          }
+          shop.phoneNumber = formattedPhone.local;
+        } catch (error) {
+          return next(new ErrorHandler(error.message, 400));
+        }
+      }
+
       if (zipCode !== undefined) shop.zipCode = zipCode;
-      if (city !== undefined) shop.city = city;  // Ensure the 'city' is updated here
+      if (city !== undefined) shop.city = city; // Ensure the 'city' is updated here
       if (country !== undefined) shop.country = country;
 
       await shop.save();
@@ -330,8 +360,6 @@ router.put(
     }
   })
 );
-
-
 
 // all sellers --- for admin
 router.get(

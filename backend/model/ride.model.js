@@ -57,6 +57,20 @@ const rideSchema = new mongoose.Schema({
     required: true,
   },
 
+  // Completion Evidence
+  completionEvidence: {
+    public_id: {
+      type: String,
+    },
+    url: {
+      type: String,
+    },
+  },
+
+  completedAt: {
+    type: Date,
+  },
+
   createdAt: {
     type: Date,
     default: Date.now(),

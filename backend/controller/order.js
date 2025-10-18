@@ -62,13 +62,13 @@ router.post(
   })
 );
 
-// Shop confirms order, then ride is created
+// NEW: Shop notifies rider (creates ride without confirming order)
 router.post(
-  "/confirm-order/:orderId",
+  "/notify-rider/:orderId",
   isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      console.log("Confirm order request received");
+      console.log("Notify rider request received");
       console.log("Seller ID:", req.seller?._id);
       console.log("Order ID:", req.params.orderId);
 
@@ -88,24 +88,30 @@ router.post(
       if (orderShopId !== req.seller._id.toString()) {
         console.log("Order does not belong to this shop");
         return next(
-          new ErrorHandler("You can only confirm your own orders", 403)
+          new ErrorHandler(
+            "You can only notify riders for your own orders",
+            403
+          )
         );
       }
 
-      // Allow confirmation of Pending or Processing orders (backward compatibility)
-      if (order.status !== "Pending" && order.status !== "Processing") {
-        console.log("Order already confirmed or processed");
+      // Only allow for Pending orders
+      if (order.status !== "Pending") {
+        console.log("Order not in Pending state");
         return next(
-          new ErrorHandler("Order already confirmed or processed", 400)
+          new ErrorHandler("Can only notify riders for pending orders", 400)
         );
       }
 
-      // Update order status
-      order.status = "Confirmed by Shop";
-      await order.save();
-      console.log("Order status updated to Confirmed by Shop");
+      // Check if ride already exists
+      if (order.ride) {
+        console.log("Ride already exists for this order");
+        return next(
+          new ErrorHandler("Ride already created for this order", 400)
+        );
+      }
 
-      // Create ride for this order
+      // Create ride for this order (WITHOUT confirming order yet)
       const shopId = order.cart[0].shopId;
       const shop = await Shop.findById(shopId);
       let rideData = null;
@@ -114,7 +120,7 @@ router.post(
         const pickupAddress = `${shop.address}, ${shop.city}, ${shop.country}`;
         const destinationAddress = `${order.shippingAddress.address1}, ${order.shippingAddress.city}, ${order.shippingAddress.country}`;
 
-        // Create the ride (default to motorcycle for food delivery)
+        // Create the ride
         const ride = await rideService.createRide({
           user: order.user._id,
           pickup: pickupAddress,
@@ -124,24 +130,26 @@ router.post(
         });
 
         order.ride = ride._id;
+        order.rideStatus = "pending"; // Track ride status
         await order.save();
 
-        // Get ride with OTP (OTP field has select: false, so we need to explicitly select it)
+        // Get ride with OTP
         const rideModel = require("../model/ride.model");
         const rideWithOTP = await rideModel.findById(ride._id).select("+otp");
 
-        // Prepare ride data to send back (including OTP for cook)
+        // Prepare ride data
         rideData = {
           _id: rideWithOTP._id,
           pickup: rideWithOTP.pickup,
           destination: rideWithOTP.destination,
           fare: rideWithOTP.fare,
           status: rideWithOTP.status,
-          otp: rideWithOTP.otp, // Send OTP to cook
+          otp: rideWithOTP.otp,
         };
 
-        // Notify nearby captains about the new ride
+        // Notify nearby captains
         try {
+          console.log("=== NOTIFYING CAPTAINS ===");
           console.log("Getting pickup coordinates for:", pickupAddress);
           const pickupCoordinates = await mapService.getAddressCoordinate(
             pickupAddress
@@ -156,68 +164,128 @@ router.post(
           );
           console.log(`Found ${captainsInRadius.length} captains in radius`);
 
-          const io = req.app.get("io");
-          console.log(
-            "Socket.IO instance:",
-            io ? "Available" : "Not available"
-          );
+          // Log each captain's details
+          captainsInRadius.forEach((captain) => {
+            console.log(
+              `Captain: ${captain._id}, Status: ${captain.status}, SocketId: ${
+                captain.socketId
+              }, Location: ${JSON.stringify(captain.location)}`
+            );
+          });
 
+          const io = req.app.get("io");
           if (io && captainsInRadius.length > 0) {
-            const rideModel = require("../model/ride.model");
             const rideWithUser = await rideModel
               .findOne({ _id: ride._id })
               .populate("user");
 
             console.log("Notifying captains about new ride:", ride._id);
-            console.log(
-              "Ride with user data:",
-              JSON.stringify({
-                _id: rideWithUser._id,
-                pickup: rideWithUser.pickup,
-                destination: rideWithUser.destination,
-                fare: rideWithUser.fare,
-                user: {
-                  _id: rideWithUser.user?._id,
-                  name: rideWithUser.user?.name,
-                  phoneNumber: rideWithUser.user?.phoneNumber,
-                },
-              })
-            );
             let notifiedCount = 0;
 
             captainsInRadius.forEach((captain) => {
-              console.log(
-                `Captain ${captain._id}, socketId: ${captain.socketId}`
-              );
               if (captain.socketId) {
                 io.to(captain.socketId).emit("new-ride", rideWithUser);
                 notifiedCount++;
                 console.log(
                   `Emitted new-ride to captain ${captain._id} via socket ${captain.socketId}`
                 );
-              } else {
-                console.log(`Captain ${captain._id} has no socketId`);
               }
             });
 
             console.log(`Successfully notified ${notifiedCount} captains`);
-          } else {
-            if (!io) {
-              console.log("Socket.IO not available - cannot notify captains");
-            }
-            if (captainsInRadius.length === 0) {
-              console.log("No captains found in radius");
-            }
           }
         } catch (notificationError) {
           console.error("Error notifying captains:", notificationError);
-          console.error("Stack trace:", notificationError.stack);
         }
       }
 
       res.status(200).json({
         success: true,
-        message: "Order confirmed and ride created!",
+        message: "Riders notified successfully! Waiting for captain to accept.",
+        order,
+        ride: rideData,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// Shop confirms order AFTER captain accepts
+router.post(
+  "/confirm-order/:orderId",
+  isSeller,
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      console.log("Confirm order request received");
+      console.log("Seller ID:", req.seller?._id);
+      console.log("Order ID:", req.params.orderId);
+
+      const orderId = req.params.orderId;
+      const order = await Order.findById(orderId).populate("ride");
+
+      if (!order) {
+        console.log("Order not found");
+        return next(new ErrorHandler("Order not found", 404));
+      }
+
+      console.log("Order status:", order.status);
+      console.log("Order shopId:", order.cart[0]?.shopId);
+
+      // Verify this order belongs to this shop
+      const orderShopId = order.cart[0]?.shopId;
+      if (orderShopId !== req.seller._id.toString()) {
+        console.log("Order does not belong to this shop");
+        return next(
+          new ErrorHandler("You can only confirm your own orders", 403)
+        );
+      }
+
+      // Only allow confirmation of Pending orders that have an accepted ride
+      if (order.status !== "Pending") {
+        console.log("Order not in Pending state");
+        return next(new ErrorHandler("Can only confirm pending orders", 400));
+      }
+
+      // Check if ride exists and is accepted
+      if (!order.ride) {
+        console.log("No ride found for this order");
+        return next(new ErrorHandler("Please notify riders first", 400));
+      }
+
+      if (order.ride.status !== "accepted") {
+        console.log("Ride not accepted yet, status:", order.ride.status);
+        return next(
+          new ErrorHandler("Wait for a captain to accept the ride first", 400)
+        );
+      }
+
+      // Update order status to confirmed
+      order.status = "Confirmed by Shop";
+      order.rideStatus = "accepted";
+      await order.save();
+      console.log("Order status updated to Confirmed by Shop");
+
+      // Get ride with OTP
+      const rideModel = require("../model/ride.model");
+      const rideWithOTP = await rideModel
+        .findById(order.ride._id)
+        .select("+otp");
+
+      // Prepare ride data with OTP
+      const rideData = {
+        _id: rideWithOTP._id,
+        pickup: rideWithOTP.pickup,
+        destination: rideWithOTP.destination,
+        fare: rideWithOTP.fare,
+        status: rideWithOTP.status,
+        otp: rideWithOTP.otp,
+        captain: rideWithOTP.captain,
+      };
+
+      res.status(200).json({
+        success: true,
+        message: "Order confirmed successfully!",
         order,
         ride: rideData,
       });
@@ -312,9 +380,14 @@ router.get(
     try {
       const orders = await Order.find({
         "cart.shopId": req.params.shopId,
-      }).sort({
-        createdAt: -1,
-      });
+      })
+        .populate({
+          path: "ride",
+          select: "+otp", // Include OTP field (it's select: false in model)
+        })
+        .sort({
+          createdAt: -1,
+        });
 
       res.status(200).json({
         success: true,
@@ -337,6 +410,30 @@ router.put(
       if (!order) {
         return next(new ErrorHandler("Order not found with this id", 400));
       }
+
+      // PROTECTION: Cannot update status of cancelled orders
+      if (
+        order.status === "Cancelled" ||
+        order.status === "Cancelled by Shop"
+      ) {
+        return next(
+          new ErrorHandler("Cannot update status of a cancelled order!", 400)
+        );
+      }
+
+      // PROTECTION: Cannot set status to Cancelled via update (use cancel endpoint)
+      if (
+        req.body.status === "Cancelled" ||
+        req.body.status === "Cancelled by Shop"
+      ) {
+        return next(
+          new ErrorHandler(
+            "Use the cancel-order endpoint to cancel orders!",
+            400
+          )
+        );
+      }
+
       if (req.body.status === "Transferred to delivery partner") {
         order.cart.forEach(async (o) => {
           await updateOrder(o._id, o.qty);
@@ -344,9 +441,7 @@ router.put(
       }
 
       // Only allow valid status transitions
-      if (req.body.status === "Cancelled" && order.status === "Pending") {
-        order.status = "Cancelled";
-      } else if (
+      if (
         req.body.status === "Confirmed by Shop" &&
         order.status === "Pending"
       ) {

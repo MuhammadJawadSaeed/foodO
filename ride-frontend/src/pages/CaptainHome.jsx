@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import CaptainDetails from "../components/CaptainDetails";
 import RidePopUp from "../components/RidePopUp";
 import { useGSAP } from "@gsap/react";
@@ -22,6 +22,98 @@ const CaptainHome = () => {
 
   const { socket } = useContext(SocketContext);
   const { captain } = useContext(CaptainDataContext);
+  const location = useLocation();
+
+  // Load accepted ride from localStorage on page load (for page reload)
+  useEffect(() => {
+    console.log("🔍 Checking localStorage for accepted ride...");
+    const savedRide = localStorage.getItem("acceptedRide");
+    console.log("localStorage data:", savedRide);
+
+    if (savedRide) {
+      try {
+        const rideData = JSON.parse(savedRide);
+        console.log("✅ Loading ride from localStorage:", rideData);
+        console.log("✅ Ride OTP:", rideData.otp);
+        setRide(rideData);
+        setConfirmRidePopupPanel(true);
+        setRidePopupPanel(false);
+      } catch (error) {
+        console.error("❌ Error parsing saved ride:", error);
+        localStorage.removeItem("acceptedRide");
+      }
+    } else {
+      console.log("ℹ️ No saved ride found in localStorage");
+    }
+  }, []);
+
+  // Check if coming from pending rides page with accepted ride
+  useEffect(() => {
+    if (location.state?.acceptedRide && location.state?.showConfirmPopup) {
+      console.log("📍 Setting ride from pending rides page");
+      console.log("Ride data:", location.state.acceptedRide);
+      console.log("Ride OTP:", location.state.acceptedRide.otp);
+
+      setRide(location.state.acceptedRide);
+
+      // Save to localStorage for page reload persistence
+      const rideToSave = JSON.stringify(location.state.acceptedRide);
+      console.log("💾 Saving to localStorage:", rideToSave);
+      localStorage.setItem("acceptedRide", rideToSave);
+      console.log("✅ Saved to localStorage successfully");
+
+      setConfirmRidePopupPanel(true);
+      setRidePopupPanel(false);
+
+      // Clear the location state after using it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  // Start online session when component mounts
+  useEffect(() => {
+    const startSession = async () => {
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/captains/start-session`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        console.log("Online session started");
+      } catch (error) {
+        console.error("Error starting session:", error);
+      }
+    };
+
+    if (captain && captain._id) {
+      startSession();
+    }
+
+    // End session when component unmounts (captain closes app/logs out)
+    return () => {
+      const endSession = async () => {
+        try {
+          await axios.post(
+            `${import.meta.env.VITE_BASE_URL}/captains/end-session`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+          console.log("Online session ended");
+        } catch (error) {
+          console.error("Error ending session:", error);
+        }
+      };
+      endSession();
+    };
+  }, [captain]);
 
   // Function to fetch pending rides
   const fetchPendingRides = async () => {

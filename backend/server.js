@@ -34,7 +34,12 @@ const server = http.createServer(app);
 // Socket.io setup
 const io = socketIO(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175",
+    ],
     credentials: true,
   },
 });
@@ -48,27 +53,47 @@ io.on("connection", (socket) => {
 
   // Handle user/captain joining
   socket.on("join", async (data) => {
-    const { userId, userType } = data;
+    // Support both formats: string (shopId) or object {userId, userType}
+    let userId, userType;
 
-    console.log(
-      `User joining: ${userId}, Type: ${userType}, SocketId: ${socket.id}`
-    );
+    if (typeof data === "string") {
+      // Shop format: just sends shopId as string
+      userId = data;
+      userType = "shop";
 
-    if (userType === "user") {
-      await User.findByIdAndUpdate(userId, { socketId: socket.id });
-      console.log(`User ${userId} connected with socketId: ${socket.id}`);
-    } else if (userType === "captain") {
-      await Captain.findByIdAndUpdate(userId, {
-        socketId: socket.id,
-        status: "active",
-      });
-      console.log(
-        `Captain ${userId} is now active with socketId: ${socket.id}`
-      );
-    } else if (userType === "shop") {
+      // Shop joins as a room
+      socket.join(userId);
+      console.log(`Shop ${userId} joined room with socketId: ${socket.id}`);
+
       const Shop = require("./model/shop");
       await Shop.findByIdAndUpdate(userId, { socketId: socket.id });
-      console.log(`Shop ${userId} connected with socketId: ${socket.id}`);
+    } else if (typeof data === "object" && data.userId) {
+      // User/Captain format: sends object
+      userId = data.userId;
+      userType = data.userType;
+
+      console.log(
+        `User joining: ${userId}, Type: ${userType}, SocketId: ${socket.id}`
+      );
+
+      if (userType === "user") {
+        await User.findByIdAndUpdate(userId, { socketId: socket.id });
+        console.log(`User ${userId} connected with socketId: ${socket.id}`);
+      } else if (userType === "captain") {
+        await Captain.findByIdAndUpdate(userId, {
+          socketId: socket.id,
+          status: "active",
+        });
+        console.log(
+          `Captain ${userId} is now active with socketId: ${socket.id}`
+        );
+      } else if (userType === "shop") {
+        // Shop joins as a room
+        socket.join(userId);
+        const Shop = require("./model/shop");
+        await Shop.findByIdAndUpdate(userId, { socketId: socket.id });
+        console.log(`Shop ${userId} joined room with socketId: ${socket.id}`);
+      }
     }
   });
 

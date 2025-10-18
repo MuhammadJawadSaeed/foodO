@@ -51,6 +51,12 @@ io.on("connection", (socket) => {
     io.emit("getUsers", users);
   });
 
+  // Handle shop/seller joining their room
+  socket.on("join", (roomId) => {
+    socket.join(roomId);
+    console.log(`User joined room: ${roomId}`);
+  });
+
   // send and get message
   const messages = {}; // Object to track messages sent to each user
 

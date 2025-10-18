@@ -7,16 +7,22 @@ import { useEffect } from "react";
 import axios from "axios";
 import { server } from "../../server";
 import { toast } from "react-toastify";
+import pakistanCities from "../../static/pakistanCities";
+import PhoneInput from "../PhoneInput";
+import { isValidPakistaniPhone } from "../../utils/phoneValidator";
 
 const Checkout = () => {
   const { user } = useSelector((state) => state.user);
   const { cart } = useSelector((state) => state.cart);
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState("Pakistan");
   const [city, setCity] = useState("");
+  const [customCity, setCustomCity] = useState("");
+  const [useCustomCity, setUseCustomCity] = useState(false);
   const [userInfo, setUserInfo] = useState(false);
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
   const [zipCode, setZipCode] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [couponCode, setCouponCode] = useState("");
   const [couponCodeData, setCouponCodeData] = useState(null);
   const [discountPrice, setDiscountPrice] = useState(null);
@@ -24,34 +30,51 @@ const Checkout = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    // Initialize phone number from user if available
+    if (user && user.phoneNumber) {
+      setPhoneNumber(user.phoneNumber);
+    }
+  }, [user]);
 
   const paymentSubmit = () => {
-   if(address1 === "" || address2 === "" || zipCode === null || country === "" || city === ""){
-      toast.error("Please choose your delivery address!")
-   } else{
-    const shippingAddress = {
-      address1,
-      address2,
-      zipCode,
-      country,
-      city,
-    };
+    const finalCity = useCustomCity ? customCity : city;
 
-    const orderData = {
-      cart,
-      totalPrice,
-      subTotalPrice,
-      shipping,
-      discountPrice,
-      shippingAddress,
-      user,
+    if (
+      address1 === "" ||
+      address2 === "" ||
+      zipCode === null ||
+      country === "" ||
+      finalCity === ""
+    ) {
+      toast.error("Please choose your delivery address!");
+    } else if (!phoneNumber || phoneNumber.trim() === "") {
+      toast.error("Phone number is required!");
+    } else if (!isValidPakistaniPhone(phoneNumber)) {
+      toast.error("Please enter a valid Pakistani mobile number!");
+    } else {
+      const shippingAddress = {
+        address1,
+        address2,
+        zipCode,
+        country,
+        city: finalCity,
+        phoneNumber,
+      };
+
+      const orderData = {
+        cart,
+        totalPrice,
+        subTotalPrice,
+        shipping,
+        discountPrice,
+        shippingAddress,
+        user,
+      };
+
+      // update local storage with the updated orders array
+      localStorage.setItem("latestOrder", JSON.stringify(orderData));
+      navigate("/payment");
     }
-
-    // update local storage with the updated orders array
-    localStorage.setItem("latestOrder", JSON.stringify(orderData));
-    navigate("/payment");
-   }
   };
 
   const subTotalPrice = cart.reduce(
@@ -112,6 +135,10 @@ const Checkout = () => {
             setCountry={setCountry}
             city={city}
             setCity={setCity}
+            customCity={customCity}
+            setCustomCity={setCustomCity}
+            useCustomCity={useCustomCity}
+            setUseCustomCity={setUseCustomCity}
             userInfo={userInfo}
             setUserInfo={setUserInfo}
             address1={address1}
@@ -120,6 +147,8 @@ const Checkout = () => {
             setAddress2={setAddress2}
             zipCode={zipCode}
             setZipCode={setZipCode}
+            phoneNumber={phoneNumber}
+            setPhoneNumber={setPhoneNumber}
           />
         </div>
         <div className="w-full 800px:w-[35%] 800px:mt-0 mt-8">
@@ -150,6 +179,10 @@ const ShippingInfo = ({
   setCountry,
   city,
   setCity,
+  customCity,
+  setCustomCity,
+  useCustomCity,
+  setUseCustomCity,
   userInfo,
   setUserInfo,
   address1,
@@ -158,6 +191,8 @@ const ShippingInfo = ({
   setAddress2,
   zipCode,
   setZipCode,
+  phoneNumber,
+  setPhoneNumber,
 }) => {
   return (
     <div className="w-full 800px:w-[95%] bg-white rounded-md p-5 pb-8">
@@ -187,13 +222,17 @@ const ShippingInfo = ({
 
         <div className="w-full flex pb-3">
           <div className="w-[50%]">
-            <label className="block pb-2">Phone Number</label>
-            <input
-              type="number"
-              required
-              value={user && user.phoneNumber}
-              className={`${styles.input} !w-[95%]`}
-            />
+            <label className="block pb-2">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
+            <div className="!w-[95%]">
+              <PhoneInput
+                value={phoneNumber}
+                onChange={setPhoneNumber}
+                required={true}
+                placeholder="300 123 4567"
+              />
+            </div>
           </div>
           <div className="w-[50%]">
             <label className="block pb-2">Zip Code</label>
@@ -207,93 +246,71 @@ const ShippingInfo = ({
           </div>
         </div>
 
-        {/* Country (only Pakistan)
+        {/* Country - Fixed to Pakistan */}
         <div className="w-full pb-2">
           <label className="block pb-2">Country</label>
-          <select
-            value={country}
+          <input
+            type="text"
+            value="Pakistan"
             disabled
-            className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-500 cursor-not-allowed"
-          >
-            <option value="PK">Pakistan</option>
-          </select>
+            className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-700 px-3 cursor-not-allowed"
+          />
         </div>
 
-        {/* City (State/Province) */}
-        {/* <div className="w-full pb-2">
-          <label className="block pb-2">Choose your City</label>
-          <select
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="w-[95%] border h-[40px] rounded-[5px]"
-          >
-            <option value="">Choose your city</option>
-            <option value="Karachi">Karachi</option>
-            <option value="Lahore">Lahore</option>
-            <option value="Islamabad">Islamabad</option>
-            <option value="Rawalpindi">Rawalpindi</option>
-            <option value="Faisalabad">Faisalabad</option>
-            <option value="Multan">Multan</option>
-            <option value="Peshawar">Peshawar</option>
-            <option value="Quetta">Quetta</option>
-            <option value="Sialkot">Sialkot</option>
-            <option value="Hyderabad">Hyderabad</option>
-            <option value="Gujranwala">Gujranwala</option>
-            <option value="Bahawalpur">Bahawalpur</option>
-            <option value="Sargodha">Sargodha</option>
-            <option value="Abbottabad">Abbottabad</option>
-            <option value="Mardan">Mardan</option>
-            <option value="Mirpur">Mirpur</option>
-          </select>
-        </div>  */}
+        {/* City Selection - Choose from list or type custom */}
         <div className="w-full pb-2">
-          <label className="block pb-2">Country</label>
-          <select
-            name=""
-            id=""
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="w-[95%] border h-[40px] rounded-[5px]"
-          >
-            <option value="" className="block border pb-2">
-              choose your country
-            </option>
-            {Country &&
-              Country.getAllCountries().map((item) => (
-                <option
-                  className="block pb-2"
-                  key={item.isoCode}
-                  value={item.isoCode}
-                >
-                  {item.name}
+          <label className="block pb-2">
+            City <span className="text-red-500">*</span>
+          </label>
+
+          {/* Toggle between dropdown and custom input */}
+          <div className="flex items-center gap-2 mb-2">
+            <label className="flex items-center gap-1 cursor-pointer">
+              <input
+                type="radio"
+                name="cityOption"
+                checked={!useCustomCity}
+                onChange={() => setUseCustomCity(false)}
+                className="cursor-pointer"
+              />
+              <span className="text-sm">Select from list</span>
+            </label>
+            <label className="flex items-center gap-1 cursor-pointer">
+              <input
+                type="radio"
+                name="cityOption"
+                checked={useCustomCity}
+                onChange={() => setUseCustomCity(true)}
+                className="cursor-pointer"
+              />
+              <span className="text-sm">Type your city</span>
+            </label>
+          </div>
+
+          {!useCustomCity ? (
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              required
+              className="w-[95%] border h-[40px] rounded-[5px] px-2"
+            >
+              <option value="">Choose your city</option>
+              {pakistanCities.map((cityName) => (
+                <option key={cityName} value={cityName}>
+                  {cityName}
                 </option>
               ))}
-          </select>
-        </div>
-
-        <div className="w-full pb-2">
-          <label className="block pb-2">Choose your City</label>
-          <select
-            name=""
-            id=""
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="w-[95%] border h-[40px] rounded-[5px]"
-          >
-            <option value="" className="block border pb-2">
-              choose your city
-            </option>
-            {State &&
-              State.getStatesOfCountry(country).map((item) => (
-                <option
-                  className="block pb-2"
-                  key={item.isoCode}
-                  value={item.isoCode}
-                >
-                  {item.name}
-                </option> 
-              ))}
-          </select>
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={customCity}
+              onChange={(e) => setCustomCity(e.target.value)}
+              placeholder="Enter your city name"
+              required
+              className="w-[95%] border h-[40px] rounded-[5px] px-3"
+            />
+          )}
         </div>
 
         <div className="w-full flex pb-3">
@@ -377,7 +394,8 @@ const CartData = ({
       <div className="flex justify-between border-b pb-3">
         <h3 className="text-[16px] font-[400] text-[#000000a4]">Discount:</h3>
         <h5 className="text-[18px] font-[600]">
-          - {discountPercentenge ? "PKR" + discountPercentenge.toString() : null}
+          -{" "}
+          {discountPercentenge ? "PKR" + discountPercentenge.toString() : null}
         </h5>
       </div>
       <h5 className="text-[18px] font-[600] text-end pt-3">PKR{totalPrice}</h5>

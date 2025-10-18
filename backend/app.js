@@ -13,7 +13,12 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
 // Allow CORS (for frontend requests)
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175",
+    ],
     credentials: true,
   })
 );
@@ -51,7 +56,8 @@ app.use("/product", product);
 app.use("/coupon", coupon);
 app.use("/payment", payment);
 app.use("/withdraw", withdraw);
-app.use("/captain", captain);
+app.use("/captain", captain); // Singular for auth routes (login, register, profile)
+app.use("/captains", captain); // Plural for stats routes (stats, start-session, end-session)
 app.use("/rides", ride); // Changed from /ride to /rides to match frontend
 
 // Global Error Handling Middleware

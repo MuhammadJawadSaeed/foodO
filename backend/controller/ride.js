@@ -2,6 +2,7 @@ const rideService = require("../utils/ride.service");
 const { validationResult } = require("express-validator");
 const mapService = require("../utils/maps.service");
 const rideModel = require("../model/ride.model");
+const cloudinary = require("cloudinary");
 
 module.exports.createRide = async (req, res) => {
   const errors = validationResult(req);
@@ -102,12 +103,102 @@ module.exports.confirmRide = async (req, res) => {
     console.log("Ride confirmed successfully:", ride._id);
 
     const io = req.app.get("io");
+
+    // Notify user about ride confirmation
     if (io && ride.user.socketId) {
       console.log("Emitting ride-confirmed to user:", ride.user._id);
       io.to(ride.user.socketId).emit("ride-confirmed", ride);
     }
 
-    return res.status(200).json(ride);
+    // NEW: Notify shop/cook about captain acceptance
+    if (io && ride.orderId) {
+      console.log("Fetching order for ride:", ride.orderId);
+      const Order = require("../model/order");
+      const order = await Order.findById(ride.orderId);
+
+      if (order && order.cart && order.cart[0] && order.cart[0].shopId) {
+        const shopId = order.cart[0].shopId;
+        console.log("Notifying shop about ride acceptance:", shopId);
+
+        // Get ride with OTP to send to shop
+        const Ride = require("../model/ride.model");
+        const rideWithOTP = await Ride.findById(ride._id).select("+otp");
+
+        // IMPORTANT: Save OTP to order so cook can see it anytime
+        const updatedOrder = await Order.findByIdAndUpdate(
+          ride.orderId,
+          {
+            rideStatus: "accepted",
+            rideOTP: rideWithOTP.otp,
+          },
+          { new: true } // Return updated document
+        );
+
+        console.log("✅ OTP saved to order successfully!");
+        console.log("Order ID:", updatedOrder._id);
+        console.log("Ride Status:", updatedOrder.rideStatus);
+        console.log("Ride OTP:", updatedOrder.rideOTP);
+
+        // Emit to shop's room (shops join with their ID as room)
+        console.log("🚀 Emitting ride-accepted to shop room:", shopId);
+        console.log("Event payload:", {
+          orderId: ride.orderId,
+          ride: {
+            _id: rideWithOTP._id,
+            status: rideWithOTP.status,
+            otp: rideWithOTP.otp,
+          },
+        });
+
+        io.to(shopId).emit("ride-accepted", {
+          orderId: ride.orderId,
+          ride: {
+            _id: rideWithOTP._id,
+            status: rideWithOTP.status,
+            otp: rideWithOTP.otp,
+            captain: {
+              _id: req.captain._id,
+              fullname: req.captain.fullname,
+              phoneNumber: req.captain.phoneNumber,
+            },
+          },
+        });
+
+        console.log("✅ Socket event emitted successfully!");
+
+        // Also emit to shop's socketId as backup
+        const Shop = require("../model/shop");
+        const shop = await Shop.findById(shopId);
+        if (shop && shop.socketId) {
+          console.log("📡 Also emitting to shop socketId:", shop.socketId);
+          io.to(shop.socketId).emit("ride-accepted", {
+            orderId: ride.orderId,
+            ride: {
+              _id: rideWithOTP._id,
+              status: rideWithOTP.status,
+              otp: rideWithOTP.otp,
+              captain: {
+                _id: req.captain._id,
+                fullname: req.captain.fullname,
+                phoneNumber: req.captain.phoneNumber,
+              },
+            },
+          });
+        }
+
+        console.log("Shop notification sent for order:", ride.orderId);
+      }
+    }
+
+    // Return ride with OTP for captain to see
+    const Ride = require("../model/ride.model");
+    const rideWithOTP = await Ride.findById(ride._id)
+      .populate("user")
+      .populate("captain")
+      .populate("orderId")
+      .select("+otp");
+
+    return res.status(200).json(rideWithOTP);
   } catch (err) {
     console.error("Error confirming ride:", err);
     return res.status(500).json({ message: err.message });
@@ -150,11 +241,40 @@ module.exports.endRide = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { rideId } = req.body;
+  const { rideId, completionImage } = req.body;
 
   try {
     console.log("Ending ride:", rideId);
-    const ride = await rideService.endRide({ rideId, captain: req.captain });
+    console.log("Has completion image:", !!completionImage);
+
+    // Upload completion evidence image to Cloudinary if provided
+    let completionEvidence = null;
+    if (completionImage) {
+      try {
+        console.log("Uploading completion evidence to Cloudinary...");
+        const myCloud = await cloudinary.v2.uploader.upload(completionImage, {
+          folder: "ride-completions",
+          width: 1200,
+          crop: "scale",
+        });
+
+        completionEvidence = {
+          public_id: myCloud.public_id,
+          url: myCloud.secure_url,
+        };
+
+        console.log("Completion evidence uploaded:", completionEvidence.url);
+      } catch (uploadError) {
+        console.error("Error uploading completion evidence:", uploadError);
+        // Continue even if image upload fails
+      }
+    }
+
+    const ride = await rideService.endRide({
+      rideId,
+      captain: req.captain,
+      completionEvidence,
+    });
 
     console.log("Ride ended successfully. Status:", ride.status);
 
@@ -203,6 +323,113 @@ module.exports.endRide = async (req, res) => {
       io.to(ride.user.socketId).emit("ride-ended", ride);
     }
 
+    // Update captain earnings and statistics
+    if (ride.captain && ride.fare) {
+      try {
+        console.log("=== Starting Captain Earnings Update ===");
+        console.log("Ride ID:", ride._id);
+        console.log("Captain ID:", ride.captain);
+        console.log("Fare Amount:", ride.fare);
+
+        const captainModel = require("../model/captain.model");
+        const captain = await captainModel.findById(ride.captain);
+
+        if (captain) {
+          console.log("Captain found:", captain.email);
+          console.log("Current earnings before update:", {
+            total: captain.earnings.total,
+            today: captain.earnings.today,
+          });
+          console.log("Current ride stats before update:", {
+            totalRides: captain.rideStats.totalRides,
+            completedRides: captain.rideStats.completedRides,
+          });
+
+          const now = new Date();
+          const today = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+          );
+
+          // Reset daily stats if needed
+          if (captain.lastDayReset && new Date(captain.lastDayReset) < today) {
+            captain.earnings.today = 0;
+            captain.rideStats.todayRides = 0;
+            captain.hoursOnline.today = 0;
+            captain.lastDayReset = now;
+          }
+
+          // Reset weekly stats if needed
+          const startOfWeek = new Date(now);
+          startOfWeek.setDate(
+            now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
+          );
+          startOfWeek.setHours(0, 0, 0, 0);
+
+          if (
+            captain.lastWeekReset &&
+            new Date(captain.lastWeekReset) < startOfWeek
+          ) {
+            captain.earnings.thisWeek = 0;
+            captain.rideStats.thisWeekRides = 0;
+            captain.hoursOnline.thisWeek = 0;
+            captain.lastWeekReset = now;
+          }
+
+          // Reset monthly stats if needed
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          if (
+            captain.lastMonthReset &&
+            new Date(captain.lastMonthReset) < startOfMonth
+          ) {
+            captain.earnings.thisMonth = 0;
+            captain.rideStats.thisMonthRides = 0;
+            captain.hoursOnline.thisMonth = 0;
+            captain.lastMonthReset = now;
+          }
+
+          // Update earnings
+          captain.earnings.total += ride.fare;
+          captain.earnings.today += ride.fare;
+          captain.earnings.thisWeek += ride.fare;
+          captain.earnings.thisMonth += ride.fare;
+
+          // Update ride stats
+          captain.rideStats.totalRides += 1;
+          captain.rideStats.completedRides += 1;
+          captain.rideStats.todayRides += 1;
+          captain.rideStats.thisWeekRides += 1;
+          captain.rideStats.thisMonthRides += 1;
+
+          await captain.save();
+
+          console.log("Captain earnings UPDATED successfully:", {
+            total: captain.earnings.total,
+            today: captain.earnings.today,
+            thisWeek: captain.earnings.thisWeek,
+            thisMonth: captain.earnings.thisMonth,
+          });
+          console.log("Captain ride stats UPDATED successfully:", {
+            totalRides: captain.rideStats.totalRides,
+            completedRides: captain.rideStats.completedRides,
+            todayRides: captain.rideStats.todayRides,
+          });
+          console.log("=== Captain Data SAVED to Database ===");
+        } else {
+          console.log("Captain NOT FOUND with ID:", ride.captain);
+        }
+      } catch (error) {
+        console.error("Error updating captain earnings:", error);
+        // Don't fail the request if earnings update fails
+      }
+    } else {
+      console.log("Skipping earnings update - Missing data:", {
+        hasCaptain: !!ride.captain,
+        hasFare: !!ride.fare,
+      });
+    }
+
     return res.status(200).json(ride);
   } catch (err) {
     console.error("Error ending ride:", err);
@@ -248,14 +475,14 @@ module.exports.getPendingRides = async (req, res) => {
 
     console.log(`Searching for rides near: lat=${latitude}, lng=${longitude}`);
 
-    // Get all pending rides within a certain radius (increased to 100km for testing with dummy coordinates)
+    // Get all pending rides within 5km radius
     const pendingRides = await rideService.getPendingRidesInRadius(
       latitude,
       longitude,
-      100 // 100km radius (increased from 10km due to dummy coordinates issue)
+      5 // 5km radius
     );
 
-    console.log(`Found ${pendingRides.length} pending rides within 100km`);
+    console.log(`Found ${pendingRides.length} pending rides within 5km`);
 
     return res.status(200).json({
       rides: pendingRides,

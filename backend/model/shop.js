@@ -25,7 +25,7 @@ const shopSchema = new mongoose.Schema({
     required: true,
   },
   phoneNumber: {
-    type: Number,
+    type: String,
     required: true,
   },
   role: {
@@ -80,6 +80,10 @@ const shopSchema = new mongoose.Schema({
       },
     },
   ],
+  socketId: {
+    type: String,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),
