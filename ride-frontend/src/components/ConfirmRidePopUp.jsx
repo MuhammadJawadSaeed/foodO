@@ -59,6 +59,41 @@ const ConfirmRidePopUp = (props) => {
         Confirm Ride to Start
       </h3>
 
+      {/* Order ID and Status */}
+      {props.ride?.order && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 mb-4 border border-blue-200">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-[10px] text-blue-700 font-semibold uppercase mb-0.5">
+                Order ID
+              </p>
+              <p className="text-xs font-bold text-gray-900 truncate">
+                #{props.ride.order._id?.slice(-8) || "N/A"}
+              </p>
+            </div>
+            <div className="flex-1 text-right">
+              <p className="text-[10px] text-indigo-700 font-semibold uppercase mb-0.5">
+                Order Status
+              </p>
+              <span
+                className={`inline-block px-2 py-1 rounded-full text-[10px] font-bold ${
+                  props.ride.order.status === "Delivered"
+                    ? "bg-green-100 text-green-700"
+                    : props.ride.order.status === "On the way"
+                    ? "bg-blue-100 text-blue-700"
+                    : props.ride.order.status === "Preparing" ||
+                      props.ride.order.status === "Prepared"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                {props.ride.order.status || "Pending"}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Customer Card */}
       <div className="bg-gradient-to-r from-yellow-400 to-orange-400 p-4 rounded-xl shadow-md mb-5">
         <div className="flex items-center justify-between">
@@ -91,15 +126,65 @@ const ConfirmRidePopUp = (props) => {
 
       {/* Ride Details */}
       <div className="space-y-3">
+        {/* Restaurant Name & Order Items */}
+        {props.ride?.order?.cart?.[0]?.shop && (
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 border-2 border-orange-300">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <i className="ri-store-2-fill text-white text-lg"></i>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-orange-700 font-semibold uppercase">
+                  Restaurant
+                </p>
+                <h3 className="text-base font-bold text-gray-900 truncate">
+                  {props.ride.order.cart[0].shop.name}
+                </h3>
+              </div>
+              <div className="bg-orange-500 text-white px-2 py-1 rounded text-[10px] font-bold">
+                PICKUP
+              </div>
+            </div>
+
+            {/* Order Items */}
+            {props.ride.order.cart && props.ride.order.cart.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                <p className="text-xs font-semibold text-orange-800 flex items-center gap-1">
+                  <i className="ri-restaurant-line"></i>
+                  {props.ride.order.cart.length} Item(s) to Deliver
+                </p>
+                <div className="max-h-24 overflow-y-auto space-y-1">
+                  {props.ride.order.cart.slice(0, 3).map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 bg-white p-1.5 rounded text-xs"
+                    >
+                      <span className="font-semibold text-gray-900">
+                        • {item.name}
+                      </span>
+                      <span className="text-gray-600">x{item.qty}</span>
+                    </div>
+                  ))}
+                  {props.ride.order.cart.length > 3 && (
+                    <p className="text-[10px] text-center text-orange-600 font-medium">
+                      +{props.ride.order.cart.length - 3} more items
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Pickup */}
         <div className="bg-green-50 rounded-lg p-3 border border-green-200">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-              <i className="ri-restaurant-2-fill text-white text-lg"></i>
+              <i className="ri-map-pin-line text-white text-lg"></i>
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-bold text-green-800 uppercase">
-                Pickup (Restaurant)
+                Pickup Location
               </h3>
               <p className="text-sm text-gray-700 mt-1 leading-tight">
                 {props.ride?.pickup || "Not specified"}

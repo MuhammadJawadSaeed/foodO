@@ -10,12 +10,25 @@ import {
 import { validateAndFormatCNIC, handleCNICInput } from "../utils/cnicValidator";
 import { PAKISTANI_CITIES } from "../utils/pakistaniCities";
 import PhoneInput from "../components/PhoneInput";
+import {
+  FaEye,
+  FaEyeSlash,
+  FaUser,
+  FaIdCard,
+  FaFileAlt,
+  FaMotorcycle,
+  FaCamera,
+  FaAddressCard,
+  FaImage,
+} from "react-icons/fa";
+import { MdLocationOn, MdPerson } from "react-icons/md";
 
 const CaptainSignup = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -271,23 +284,29 @@ const CaptainSignup = () => {
         </div>
       )}
 
-      <div className="h-screen flex flex-col">
-        {/* Scrollable Form Section */}
-        <div className="flex-1 overflow-y-auto px-5 py-5">
-          <img
-            className="w-20 mb-3"
-            src="https://www.svgrepo.com/show/505031/uber-driver.svg"
-            alt=""
-          />
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-orange-500 to-purple-600 text-white px-5 py-6 shadow-lg">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md">
+              <span className="text-3xl">🍔</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-black">
+                food<span className="text-orange-200">O</span>
+              </h1>
+              <p className="text-sm text-orange-100">Captain Registration</p>
+            </div>
+          </div>
+        </div>
 
-          <form
-            onSubmit={(e) => {
-              submitHandler(e);
-            }}
-          >
+        {/* Scrollable Form Section */}
+        <div className="px-5 py-6 max-w-2xl mx-auto">
+          <form onSubmit={submitHandler} className="space-y-6">
             {/* Profile Image Upload (Optional) */}
-            <div className="mb-5">
-              <h3 className="text-base font-medium mb-2">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaCamera className="text-2xl text-orange-500" />
                 Profile Photo (Optional)
               </h3>
               {profileImagePreview ? (
@@ -295,23 +314,25 @@ const CaptainSignup = () => {
                   <img
                     src={profileImagePreview}
                     alt="Profile Preview"
-                    className="w-32 h-32 mx-auto object-cover rounded-full border-2 border-gray-300"
+                    className="w-32 h-32 mx-auto object-cover rounded-full border-4 border-orange-200 shadow-md"
                   />
                   <button
                     type="button"
                     onClick={() =>
                       deleteImage(setProfileImage, setProfileImagePreview)
                     }
-                    className="absolute top-0 right-1/2 translate-x-16 bg-red-500 text-white px-3 py-1 rounded-lg text-sm"
+                    className="absolute top-0 right-1/2 translate-x-16 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md transition-all"
                   >
                     Delete
                   </button>
                 </div>
               ) : (
-                <label className="flex items-center justify-center w-32 h-32 mx-auto border-2 border-dashed border-gray-300 rounded-full cursor-pointer hover:bg-gray-50">
+                <label className="flex items-center justify-center w-32 h-32 mx-auto border-2 border-dashed border-orange-300 rounded-full cursor-pointer hover:bg-orange-50 transition-colors">
                   <div className="text-center">
-                    <i className="ri-user-add-line text-3xl text-gray-400"></i>
-                    <p className="text-xs text-gray-400 mt-1">Add Photo</p>
+                    <FaUser className="text-4xl text-orange-400 mx-auto" />
+                    <p className="text-xs text-gray-500 mt-1 font-medium">
+                      Add Photo
+                    </p>
                   </div>
                   <input
                     type="file"
@@ -329,336 +350,446 @@ const CaptainSignup = () => {
               )}
             </div>
 
-            <h3 className="text-lg w-full font-medium mb-2">
-              What's our Captain's name
-            </h3>
-            <div className="flex gap-4 mb-5">
-              <input
-                required
-                className="bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border text-lg placeholder:text-base"
-                type="text"
-                placeholder="First name"
-                value={firstName}
-                onChange={(e) => {
-                  setFirstName(e.target.value);
-                }}
-              />
-              <input
-                required
-                className="bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border text-lg placeholder:text-base"
-                type="text"
-                placeholder="Last name"
-                value={lastName}
-                onChange={(e) => {
-                  setLastName(e.target.value);
-                }}
-              />
-            </div>
+            {/* Personal Information */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <MdPerson className="text-2xl text-purple-500" />
+                Personal Information
+              </h3>
 
-            <h3 className="text-lg font-medium mb-2">Contact Information</h3>
-            <input
-              required
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
-              className="bg-[#eeeeee] mb-3 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base"
-              type="email"
-              placeholder="email@example.com"
-            />
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      First Name
+                    </label>
+                    <input
+                      required
+                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:outline-none transition-all"
+                      type="text"
+                      placeholder="John"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Last Name
+                    </label>
+                    <input
+                      required
+                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:outline-none transition-all"
+                      type="text"
+                      placeholder="Doe"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-            {/* Professional Phone Input Component */}
-            <div className="mb-5">
-              <label className="block text-base font-medium text-gray-700 mb-2">
-                Phone Number
-              </label>
-              <PhoneInput
-                value={phoneNumber}
-                onChange={(value) => {
-                  setPhoneNumber(value);
-                  // Validate the phone number
-                  try {
-                    validateAndFormatPhone(value);
-                    setPhoneError("");
-                  } catch (error) {
-                    setPhoneError(error.message);
-                  }
-                }}
-                error={phoneError}
-                placeholder="300 123 4567"
-                required
-              />
-            </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:outline-none transition-all"
+                    type="email"
+                    placeholder="captain@example.com"
+                  />
+                </div>
 
-            <h3 className="text-lg font-medium mb-2">Enter Password</h3>
-            <input
-              className="bg-[#eeeeee] mb-5 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-              required
-              type="password"
-              placeholder="password"
-              minLength="6"
-            />
+                {/* Phone Input */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number
+                  </label>
+                  <PhoneInput
+                    value={phoneNumber}
+                    onChange={(value) => {
+                      setPhoneNumber(value);
+                      try {
+                        validateAndFormatPhone(value);
+                        setPhoneError("");
+                      } catch (error) {
+                        setPhoneError(error.message);
+                      }
+                    }}
+                    error={phoneError}
+                    placeholder="300 123 4567"
+                    required
+                  />
+                </div>
 
-            <h3 className="text-lg font-medium mb-2">Identity Verification</h3>
-            <input
-              required
-              value={cnicNumber}
-              onChange={(e) =>
-                handleCNICInput(e.target.value, setCnicNumber, setCnicError)
-              }
-              className={`bg-[#eeeeee] mb-1 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base ${
-                cnicError
-                  ? "border-red-500"
-                  : cnicNumber
-                  ? "border-green-500"
-                  : ""
-              }`}
-              type="text"
-              placeholder="CNIC Number (e.g., 12345-6789012-3)"
-            />
-            {cnicError && (
-              <p className="text-red-500 text-sm mb-2">{cnicError}</p>
-            )}
-            {!cnicError && cnicNumber.length === 15 && (
-              <p className="text-green-500 text-sm mb-2">✓ Valid CNIC format</p>
-            )}
-
-            <textarea
-              required
-              value={address}
-              onChange={(e) => {
-                setAddress(e.target.value);
-              }}
-              className="bg-[#eeeeee] mb-3 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base"
-              placeholder="Complete Address"
-              rows="3"
-              minLength="10"
-            />
-
-            {/* City Input with Custom Searchable Dropdown */}
-            <div ref={cityDropdownRef} className="mb-5 w-full relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                City
-              </label>
-              <input
-                required
-                type="text"
-                value={city}
-                onChange={(e) => handleCityInput(e.target.value)}
-                onFocus={() => setShowCitySuggestions(true)}
-                className="bg-[#eeeeee] rounded-lg px-4 py-3 border w-full text-base sm:text-lg placeholder:text-sm sm:placeholder:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Type to search city (e.g., Karachi)"
-                autoComplete="off"
-              />
-
-              {/* Suggestions Dropdown */}
-              {showCitySuggestions && filteredCities.length > 0 && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {filteredCities.slice(0, 50).map((cityName) => (
-                    <div
-                      key={cityName}
-                      onClick={() => selectCity(cityName)}
-                      className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-base sm:text-lg"
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-4 py-3 pr-12 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:outline-none transition-all"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Minimum 6 characters"
+                      minLength="6"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                     >
-                      {cityName}
-                    </div>
-                  ))}
-                  {filteredCities.length > 50 && (
-                    <div className="px-4 py-2 text-sm text-gray-500 bg-gray-50">
-                      + {filteredCities.length - 50} more cities... Keep typing
-                      to narrow down
-                    </div>
+                      {showPassword ? (
+                        <FaEyeSlash className="text-xl" />
+                      ) : (
+                        <FaEye className="text-xl" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Identity Verification */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaIdCard className="text-2xl text-blue-500" />
+                Identity Verification
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    CNIC Number
+                  </label>
+                  <input
+                    required
+                    value={cnicNumber}
+                    onChange={(e) =>
+                      handleCNICInput(
+                        e.target.value,
+                        setCnicNumber,
+                        setCnicError
+                      )
+                    }
+                    className={`w-full px-4 py-3 bg-gray-50 border-2 rounded-xl text-gray-800 placeholder:text-gray-400 focus:bg-white focus:outline-none transition-all ${
+                      cnicError
+                        ? "border-red-500 focus:border-red-500"
+                        : cnicNumber.length === 15
+                        ? "border-green-500 focus:border-green-500"
+                        : "border-gray-200 focus:border-orange-500"
+                    }`}
+                    type="text"
+                    placeholder="12345-6789012-3"
+                  />
+                  {cnicError && (
+                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                      <span>⚠️</span> {cnicError}
+                    </p>
+                  )}
+                  {!cnicError && cnicNumber.length === 15 && (
+                    <p className="text-green-500 text-sm mt-2 flex items-center gap-1">
+                      <span>✓</span> Valid CNIC format
+                    </p>
                   )}
                 </div>
-              )}
 
-              {/* No results message */}
-              {showCitySuggestions &&
-                filteredCities.length === 0 &&
-                city.trim() !== "" && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 text-center text-gray-500">
-                    No cities found matching "{city}"
-                  </div>
-                )}
-
-              <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                <span>
-                  Type to search from 180+ Pakistani cities or scroll to select
-                </span>
-              </p>
-            </div>
-
-            {/* CNIC Image Upload */}
-            <div className="mb-5">
-              <h3 className="text-base font-medium mb-2">Upload CNIC Image</h3>
-              {cnicImagePreview ? (
-                <div className="relative">
-                  <img
-                    src={cnicImagePreview}
-                    alt="CNIC Preview"
-                    className="w-full h-48 object-cover rounded-lg border-2 border-gray-300"
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Complete Address
+                  </label>
+                  <textarea
+                    required
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:outline-none transition-all"
+                    placeholder="Enter your full address"
+                    rows="3"
+                    minLength="10"
                   />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      deleteImage(setCnicImage, setCnicImagePreview)
-                    }
-                    className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg text-sm"
-                  >
-                    Delete
-                  </button>
                 </div>
-              ) : (
-                <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500">
-                      Click to upload CNIC
-                    </p>
-                    <p className="text-xs text-gray-400">JPG, PNG (Max 5MB)</p>
-                  </div>
+
+                {/* City Input */}
+                <div ref={cityDropdownRef} className="relative">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    City
+                  </label>
                   <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={(e) =>
-                      handleImageChange(e, setCnicImage, setCnicImagePreview)
-                    }
+                    required
+                    type="text"
+                    value={city}
+                    onChange={(e) => handleCityInput(e.target.value)}
+                    onFocus={() => setShowCitySuggestions(true)}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:outline-none transition-all"
+                    placeholder="Type to search city (e.g., Karachi)"
+                    autoComplete="off"
                   />
-                </label>
-              )}
+
+                  {/* Suggestions Dropdown */}
+                  {showCitySuggestions && filteredCities.length > 0 && (
+                    <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                      {filteredCities.slice(0, 50).map((cityName) => (
+                        <div
+                          key={cityName}
+                          onClick={() => selectCity(cityName)}
+                          className="px-4 py-3 hover:bg-orange-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                        >
+                          {cityName}
+                        </div>
+                      ))}
+                      {filteredCities.length > 50 && (
+                        <div className="px-4 py-2 text-sm text-gray-500 bg-gray-50">
+                          + {filteredCities.length - 50} more cities...
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {showCitySuggestions &&
+                    filteredCities.length === 0 &&
+                    city.trim() !== "" && (
+                      <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl p-4 text-center text-gray-500">
+                        No cities found matching "{city}"
+                      </div>
+                    )}
+                </div>
+              </div>
             </div>
 
-            {/* Driving License Upload */}
-            <div className="mb-5">
-              <h3 className="text-base font-medium mb-2">
-                Upload Driving License
+            {/* Document Uploads */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaFileAlt className="text-2xl text-green-500" />
+                Required Documents
               </h3>
-              {drivingLicensePreview ? (
-                <div className="relative">
-                  <img
-                    src={drivingLicensePreview}
-                    alt="License Preview"
-                    className="w-full h-48 object-cover rounded-lg border-2 border-gray-300"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      deleteImage(setDrivingLicense, setDrivingLicensePreview)
-                    }
-                    className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg text-sm"
-                  >
-                    Delete
-                  </button>
+
+              <div className="space-y-6">
+                {/* CNIC Image */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    CNIC Image
+                  </label>
+                  {cnicImagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={cnicImagePreview}
+                        alt="CNIC Preview"
+                        className="w-full h-48 object-cover rounded-xl border-2 border-gray-200 shadow-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          deleteImage(setCnicImage, setCnicImagePreview)
+                        }
+                        className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md transition-all"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-orange-50 hover:border-orange-400 transition-all">
+                      <div className="text-center p-4">
+                        <FaAddressCard className="text-5xl mb-2 text-orange-500 mx-auto" />
+                        <p className="text-sm font-semibold text-gray-700">
+                          Click to upload CNIC
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          JPG, PNG (Max 5MB)
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) =>
+                          handleImageChange(
+                            e,
+                            setCnicImage,
+                            setCnicImagePreview
+                          )
+                        }
+                      />
+                    </label>
+                  )}
                 </div>
-              ) : (
-                <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500">
-                      Click to upload License
-                    </p>
-                    <p className="text-xs text-gray-400">JPG, PNG (Max 5MB)</p>
-                  </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={(e) =>
-                      handleImageChange(
-                        e,
-                        setDrivingLicense,
-                        setDrivingLicensePreview
-                      )
-                    }
-                  />
-                </label>
-              )}
+
+                {/* Driving License */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Driving License
+                  </label>
+                  {drivingLicensePreview ? (
+                    <div className="relative">
+                      <img
+                        src={drivingLicensePreview}
+                        alt="License Preview"
+                        className="w-full h-48 object-cover rounded-xl border-2 border-gray-200 shadow-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          deleteImage(
+                            setDrivingLicense,
+                            setDrivingLicensePreview
+                          )
+                        }
+                        className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md transition-all"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-orange-50 hover:border-orange-400 transition-all">
+                      <div className="text-center p-4">
+                        <FaIdCard className="text-5xl mb-2 text-blue-500 mx-auto" />
+                        <p className="text-sm font-semibold text-gray-700">
+                          Click to upload License
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          JPG, PNG (Max 5MB)
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) =>
+                          handleImageChange(
+                            e,
+                            setDrivingLicense,
+                            setDrivingLicensePreview
+                          )
+                        }
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <h3 className="text-lg font-medium mb-2">Motorcycle Information</h3>
-            <input
-              required
-              className="bg-[#eeeeee] mb-5 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base"
-              type="text"
-              placeholder="Motorcycle Plate Number"
-              value={vehiclePlate}
-              onChange={(e) => {
-                setVehiclePlate(e.target.value);
-              }}
-            />
-
-            {/* Vehicle Image Upload */}
-            <div className="mb-5">
-              <h3 className="text-base font-medium mb-2">
-                Upload Vehicle Image
+            {/* Vehicle Information */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <FaMotorcycle className="text-2xl text-red-500" />
+                Motorcycle Information
               </h3>
-              {vehicleImagePreview ? (
-                <div className="relative">
-                  <img
-                    src={vehicleImagePreview}
-                    alt="Vehicle Preview"
-                    className="w-full h-48 object-cover rounded-lg border-2 border-gray-300"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      deleteImage(setVehicleImage, setVehicleImagePreview)
-                    }
-                    className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-lg text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ) : (
-                <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500">
-                      Click to upload Vehicle
-                    </p>
-                    <p className="text-xs text-gray-400">JPG, PNG (Max 5MB)</p>
-                  </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Plate Number
+                  </label>
                   <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={(e) =>
-                      handleImageChange(
-                        e,
-                        setVehicleImage,
-                        setVehicleImagePreview
-                      )
-                    }
+                    required
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-gray-800 placeholder:text-gray-400 focus:border-orange-500 focus:bg-white focus:outline-none transition-all"
+                    type="text"
+                    placeholder="ABC-123"
+                    value={vehiclePlate}
+                    onChange={(e) => setVehiclePlate(e.target.value)}
                   />
-                </label>
-              )}
+                </div>
+
+                {/* Vehicle Image */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Vehicle Image
+                  </label>
+                  {vehicleImagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={vehicleImagePreview}
+                        alt="Vehicle Preview"
+                        className="w-full h-48 object-cover rounded-xl border-2 border-gray-200 shadow-md"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          deleteImage(setVehicleImage, setVehicleImagePreview)
+                        }
+                        className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md transition-all"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-orange-50 hover:border-orange-400 transition-all">
+                      <div className="text-center p-4">
+                        <FaMotorcycle className="text-5xl mb-2 text-red-500 mx-auto" />
+                        <p className="text-sm font-semibold text-gray-700">
+                          Click to upload Vehicle
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          JPG, PNG (Max 5MB)
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) =>
+                          handleImageChange(
+                            e,
+                            setVehicleImage,
+                            setVehicleImagePreview
+                          )
+                        }
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
             </div>
           </form>
         </div>
 
         {/* Fixed Bottom Section - Button and Links */}
-        <div className="border-t border-gray-200 bg-white px-5 py-4 shadow-lg">
+        <div className="sticky bottom-0 border-t-2 border-gray-200 bg-white px-5 py-5 shadow-2xl">
           <button
             onClick={submitHandler}
-            className="bg-[#111] text-white font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base disabled:bg-gray-400 active:bg-gray-800 transition"
+            className="bg-gradient-to-r from-orange-500 to-purple-600 hover:from-orange-600 hover:to-purple-700 text-white font-bold py-4 rounded-xl w-full text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
-            {loading ? "Creating Account..." : "Create Captain Account"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Creating Account...
+              </span>
+            ) : (
+              "Create Captain Account"
+            )}
           </button>
 
-          <p className="text-center text-sm mb-2">
+          <p className="text-center text-sm mt-4">
             Already have an account?{" "}
-            <Link to="/captain-login" className="text-blue-600 font-medium">
+            <Link
+              to="/captain-login"
+              className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-purple-600 hover:from-orange-600 hover:to-purple-700"
+            >
               Login here
             </Link>
           </p>
 
-          <p className="text-[10px] text-center text-gray-500 leading-tight">
-            This site is protected by reCAPTCHA and the{" "}
-            <span className="underline">Google Privacy Policy</span> and{" "}
-            <span className="underline">Terms of Service apply</span>.
+          <p className="text-xs text-center text-gray-500 mt-3 leading-relaxed">
+            © 2025 foodO. By signing up, you agree to our Terms of Service and
+            Privacy Policy.
           </p>
         </div>
       </div>

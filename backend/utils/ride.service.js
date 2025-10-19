@@ -100,15 +100,26 @@ module.exports.confirmRide = async ({ rideId, captain }) => {
     throw new Error("Ride id is required");
   }
 
-  await rideModel.findOneAndUpdate(
+  console.log("🔄 Updating ride status to 'accepted'...");
+  console.log("  Ride ID:", rideId);
+  console.log("  Captain ID:", captain._id);
+
+  const updateResult = await rideModel.findOneAndUpdate(
     {
       _id: rideId,
     },
     {
       status: "accepted",
       captain: captain._id,
-    }
+    },
+    { new: true } // Return the updated document
   );
+
+  console.log("✅ Ride updated:", {
+    id: updateResult._id,
+    status: updateResult.status,
+    captain: updateResult.captain,
+  });
 
   const ride = await rideModel
     .findOne({
@@ -122,6 +133,7 @@ module.exports.confirmRide = async ({ rideId, captain }) => {
     throw new Error("Ride not found");
   }
 
+  console.log("✅ Ride confirmed and populated successfully");
   return ride;
 };
 
@@ -207,6 +219,160 @@ module.exports.endRide = async ({ rideId, captain, completionEvidence }) => {
   ride.completedAt = updateData.completedAt;
   if (completionEvidence) {
     ride.completionEvidence = completionEvidence;
+  }
+
+  // Calculate earnings for Cash on Delivery orders
+  if (ride.order) {
+    try {
+      const Order = require("../model/order");
+      const order = await Order.findById(ride.order);
+
+      console.log("🔍 Checking order for earnings calculation:");
+      console.log("   - Order ID:", order?._id);
+      console.log("   - Payment Type:", order?.paymentInfo?.type);
+      console.log("   - Total Price:", order?.totalPrice);
+
+      if (
+        order &&
+        order.paymentInfo &&
+        order.paymentInfo.type === "Cash On Delivery"
+      ) {
+        // Calculate captain's earnings (ride fare + order total)
+        const rideFare = ride.fare || 0;
+        const orderAmount = order.totalPrice || 0;
+        const captainEarnings = rideFare + orderAmount;
+
+        console.log(`\n💰 === EARNINGS CALCULATION START ===`);
+        console.log(`📦 Order ID: ${order._id}`);
+        console.log(`🚴 Ride Fare (Delivery): PKR ${rideFare}`);
+        console.log(`🍔 Order Amount (Food): PKR ${orderAmount}`);
+        console.log(`💵 Total Captain Earnings: PKR ${captainEarnings}`);
+
+        // Update captain's earnings (total + separated by type)
+        const captainModel = require("../model/captain.model");
+
+        // Get captain before update to show the difference
+        const captainBefore = await captainModel.findById(captain._id);
+        console.log(`\n📊 Captain BEFORE Update:`);
+        console.log(
+          `   - Total Earnings: PKR ${captainBefore.earnings?.total || 0}`
+        );
+        console.log(
+          `   - Ride Fee Total: PKR ${
+            captainBefore.rideFeeEarnings?.total || 0
+          }`
+        );
+        console.log(
+          `   - Order Fee Total: PKR ${
+            captainBefore.orderFeeEarnings?.total || 0
+          }`
+        );
+
+        const updatedCaptain = await captainModel.findByIdAndUpdate(
+          captain._id,
+          {
+            $inc: {
+              // Total earnings
+              "earnings.total": captainEarnings,
+              "earnings.today": captainEarnings,
+              "earnings.thisWeek": captainEarnings,
+              "earnings.thisMonth": captainEarnings,
+              // Ride fee earnings (delivery charges)
+              "rideFeeEarnings.total": rideFare,
+              "rideFeeEarnings.today": rideFare,
+              "rideFeeEarnings.thisWeek": rideFare,
+              "rideFeeEarnings.thisMonth": rideFare,
+              // Order fee earnings (food payment)
+              "orderFeeEarnings.total": orderAmount,
+              "orderFeeEarnings.today": orderAmount,
+              "orderFeeEarnings.thisWeek": orderAmount,
+              "orderFeeEarnings.thisMonth": orderAmount,
+              // Ride statistics
+              "rideStats.totalRides": 1,
+              "rideStats.completedRides": 1,
+              "rideStats.todayRides": 1,
+              "rideStats.thisWeekRides": 1,
+              "rideStats.thisMonthRides": 1,
+            },
+          },
+          { new: true }
+        );
+
+        console.log(`\n✅ Captain AFTER Update:`);
+        console.log(
+          `   - Total Earnings: PKR ${updatedCaptain.earnings.total}`
+        );
+        console.log(
+          `   - Ride Fee Total: PKR ${
+            updatedCaptain.rideFeeEarnings?.total || 0
+          }`
+        );
+        console.log(
+          `   - Order Fee Total: PKR ${
+            updatedCaptain.orderFeeEarnings?.total || 0
+          }`
+        );
+        console.log(
+          `   - Completed Rides: ${updatedCaptain.rideStats.completedRides}`
+        );
+        console.log(`💰 === EARNINGS CALCULATION END ===\n`);
+
+        // Update shop's available balance (order amount minus 10% service charge)
+        if (order.cart && order.cart.length > 0 && order.cart[0].shopId) {
+          const Shop = require("../model/shop");
+
+          // Calculate shop earnings (order amount - 10% service charge)
+          const serviceCharge = orderAmount * 0.1;
+          const shopEarnings = orderAmount - serviceCharge;
+
+          // Get shop before update
+          const shopBefore = await Shop.findById(order.cart[0].shopId);
+          console.log(`\n🏪 === SHOP BALANCE UPDATE START ===`);
+          console.log(`🏪 Shop: ${shopBefore.name}`);
+          console.log(
+            `💰 Shop Balance BEFORE: PKR ${shopBefore.availableBalance || 0}`
+          );
+          console.log(`� Order Amount: PKR ${orderAmount}`);
+          console.log(
+            `💸 Service Charge (10%): PKR ${serviceCharge.toFixed(2)}`
+          );
+          console.log(`💵 Shop Earnings: PKR ${shopEarnings.toFixed(2)}`);
+
+          const updatedShop = await Shop.findByIdAndUpdate(
+            order.cart[0].shopId,
+            {
+              $inc: {
+                availableBalance: shopEarnings,
+              },
+            },
+            { new: true }
+          );
+
+          console.log(
+            `✅ Shop Balance AFTER: PKR ${updatedShop.availableBalance}`
+          );
+          console.log(`📊 Balance Increase: PKR ${shopEarnings.toFixed(2)}`);
+          console.log(`🏪 === SHOP BALANCE UPDATE END ===\n`);
+        } else {
+          console.log(
+            `⚠️ WARNING: Could not update shop balance - no shop ID found in cart`
+          );
+        }
+      } else {
+        console.log(`ℹ️ Not a COD order - skipping earnings calculation`);
+        console.log(
+          `   Payment Type: ${order?.paymentInfo?.type || "Unknown"}`
+        );
+      }
+    } catch (earningsError) {
+      console.error("❌ ERROR updating earnings:", earningsError);
+      console.error("Error stack:", earningsError.stack);
+      // Don't throw error - ride should still complete
+    }
+  } else {
+    console.log(
+      `ℹ️ No order associated with this ride - skipping earnings calculation`
+    );
   }
 
   return ride;
@@ -315,6 +481,76 @@ module.exports.getPendingRidesInRadius = async (
     return ridesInRadius;
   } catch (error) {
     console.error("Error getting pending rides:", error);
+    throw error;
+  }
+};
+
+// NEW: Get only UNACCEPTED pending rides (not assigned to any captain yet)
+module.exports.getUnacceptedPendingRidesInRadius = async (
+  latitude,
+  longitude,
+  radius
+) => {
+  if (!latitude || !longitude) {
+    throw new Error("Latitude and longitude are required");
+  }
+
+  // Radius in km, default to 5km if not provided
+  const radiusInKm = radius || 5;
+
+  try {
+    // Get only UNACCEPTED pending rides (no captain assigned)
+    const pendingRides = await rideModel
+      .find({
+        status: "pending",
+        captain: null, // Only rides not accepted by anyone
+      })
+      .populate("user")
+      .populate("order");
+
+    console.log(`Found ${pendingRides.length} unaccepted pending rides`);
+
+    // Filter by distance
+    const ridesInRadius = [];
+
+    for (const ride of pendingRides) {
+      try {
+        // Get pickup coordinates
+        const pickupCoords = await mapService.getAddressCoordinate(ride.pickup);
+
+        // Calculate distance
+        const distance = getDistanceFromLatLonInKm(
+          latitude,
+          longitude,
+          pickupCoords.lat,
+          pickupCoords.lng
+        );
+
+        // Check if dummy coordinates
+        const isDummyCoords =
+          Math.abs(pickupCoords.lat - 31.5204) < 0.001 &&
+          Math.abs(pickupCoords.lng - 74.3587) < 0.001;
+
+        if (isDummyCoords) {
+          ridesInRadius.push({
+            ...ride.toObject(),
+            distanceFromCaptain: "N/A",
+          });
+        } else if (distance <= radiusInKm) {
+          ridesInRadius.push({
+            ...ride.toObject(),
+            distanceFromCaptain: distance.toFixed(2),
+          });
+        }
+      } catch (error) {
+        console.log(`Error calculating distance for ride ${ride._id}:`, error);
+      }
+    }
+
+    console.log(`Returning ${ridesInRadius.length} unaccepted rides in radius`);
+    return ridesInRadius;
+  } catch (error) {
+    console.error("Error getting unaccepted pending rides:", error);
     throw error;
   }
 };

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import CaptainDetails from "../components/CaptainDetails";
 import RidePopUp from "../components/RidePopUp";
 import { useGSAP } from "@gsap/react";
@@ -23,47 +23,103 @@ const CaptainHome = () => {
   const { socket } = useContext(SocketContext);
   const { captain } = useContext(CaptainDataContext);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Load accepted ride from localStorage on page load (for page reload)
+  // BUT validate it against database first to ensure it still exists
+  // This runs ONLY on initial mount, NOT when coming from pending rides page
   useEffect(() => {
-    console.log("🔍 Checking localStorage for accepted ride...");
-    const savedRide = localStorage.getItem("acceptedRide");
-    console.log("localStorage data:", savedRide);
-
-    if (savedRide) {
-      try {
-        const rideData = JSON.parse(savedRide);
-        console.log("✅ Loading ride from localStorage:", rideData);
-        console.log("✅ Ride OTP:", rideData.otp);
-        setRide(rideData);
-        setConfirmRidePopupPanel(true);
-        setRidePopupPanel(false);
-      } catch (error) {
-        console.error("❌ Error parsing saved ride:", error);
-        localStorage.removeItem("acceptedRide");
+    const validateAndLoadRide = async () => {
+      // Skip if coming from navigation with new ride data
+      if (location.state?.acceptedRide || location.state?.activeRide) {
+        return;
       }
-    } else {
-      console.log("ℹ️ No saved ride found in localStorage");
-    }
-  }, []);
+
+      const savedRide = localStorage.getItem("acceptedRide");
+
+      if (savedRide) {
+        try {
+          const rideData = JSON.parse(savedRide);
+
+          // Validate that the ride still exists in the database
+          try {
+            const response = await axios.get(
+              `${import.meta.env.VITE_BASE_URL}/rides/${rideData._id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+
+            // Check if ride is still accepted/ongoing
+            if (
+              response.data.ride &&
+              (response.data.ride.status === "accepted" ||
+                response.data.ride.status === "ongoing")
+            ) {
+              setRide(response.data.ride);
+              setConfirmRidePopupPanel(true);
+              setRidePopupPanel(false);
+            } else {
+              localStorage.removeItem("acceptedRide");
+              setRide(null);
+              setConfirmRidePopupPanel(false);
+            }
+          } catch (validationError) {
+            localStorage.removeItem("acceptedRide");
+            setRide(null);
+            setConfirmRidePopupPanel(false);
+          }
+        } catch (error) {
+          console.error("Error parsing saved ride:", error);
+          localStorage.removeItem("acceptedRide");
+        }
+      }
+    };
+
+    validateAndLoadRide();
+  }, []); // Empty dependency array - runs only once on mount
 
   // Check if coming from pending rides page with accepted ride
   useEffect(() => {
     if (location.state?.acceptedRide && location.state?.showConfirmPopup) {
-      console.log("📍 Setting ride from pending rides page");
-      console.log("Ride data:", location.state.acceptedRide);
-      console.log("Ride OTP:", location.state.acceptedRide.otp);
-
       setRide(location.state.acceptedRide);
 
       // Save to localStorage for page reload persistence
       const rideToSave = JSON.stringify(location.state.acceptedRide);
-      console.log("💾 Saving to localStorage:", rideToSave);
       localStorage.setItem("acceptedRide", rideToSave);
-      console.log("✅ Saved to localStorage successfully");
 
       setConfirmRidePopupPanel(true);
       setRidePopupPanel(false);
+
+      // Clear the location state after using it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  // Check if coming from "My Active Rides" tab with active ride to start
+  useEffect(() => {
+    if (location.state?.activeRide) {
+      const activeRide = location.state.activeRide;
+      setRide(activeRide);
+
+      // Check ride status to determine next action
+      if (activeRide.status === "ongoing") {
+        // Ride is already started - go directly to riding page
+        localStorage.removeItem("acceptedRide"); // Clear from storage
+        navigate("/captain-riding", { state: { ride: activeRide } });
+      } else if (activeRide.status === "accepted") {
+        // Ride is accepted but not started - show OTP popup
+
+        // Save to localStorage for page reload persistence
+        const rideToSave = JSON.stringify(activeRide);
+        localStorage.setItem("acceptedRide", rideToSave);
+
+        // Show confirm popup so captain can enter OTP and start
+        setConfirmRidePopupPanel(true);
+        setRidePopupPanel(false);
+      }
 
       // Clear the location state after using it
       window.history.replaceState({}, document.title);
@@ -132,8 +188,9 @@ const CaptainHome = () => {
       if (response.data.rides && response.data.rides.length > 0) {
         setPendingRidesCount(response.data.rides.length);
 
-        // If captain has no active ride, auto-load the first pending ride
-        if (!ride) {
+        // ONLY auto-load if captain has NO active ride AND confirm popup is not open
+        // This prevents overwriting an accepted ride with a pending one
+        if (!ride && !confirmRidePopupPanel) {
           const firstPendingRide = response.data.rides[0];
           console.log("Auto-loading first pending ride:", firstPendingRide);
           setRide(firstPendingRide);
@@ -157,10 +214,19 @@ const CaptainHome = () => {
     // Set up socket event listener for new rides
     socket.on("new-ride", (data) => {
       console.log("New ride received:", data);
-      setRide(data);
-      setRidePopupPanel(true);
-      setConfirmRidePopupPanel(false);
-      setPendingRidesCount((prev) => prev + 1);
+
+      // ONLY show new ride popup if there's NO active accepted ride
+      // Don't override an accepted ride with a new pending one
+      if (!confirmRidePopupPanel) {
+        setRide(data);
+        setRidePopupPanel(true);
+        setConfirmRidePopupPanel(false);
+        setPendingRidesCount((prev) => prev + 1);
+      } else {
+        console.log("⚠️ Ignoring new ride - captain has active accepted ride");
+        // Just update the count
+        setPendingRidesCount((prev) => prev + 1);
+      }
     });
 
     // Only emit join event and update location if captain data is available
@@ -193,10 +259,64 @@ const CaptainHome = () => {
       // Refresh pending rides count every 30 seconds
       const ridesInterval = setInterval(fetchPendingRides, 30000);
 
+      // Periodic validation: Check if current ride still exists every 30 seconds
+      const validateCurrentRide = async () => {
+        const savedRide = localStorage.getItem("acceptedRide");
+
+        // ONLY validate if there's actually an accepted ride with confirm popup open
+        if (savedRide && ride && ride._id && confirmRidePopupPanel) {
+          try {
+            console.log(
+              "🔄 Validating current ride exists in database:",
+              ride._id
+            );
+            const response = await axios.get(
+              `${import.meta.env.VITE_BASE_URL}/rides/${ride._id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+
+            // Check if ride status is still active
+            if (
+              !response.data.ride ||
+              (response.data.ride.status !== "accepted" &&
+                response.data.ride.status !== "ongoing")
+            ) {
+              console.log("⚠️ Current ride no longer active, clearing from UI");
+              localStorage.removeItem("acceptedRide");
+              setRide(null);
+              setConfirmRidePopupPanel(false);
+              setRidePopupPanel(false);
+            } else {
+              console.log("✅ Ride validation successful - ride still active");
+            }
+          } catch (error) {
+            console.error(
+              "❌ Current ride validation failed (deleted from DB?)"
+            );
+            console.log("🗑️ Clearing ride from localStorage and UI");
+            localStorage.removeItem("acceptedRide");
+            setRide(null);
+            setConfirmRidePopupPanel(false);
+            setRidePopupPanel(false);
+          }
+        }
+      };
+
+      // Validate current ride every 30 seconds
+      const rideValidationInterval = setInterval(validateCurrentRide, 30000);
+      // Also validate once after 10 seconds (not immediately to avoid conflicts)
+      const initialValidationTimeout = setTimeout(validateCurrentRide, 10000);
+
       // Clean up function to remove event listeners and intervals
       return () => {
         clearInterval(locationInterval);
         clearInterval(ridesInterval);
+        clearInterval(rideValidationInterval);
+        clearTimeout(initialValidationTimeout);
         socket.off("new-ride");
       };
     } else {
@@ -205,7 +325,7 @@ const CaptainHome = () => {
         socket.off("new-ride");
       };
     }
-  }, [captain, socket]);
+  }, [captain, socket]); // Removed 'ride' dependency to prevent re-running on ride changes
 
   // Accept ride, then show confirm/start popup
   async function confirmRide() {

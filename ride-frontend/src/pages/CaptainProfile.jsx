@@ -89,11 +89,15 @@ const CaptainProfile = () => {
       });
 
       localStorage.removeItem("token");
+      // Also clear accepted ride data on logout
+      localStorage.removeItem("acceptedRide");
       setCaptain(null);
       navigate("/captain-login");
     } catch (error) {
       console.error("Error logging out:", error);
       localStorage.removeItem("token");
+      // Also clear accepted ride data on logout error
+      localStorage.removeItem("acceptedRide");
       navigate("/captain-login");
     }
   };

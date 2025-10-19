@@ -153,6 +153,46 @@ const captainSchema = new mongoose.Schema({
     },
   },
 
+  // Ride Fee (Delivery charges only)
+  rideFeeEarnings: {
+    total: {
+      type: Number,
+      default: 0,
+    },
+    today: {
+      type: Number,
+      default: 0,
+    },
+    thisWeek: {
+      type: Number,
+      default: 0,
+    },
+    thisMonth: {
+      type: Number,
+      default: 0,
+    },
+  },
+
+  // Order Fee (Food payment from COD)
+  orderFeeEarnings: {
+    total: {
+      type: Number,
+      default: 0,
+    },
+    today: {
+      type: Number,
+      default: 0,
+    },
+    thisWeek: {
+      type: Number,
+      default: 0,
+    },
+    thisMonth: {
+      type: Number,
+      default: 0,
+    },
+  },
+
   // Online Hours Tracking
   hoursOnline: {
     total: {

@@ -222,7 +222,13 @@ router.post(
       console.log("Order ID:", req.params.orderId);
 
       const orderId = req.params.orderId;
-      const order = await Order.findById(orderId).populate("ride");
+      const order = await Order.findById(orderId).populate({
+        path: "ride",
+        populate: {
+          path: "captain",
+          select: "fullname phoneNumber profileImage vehicle",
+        },
+      });
 
       if (!order) {
         console.log("Order not found");
@@ -378,22 +384,53 @@ router.get(
   "/get-seller-all-orders/:shopId",
   catchAsyncErrors(async (req, res, next) => {
     try {
+      console.log("🔍 Fetching orders for shop:", req.params.shopId);
+
       const orders = await Order.find({
         "cart.shopId": req.params.shopId,
       })
         .populate({
           path: "ride",
           select: "+otp", // Include OTP field (it's select: false in model)
+          populate: {
+            path: "captain",
+            select: "fullname phoneNumber profileImage vehicle", // Populate captain details (removed city)
+          },
         })
         .sort({
           createdAt: -1,
         });
+
+      console.log("📦 Found", orders.length, "orders");
+
+      // Debug: Log orders with captain data
+      if (orders.length > 0) {
+        console.log("🔍 Checking all orders for captain data...");
+        orders.forEach((order, index) => {
+          if (order.ride && order.ride.captain) {
+            console.log(`✅ Order ${index + 1} has captain data:`);
+            console.log("  - Order ID:", order._id);
+            console.log("  - Captain Name:", order.ride.captain.fullname);
+            console.log("  - Captain Phone:", order.ride.captain.phoneNumber);
+            console.log("  - Captain Vehicle:", order.ride.captain.vehicle);
+            console.log("  - Captain Image:", order.ride.captain.profileImage);
+          } else if (order.ride) {
+            console.warn(`⚠️ Order ${index + 1} has ride but NO captain:`, {
+              orderId: order._id,
+              rideId: order.ride._id,
+              captainField: order.ride.captain,
+              captainType: typeof order.ride.captain,
+            });
+          }
+        });
+      }
 
       res.status(200).json({
         success: true,
         orders,
       });
     } catch (error) {
+      console.error("❌ Error fetching orders:", error);
       return next(new ErrorHandler(error.message, 500));
     }
   })
@@ -462,8 +499,22 @@ router.put(
       if (req.body.status === "Delivered") {
         order.deliveredAt = Date.now();
         order.paymentInfo.status = "Succeeded";
-        const serviceCharge = order.totalPrice * 0.1;
-        await updateSellerInfo(order.totalPrice - serviceCharge);
+
+        // Only update shop balance for PREPAID orders
+        // COD orders are handled by ride service when captain completes delivery
+        if (order.paymentInfo.type !== "Cash On Delivery") {
+          const serviceCharge = order.totalPrice * 0.1;
+          await updateSellerInfo(order.totalPrice - serviceCharge);
+          console.log(
+            `💰 Shop balance updated for PREPAID order: PKR ${
+              order.totalPrice - serviceCharge
+            }`
+          );
+        } else {
+          console.log(
+            `ℹ️ COD order - shop balance will be updated when captain completes delivery`
+          );
+        }
       }
 
       await order.save({ validateBeforeSave: false });
@@ -485,7 +536,8 @@ router.put(
       async function updateSellerInfo(amount) {
         const seller = await Shop.findById(req.seller.id);
 
-        seller.availableBalance = amount;
+        // Add to available balance instead of replacing
+        seller.availableBalance += amount;
 
         await seller.save();
       }

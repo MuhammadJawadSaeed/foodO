@@ -5,17 +5,52 @@ import { CaptainDataContext } from "../context/CapatainContext";
 import { SocketContext } from "../context/SocketContext";
 
 const CaptainPendingRides = () => {
-  const [pendingRides, setPendingRides] = useState([]);
+  const [myRides, setMyRides] = useState([]);
+  const [availableRides, setAvailableRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRide, setSelectedRide] = useState(null);
   const [locationMessage, setLocationMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("available"); // 'available' or 'myRides'
   const { captain } = useContext(CaptainDataContext);
   const { socket } = useContext(SocketContext);
   const navigate = useNavigate();
 
-  const fetchPendingRides = async () => {
+  // Fetch captain's active rides (accepted/started)
+  const fetchMyRides = async () => {
     try {
-      setLoading(true);
+      console.log("📥 Fetching my active rides...");
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/rides/my-rides`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      console.log("✅ My active rides response:", response.data);
+      console.log(`   Found ${response.data.rides?.length || 0} active rides`);
+
+      if (response.data.rides && response.data.rides.length > 0) {
+        response.data.rides.forEach((ride, index) => {
+          console.log(
+            `   Ride ${index + 1}: Status=${ride.status}, ID=${ride._id}`
+          );
+        });
+      }
+
+      setMyRides(response.data.rides || []);
+    } catch (error) {
+      console.error("❌ Error fetching my rides:", error);
+      if (error.response?.status === 401) {
+        navigate("/captain-login");
+      }
+    }
+  };
+
+  // Fetch available pending rides (not accepted by anyone)
+  const fetchAvailableRides = async () => {
+    try {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/rides/pending-rides`,
         {
@@ -25,8 +60,8 @@ const CaptainPendingRides = () => {
         }
       );
 
-      console.log("Pending rides:", response.data);
-      setPendingRides(response.data.rides || []);
+      console.log("Available rides:", response.data);
+      setAvailableRides(response.data.rides || []);
 
       // Set location message if available
       if (response.data.message) {
@@ -35,35 +70,64 @@ const CaptainPendingRides = () => {
         setLocationMessage("");
       }
     } catch (error) {
-      console.error("Error fetching pending rides:", error);
-
-      // Show user-friendly error message
+      console.error("Error fetching available rides:", error);
       if (error.response?.status === 401) {
-        alert("Please login again");
         navigate("/captain-login");
-      } else {
-        alert("Failed to fetch pending rides. Please try again.");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
+  const fetchAllRides = async () => {
+    setLoading(true);
+    await Promise.all([fetchMyRides(), fetchAvailableRides()]);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetchPendingRides();
+    console.log("🔵 CaptainPendingRides mounted/updated");
+    fetchAllRides();
 
     // Listen for new rides via socket
     if (socket) {
       socket.on("new-ride", (data) => {
         console.log("New ride received in pending rides page:", data);
-        fetchPendingRides(); // Refresh the list
+        fetchAvailableRides(); // Refresh available rides only
+      });
+
+      // Listen for ride status changes
+      socket.on("ride-accepted", (data) => {
+        console.log("Ride accepted event:", data);
+        fetchAllRides(); // Refresh both lists
+      });
+
+      socket.on("ride-started", (data) => {
+        console.log("Ride started event:", data);
+        fetchAllRides(); // Refresh both lists
       });
 
       return () => {
         socket.off("new-ride");
+        socket.off("ride-accepted");
+        socket.off("ride-started");
       };
     }
   }, [socket]);
+
+  // Refresh rides when component becomes visible (user returns from another page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log("📱 Page became visible - refreshing rides");
+        fetchAllRides();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const handleAcceptRide = async (rideId) => {
     try {
@@ -82,16 +146,38 @@ const CaptainPendingRides = () => {
         }
       );
 
-      console.log("Ride accepted successfully:", response.data);
-      alert("Ride accepted! Starting ride confirmation...");
+      console.log("✅ Ride accepted successfully:", response.data);
+      console.log(
+        "   Accepted ride ID:",
+        response.data._id || response.data.ride?._id
+      );
+      console.log(
+        "   Accepted ride status:",
+        response.data.status || response.data.ride?.status
+      );
 
-      // Navigate to home with accepted ride data to show confirm popup
+      // Refresh both lists to update UI immediately
+      console.log("🔄 Refreshing ride lists...");
+      await fetchAllRides();
+
+      // Small delay to ensure database is updated
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Fetch my rides one more time to ensure it's in the list
+      console.log("🔄 Double-checking my active rides...");
+      await fetchMyRides();
+
+      // Navigate to home with popup to confirm/start ride
+      // This allows captain to immediately see the ride details and start
       navigate("/captain-home", {
         state: {
           acceptedRide: response.data,
           showConfirmPopup: true,
         },
       });
+
+      // Note: The ride will now be visible in "My Active Rides" tab
+      // Captain can return here anytime to start the ride
     } catch (error) {
       console.error("Error accepting ride:", error);
       alert(
@@ -101,9 +187,13 @@ const CaptainPendingRides = () => {
     }
   };
 
-  const RideCard = ({ ride }) => {
+  const RideCard = ({ ride, isMyRide = false }) => {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4 mb-4 border-l-4 border-indigo-500">
+      <div
+        className={`bg-white rounded-lg shadow-md p-4 mb-4 border-l-4 ${
+          isMyRide ? "border-green-500" : "border-indigo-500"
+        }`}
+      >
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
@@ -116,6 +206,11 @@ const CaptainPendingRides = () => {
               {ride.distanceFromCaptain && (
                 <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                   {ride.distanceFromCaptain} km away
+                </span>
+              )}
+              {isMyRide && (
+                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
+                  {ride.status === "ongoing" ? "In Progress" : "Accepted"}
                 </span>
               )}
             </div>
@@ -159,14 +254,38 @@ const CaptainPendingRides = () => {
             )}
           </div>
 
-          {/* Accept Button */}
-          <button
-            onClick={() => handleAcceptRide(ride._id)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
-          >
-            <i className="ri-check-line text-xl"></i>
-            Accept
-          </button>
+          {/* Action Button */}
+          {!isMyRide ? (
+            <button
+              onClick={() => handleAcceptRide(ride._id)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
+            >
+              <i className="ri-check-line text-xl"></i>
+              Accept
+            </button>
+          ) : (
+            <div className="text-right">
+              {ride.status === "accepted" ? (
+                <Link
+                  to="/captain-home"
+                  state={{ activeRide: ride }}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2"
+                >
+                  <i className="ri-play-line"></i>
+                  Start Ride
+                </Link>
+              ) : (
+                <Link
+                  to="/captain-home"
+                  state={{ activeRide: ride }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2"
+                >
+                  <i className="ri-navigation-line"></i>
+                  Continue
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Expandable Details */}
@@ -236,9 +355,9 @@ const CaptainPendingRides = () => {
             <i className="ri-arrow-left-line text-xl"></i>
             <span className="font-semibold">Back to Home</span>
           </Link>
-          <h1 className="text-xl font-bold">Pending Rides</h1>
+          <h1 className="text-xl font-bold">Rides</h1>
           <button
-            onClick={fetchPendingRides}
+            onClick={fetchAllRides}
             className="flex items-center gap-2 hover:bg-indigo-700 px-3 py-2 rounded-lg transition-colors"
           >
             <i className="ri-refresh-line text-xl"></i>
@@ -246,10 +365,52 @@ const CaptainPendingRides = () => {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab("available")}
+            className={`flex-1 px-4 py-3 font-semibold text-sm transition-all ${
+              activeTab === "available"
+                ? "text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <i className="ri-checkbox-blank-circle-line"></i>
+              <span>Available Rides</span>
+              {availableRides.length > 0 && (
+                <span className="bg-indigo-600 text-white px-2 py-0.5 rounded-full text-xs">
+                  {availableRides.length}
+                </span>
+              )}
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab("myRides")}
+            className={`flex-1 px-4 py-3 font-semibold text-sm transition-all ${
+              activeTab === "myRides"
+                ? "text-green-600 border-b-2 border-green-600 bg-green-50"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <i className="ri-steering-2-line"></i>
+              <span>My Active Rides</span>
+              {myRides.length > 0 && (
+                <span className="bg-green-600 text-white px-2 py-0.5 rounded-full text-xs">
+                  {myRides.length}
+                </span>
+              )}
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* Content */}
-      <div className="p-4">
-        {/* Location Warning Message */}
-        {locationMessage && (
+      <div className="p-4 pb-20">
+        {/* Location Warning Message - Only for available rides tab */}
+        {activeTab === "available" && locationMessage && (
           <div className="mb-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
             <div className="flex items-center gap-2">
               <i className="ri-map-pin-line text-yellow-600 text-xl"></i>
@@ -268,39 +429,74 @@ const CaptainPendingRides = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-            <p className="text-gray-600">Loading pending rides...</p>
+            <p className="text-gray-600">Loading rides...</p>
           </div>
-        ) : pendingRides.length === 0 ? (
+        ) : activeTab === "available" ? (
+          // Available Rides Tab
+          availableRides.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <i className="ri-car-line text-6xl text-gray-300 mb-4"></i>
+              <h2 className="text-xl font-semibold text-gray-700 mb-2">
+                No Available Rides
+              </h2>
+              <p className="text-gray-500 text-center">
+                There are no new rides in your area at the moment.
+                <br />
+                New rides will appear here automatically.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {availableRides.length}{" "}
+                  {availableRides.length === 1 ? "Ride" : "Rides"} Available
+                </h2>
+                <span className="text-sm text-gray-600">Updated just now</span>
+              </div>
+
+              {/* Available Rides List */}
+              {availableRides.map((ride) => (
+                <RideCard key={ride._id} ride={ride} isMyRide={false} />
+              ))}
+            </div>
+          )
+        ) : // My Active Rides Tab
+        myRides.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <i className="ri-car-line text-6xl text-gray-300 mb-4"></i>
+            <i className="ri-steering-2-line text-6xl text-gray-300 mb-4"></i>
             <h2 className="text-xl font-semibold text-gray-700 mb-2">
-              No Pending Rides
+              No Active Rides
             </h2>
             <p className="text-gray-500 text-center">
-              There are no pending rides in your area at the moment.
+              You don't have any active rides at the moment.
               <br />
-              New rides will appear here automatically.
+              Accept a ride from the "Available Rides" tab to get started.
             </p>
-            <Link
-              to="/captain-home"
-              className="mt-6 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+            <button
+              onClick={() => setActiveTab("available")}
+              className="mt-6 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2"
             >
-              Go to Home
-            </Link>
+              <i className="ri-eye-line"></i>
+              View Available Rides
+            </button>
           </div>
         ) : (
           <div>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-800">
-                {pendingRides.length}{" "}
-                {pendingRides.length === 1 ? "Ride" : "Rides"} Available
+                {myRides.length} Active{" "}
+                {myRides.length === 1 ? "Ride" : "Rides"}
               </h2>
-              <span className="text-sm text-gray-600">Updated just now</span>
+              <span className="text-sm text-green-600 flex items-center gap-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                In Progress
+              </span>
             </div>
 
-            {/* Rides List */}
-            {pendingRides.map((ride) => (
-              <RideCard key={ride._id} ride={ride} />
+            {/* My Rides List */}
+            {myRides.map((ride) => (
+              <RideCard key={ride._id} ride={ride} isMyRide={true} />
             ))}
           </div>
         )}

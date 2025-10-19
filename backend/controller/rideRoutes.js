@@ -68,4 +68,14 @@ router.get(
   rideController.getPendingRides
 );
 
+// Get captain's active rides (accepted/started)
+router.get(
+  "/my-rides",
+  authMiddleware.authCaptain,
+  rideController.getMyCaptainRides
+);
+
+// Get single ride by ID with OTP (for shop to fetch OTP)
+router.get("/:rideId", isAuthenticated, rideController.getRideById);
+
 module.exports = router;

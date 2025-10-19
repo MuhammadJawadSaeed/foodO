@@ -78,7 +78,7 @@ const FinishRide = (props) => {
   }
 
   return (
-    <div>
+    <div className="pb-6">
       <h5
         className="p-1 text-center w-[93%] absolute top-0"
         onClick={() => {
@@ -88,6 +88,41 @@ const FinishRide = (props) => {
         <i className="text-3xl text-gray-200 ri-arrow-down-wide-line"></i>
       </h5>
       <h3 className="text-2xl font-semibold mb-5">Finish this Ride</h3>
+
+      {/* Order ID and Status */}
+      {props.ride?.order && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 mb-4 border border-blue-200">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-[10px] text-blue-700 font-semibold uppercase mb-0.5">
+                Order ID
+              </p>
+              <p className="text-xs font-bold text-gray-900 truncate">
+                #{props.ride.order._id?.slice(-8) || "N/A"}
+              </p>
+            </div>
+            <div className="flex-1 text-right">
+              <p className="text-[10px] text-indigo-700 font-semibold uppercase mb-0.5">
+                Order Status
+              </p>
+              <span
+                className={`inline-block px-2 py-1 rounded-full text-[10px] font-bold ${
+                  props.ride.order.status === "Delivered"
+                    ? "bg-green-100 text-green-700"
+                    : props.ride.order.status === "On the way"
+                    ? "bg-blue-100 text-blue-700"
+                    : props.ride.order.status === "Preparing" ||
+                      props.ride.order.status === "Prepared"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                {props.ride.order.status || "Pending"}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Customer Card with Avatar and Details */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-indigo-200 mt-4">
@@ -264,7 +299,8 @@ const FinishRide = (props) => {
           </div>
         </div>
 
-        <div className="mt-6 w-full">
+        {/* Finish Button - with extra bottom padding for better accessibility */}
+        <div className="mt-6 w-full pb-4">
           <button
             onClick={endRide}
             disabled={!completionImage || isUploading}

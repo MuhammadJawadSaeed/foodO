@@ -428,15 +428,65 @@ module.exports.getCaptainStats = async (req, res, next) => {
       return res.status(404).json({ message: "Captain not found" });
     }
 
+    // Initialize new fields if they don't exist (for existing captains)
+    if (!captain.rideFeeEarnings) {
+      captain.rideFeeEarnings = {
+        total: 0,
+        today: 0,
+        thisWeek: 0,
+        thisMonth: 0,
+      };
+    }
+    if (!captain.orderFeeEarnings) {
+      captain.orderFeeEarnings = {
+        total: 0,
+        today: 0,
+        thisWeek: 0,
+        thisMonth: 0,
+      };
+    }
+
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // Check if we need to reset daily stats
     if (captain.lastDayReset && new Date(captain.lastDayReset) < today) {
       captain.earnings.today = 0;
+      if (captain.rideFeeEarnings) captain.rideFeeEarnings.today = 0;
+      if (captain.orderFeeEarnings) captain.orderFeeEarnings.today = 0;
       captain.rideStats.todayRides = 0;
       captain.hoursOnline.today = 0;
       captain.lastDayReset = now;
+    }
+
+    // Check if we need to reset weekly stats
+    if (
+      captain.lastWeekReset &&
+      new Date(captain.lastWeekReset) < startOfWeek
+    ) {
+      captain.earnings.thisWeek = 0;
+      if (captain.rideFeeEarnings) captain.rideFeeEarnings.thisWeek = 0;
+      if (captain.orderFeeEarnings) captain.orderFeeEarnings.thisWeek = 0;
+      captain.rideStats.thisWeekRides = 0;
+      captain.hoursOnline.thisWeek = 0;
+      captain.lastWeekReset = now;
+    }
+
+    // Check if we need to reset monthly stats
+    if (
+      captain.lastMonthReset &&
+      new Date(captain.lastMonthReset) < startOfMonth
+    ) {
+      captain.earnings.thisMonth = 0;
+      if (captain.rideFeeEarnings) captain.rideFeeEarnings.thisMonth = 0;
+      if (captain.orderFeeEarnings) captain.orderFeeEarnings.thisMonth = 0;
+      captain.rideStats.thisMonthRides = 0;
+      captain.hoursOnline.thisMonth = 0;
+      captain.lastMonthReset = now;
     }
 
     // Calculate current session time if online
@@ -448,8 +498,20 @@ module.exports.getCaptainStats = async (req, res, next) => {
 
     await captain.save();
 
-    res.status(200).json({
+    const response = {
       earnings: captain.earnings,
+      rideFeeEarnings: captain.rideFeeEarnings || {
+        total: 0,
+        today: 0,
+        thisWeek: 0,
+        thisMonth: 0,
+      },
+      orderFeeEarnings: captain.orderFeeEarnings || {
+        total: 0,
+        today: 0,
+        thisWeek: 0,
+        thisMonth: 0,
+      },
       hoursOnline: {
         total: captain.hoursOnline.total,
         today: captain.hoursOnline.today + currentSessionTime,
@@ -458,7 +520,21 @@ module.exports.getCaptainStats = async (req, res, next) => {
       },
       rideStats: captain.rideStats,
       currentSessionTime,
+    };
+
+    console.log("📊 Captain Stats Response:", {
+      captainId: captain._id,
+      totalEarnings: response.earnings.total,
+      weeklyData: {
+        rides: response.rideStats.thisWeekRides,
+        hours: (response.hoursOnline.thisWeek / 60).toFixed(1),
+        totalEarnings: response.earnings.thisWeek,
+        rideFee: response.rideFeeEarnings.thisWeek,
+        orderFee: response.orderFeeEarnings.thisWeek,
+      },
     });
+
+    res.status(200).json(response);
   } catch (error) {
     console.error("Error getting captain stats:", error);
     res.status(500).json({ message: "Internal server error" });

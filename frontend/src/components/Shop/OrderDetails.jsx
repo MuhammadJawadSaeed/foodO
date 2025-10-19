@@ -17,8 +17,21 @@ import {
   MdInfo,
   MdUpdate,
   MdList,
+  MdLock,
+  MdSecurity,
+  MdWarning,
+  MdPhone,
+  MdPerson,
 } from "react-icons/md";
-import { FaBox, FaCalendarAlt, FaHashtag } from "react-icons/fa";
+import {
+  FaBox,
+  FaCalendarAlt,
+  FaHashtag,
+  FaShieldAlt,
+  FaKey,
+  FaMotorcycle,
+  FaIdCard,
+} from "react-icons/fa";
 import io from "socket.io-client";
 
 const ENDPOINT = "http://localhost:8000";
@@ -46,12 +59,10 @@ const OrderDetails = () => {
     if (seller && seller._id) {
       // Join as shop with seller ID as room
       socket.emit("join", seller._id);
-      console.log("Shop connected to socket and joined room:", seller._id);
     }
 
     // Listen for order delivered event
     socket.on("order-delivered", (data) => {
-      console.log("Order delivered event received:", data);
       if (data.orderId === id) {
         toast.success("Order has been delivered successfully! ✅");
         setStatus("Delivered");
@@ -62,63 +73,44 @@ const OrderDetails = () => {
 
     // Listen for ride accepted event
     socket.on("ride-accepted", (data) => {
-      console.log("🎉 Ride accepted event received!");
-      console.log("Event data:", JSON.stringify(data, null, 2));
-      console.log("Current order ID:", id);
-
-      if (data.orderId === id) {
-        console.log("✅ Event is for current order");
-        console.log("Ride details:", data.ride);
+      // Normalize ID comparison (stringify both sides)
+      if (String(data.orderId) === String(id)) {
+        // IMMEDIATELY set states
+        setRideAccepted(true);
 
         // Get OTP from multiple possible sources
         const otpValue = data.ride?.otp || data.otp || data.ride?.OTP;
-        console.log("OTP received:", otpValue);
-        console.log("OTP type:", typeof otpValue);
 
         if (otpValue) {
-          toast.success(
-            "🎉 Captain accepted the ride! You can now confirm the order."
-          );
-          setRideAccepted(true);
-          setRideDetails(data.ride);
-          setOtp(String(otpValue)); // Convert to string to ensure display
+          setOtp(String(otpValue));
           setShowOTP(true);
-
-          console.log("✅ State updated - rideAccepted:", true);
-          console.log("✅ State updated - otp:", String(otpValue));
-          console.log("✅ State updated - showOTP:", true);
-        } else {
-          console.error("❌ OTP not found in event data!");
-          console.log("Available data keys:", Object.keys(data));
-          console.log(
-            "Available ride keys:",
-            data.ride ? Object.keys(data.ride) : "No ride object"
-          );
-
-          // Still set ride as accepted but show warning
-          setRideAccepted(true);
           setRideDetails(data.ride);
-          toast.warning(
-            "Captain accepted but OTP not received. Please refresh page."
-          );
+
+          toast.success("🎉 Captain accepted! You can now confirm the order.");
+        } else {
+          toast.info("Captain accepted! Loading OTP...");
+          setRideDetails(data.ride);
         }
 
-        // Refresh orders
-        dispatch(getAllOrdersOfShop(seller._id));
-      } else {
-        console.log("ℹ️ Event is for different order:", data.orderId);
+        // Force refresh orders
+        setTimeout(() => {
+          dispatch(getAllOrdersOfShop(seller._id));
+        }, 300);
+        setTimeout(() => {
+          dispatch(getAllOrdersOfShop(seller._id));
+        }, 1000);
+        setTimeout(() => {
+          dispatch(getAllOrdersOfShop(seller._id));
+        }, 2000);
       }
     });
 
     // Listen for ride start event to hide OTP
     socket.on("ride-started", (data) => {
-      console.log("🚗 Ride started event received!");
-      console.log("Event data:", data);
-
       if (data.orderId === id) {
-        console.log("✅ Ride started for current order - hiding OTP");
         toast.info("🚗 Captain has started the delivery!");
         setShowOTP(false);
+        setStatus("On the way"); // Auto-update status to "On the way"
 
         // Refresh orders to update ride status
         dispatch(getAllOrdersOfShop(seller._id));
@@ -138,105 +130,114 @@ const OrderDetails = () => {
 
   const data = orders && orders.find((item) => item._id === id);
 
-  // Debug: Log order data
-  useEffect(() => {
-    if (data) {
-      console.log("=== ORDER DATA DEBUG ===");
-      console.log("Order ID:", data._id);
-      console.log("Order Status:", data.status);
-      console.log("Has Ride:", !!data.ride);
-      console.log("Ride Status:", data.rideStatus);
-      console.log("Ride OTP (order.rideOTP):", data.rideOTP);
-      if (data.ride) {
-        console.log("Ride Object:", data.ride);
-        console.log("Ride OTP (ride.otp):", data.ride.otp);
-        console.log("Ride Keys:", Object.keys(data.ride));
-      }
-      console.log("Current State - showOTP:", showOTP);
-      console.log("Current State - otp:", otp);
-      console.log("Current State - rideAccepted:", rideAccepted);
-      console.log("========================");
-    }
-  }, [data, showOTP, otp, rideAccepted]);
-
-  // Set initial status when data loads
+  // Set initial status when data loads and handle OTP display
   useEffect(() => {
     if (data && data.status) {
       setStatus(data.status);
     }
 
+    // Debug captain data
+    if (data?.ride) {
+      console.log("🔍 Ride Data Debug:", {
+        rideExists: !!data.ride,
+        rideType: typeof data.ride,
+        rideId: data.ride._id,
+        captainExists: !!data.ride.captain,
+        captainType: typeof data.ride.captain,
+        captain: data.ride.captain,
+      });
+
+      if (data.ride.captain) {
+        console.log("🔍 Captain Data Debug:", {
+          fullname: data.ride.captain.fullname,
+          phone: data.ride.captain.phoneNumber,
+          vehicle: data.ride.captain.vehicle,
+          allKeys: Object.keys(data.ride.captain),
+          allCaptainData: data.ride.captain,
+        });
+      } else {
+        console.warn("⚠️ Captain data is missing or not populated!");
+      }
+    }
+
     // Check if ride exists and is accepted - Load OTP from order data
     if (data && data.ride) {
-      console.log("📋 Order has ride:", data.ride);
-      console.log("Ride status:", data.rideStatus);
-      console.log("Ride OTP in order:", data.rideOTP);
-      console.log("Full order data:", JSON.stringify(data, null, 2));
-
       const rideStatus = data.rideStatus || data.ride.status;
 
-      // Show OTP if ride is accepted AND not started yet
-      if (rideStatus === "accepted" || rideStatus === "started") {
-        console.log("✅ Ride is accepted - showing confirm button and OTP");
+      // Show OTP if ride is accepted; hide when ride becomes ongoing
+      if (rideStatus === "accepted" || rideStatus === "ongoing") {
         setRideAccepted(true);
 
         // Show OTP until ride starts
         if (rideStatus === "accepted") {
           setShowOTP(true);
-          console.log("✅ Ride status is 'accepted' - OTP should be visible");
-        } else if (rideStatus === "started") {
+        } else if (rideStatus === "ongoing") {
           setShowOTP(false);
-          console.log("ℹ️ Ride has started - hiding OTP");
         }
 
         // Load OTP from order data (saved in database) OR from ride object
-        // Check multiple possible locations
         let otpValue = null;
 
         if (data.rideOTP) {
-          console.log("✅ Loading OTP from order.rideOTP:", data.rideOTP);
           otpValue = data.rideOTP;
         } else if (data.ride && data.ride.otp) {
-          console.log("✅ Loading OTP from ride.otp:", data.ride.otp);
           otpValue = data.ride.otp;
         } else if (data.ride && typeof data.ride === "object") {
           // Check if ride has OTP in any case variation
           const rideKeys = Object.keys(data.ride);
-          console.log("Available ride keys:", rideKeys);
           const otpKey = rideKeys.find((key) => key.toLowerCase() === "otp");
           if (otpKey) {
-            console.log(
-              `✅ Loading OTP from ride.${otpKey}:`,
-              data.ride[otpKey]
-            );
             otpValue = data.ride[otpKey];
           }
         }
 
-        if (!otpValue) {
-          console.log("⚠️ No OTP found in order data or ride object");
-          console.log("order.rideOTP:", data.rideOTP);
-          console.log("order.ride:", data.ride);
-        }
-
         if (otpValue) {
           setOtp(String(otpValue)); // Convert to string
-          console.log("✅ OTP set to state:", String(otpValue));
+          setShowOTP(true);
         } else {
-          console.error("❌ Failed to load OTP from any source");
+          // AGGRESSIVE FALLBACK: Try to fetch OTP directly from ride endpoint
+          if (data.ride?._id) {
+            setTimeout(async () => {
+              try {
+                const rideResponse = await axios.get(
+                  `${server}/rides/${data.ride._id}`,
+                  { withCredentials: true }
+                );
+                if (rideResponse.data?.ride?.otp) {
+                  setOtp(String(rideResponse.data.ride.otp));
+                  setShowOTP(true);
+                  setRideAccepted(true);
+                }
+              } catch (err) {
+                console.error("Error fetching ride:", err);
+              }
+            }, 500);
+          }
+
+          // Schedule multiple retries with increasing delays
+          setTimeout(() => {
+            dispatch(getAllOrdersOfShop(seller._id));
+          }, 800);
+          setTimeout(() => {
+            const retryOtp = data.rideOTP || data.ride?.otp;
+            if (retryOtp) {
+              setOtp(String(retryOtp));
+              setShowOTP(true);
+              setRideAccepted(true);
+            }
+          }, 1500);
+          setTimeout(() => {
+            dispatch(getAllOrdersOfShop(seller._id));
+          }, 2500);
         }
-      } else {
-        console.log("ℹ️ Ride status:", rideStatus);
       }
-    } else {
-      console.log("ℹ️ Order has no ride yet");
     }
-  }, [data]);
+  }, [data, dispatch, seller]);
 
   const fetchRideOTP = async (rideId) => {
     try {
       // This would need a backend endpoint to fetch ride with OTP
       // For now, OTP will come from socket event or order data
-      console.log("Fetching OTP for ride:", rideId);
     } catch (error) {
       console.error("Error fetching OTP:", error);
     }
@@ -244,16 +245,11 @@ const OrderDetails = () => {
 
   const handleNotifyRider = async () => {
     try {
-      console.log("Notifying riders for order:", id);
-      console.log("Seller:", seller);
-
       const res = await axios.post(
         `${server}/order/notify-rider/${id}`,
         {},
         { withCredentials: true }
       );
-
-      console.log("Notify rider response:", res.data);
 
       if (res.data.success) {
         toast.success(" Riders notified! Waiting for captain to accept...");
@@ -266,27 +262,20 @@ const OrderDetails = () => {
         dispatch(getAllOrdersOfShop(seller._id));
       }
     } catch (error) {
-      console.error("Notify rider error:", error);
-      console.error("Error response:", error.response?.data);
       toast.error(error.response?.data?.message || "Failed to notify riders");
     }
   };
 
   const handleConfirmOrder = async () => {
     try {
-      console.log("Confirming order:", id);
-      console.log("Seller:", seller);
-
       const res = await axios.post(
         `${server}/order/confirm-order/${id}`,
         {},
         { withCredentials: true }
       );
 
-      console.log("Confirm response:", res.data);
-
       if (res.data.success) {
-        toast.success("✅ Order confirmed successfully!");
+        toast.success(" Order confirmed successfully!");
 
         // OTP already displayed on page
         dispatch(getAllOrdersOfShop(seller._id));
@@ -297,32 +286,23 @@ const OrderDetails = () => {
         }, 2000);
       }
     } catch (error) {
-      console.error("Confirm error:", error);
-      console.error("Error response:", error.response?.data);
       toast.error(error.response?.data?.message || "Failed to confirm order");
     }
   };
 
   const handleCancelOrder = async () => {
     try {
-      console.log("Cancelling order:", id);
-      console.log("Seller:", seller);
-
       const res = await axios.post(
         `${server}/order/cancel-order/${id}`,
         {},
         { withCredentials: true }
       );
 
-      console.log("Cancel response:", res.data);
-
       if (res.data.success) {
         toast.success("Order cancelled successfully");
         dispatch(getAllOrdersOfShop(seller._id));
       }
     } catch (error) {
-      console.error("Cancel error:", error);
-      console.error("Error response:", error.response?.data);
       toast.error(error.response?.data?.message || "Failed to cancel order");
     }
   };
@@ -369,8 +349,6 @@ const OrderDetails = () => {
         toast.error(error.response.data.message);
       });
   };
-
-  console.log(data?.status);
 
   // Ride Confirmation Popup (Full Screen)
   const RideConfirmationPopup = () => (
@@ -631,68 +609,240 @@ const OrderDetails = () => {
         </div>
       </div>
 
-      {/* Captain Accepted Alert - Shows when ride is accepted */}
-      {rideAccepted && data?.ride && (
-        <div className="mb-6 animate-fadeIn">
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-4 shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-md animate-pulse">
-                  <MdCheckCircle className="text-white text-2xl" />
-                </div>
+      {/* Captain Details Card - Shows when captain accepts */}
+      {(rideAccepted ||
+        data?.rideStatus === "accepted" ||
+        data?.rideStatus === "ongoing") &&
+        data?.ride?.captain && (
+          <div className="mb-3 animate-fadeIn">
+            {/* Compact Captain Info Card */}
+            <div className="bg-white rounded-lg border border-blue-200 shadow-md overflow-hidden">
+              {/* Header - Compact */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2 flex items-center gap-2">
+                <MdCheckCircle className="text-base text-white" />
+                <h3 className="text-sm font-bold text-white">
+                  Delivery Captain
+                </h3>
               </div>
-              <div className="flex-1">
-                <h4 className="text-lg font-bold text-green-900 mb-1">
-                  🎉 Captain Accepted the Ride!
-                </h4>
-                <p className="text-sm text-green-800">
-                  The delivery captain has accepted your order. You can now
-                  confirm the order below.
-                </p>
+
+              <div className="p-3">
+                {/* Compact Info Row */}
+                <div className="flex items-center gap-3">
+                  {/* Profile Image - Smaller */}
+                  <div className="flex-shrink-0">
+                    <img
+                      src={
+                        data.ride.captain.profileImage?.url ||
+                        "https://ui-avatars.com/api/?name=Captain&background=3B82F6&color=fff&size=128"
+                      }
+                      alt="Captain"
+                      className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-blue-300 shadow"
+                    />
+                  </div>
+
+                  {/* Info Grid - Compact */}
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {/* Rider Name */}
+                    <div className="bg-blue-50 px-2 py-1.5 rounded border border-blue-200">
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <MdPerson className="text-blue-600 text-sm" />
+                        <p className="text-[9px] font-semibold text-blue-700 uppercase">
+                          Rider
+                        </p>
+                      </div>
+                      <p className="text-sm font-bold text-gray-900 truncate">
+                        {(() => {
+                          const captain = data.ride.captain;
+                          if (!captain) return "Loading...";
+
+                          // Try different name formats
+                          if (captain.fullname?.firstname) {
+                            return `${captain.fullname.firstname} ${
+                              captain.fullname.lastname || ""
+                            }`.trim();
+                          }
+                          if (captain.fullName) return captain.fullName;
+                          if (captain.name) return captain.name;
+
+                          // If captain object exists but no name, show Captain
+                          return "Captain";
+                        })()}
+                      </p>
+                    </div>
+
+                    {/* Bike Plate - Simple */}
+                    <div className="bg-yellow-50 px-2 py-1.5 rounded border border-yellow-300">
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <FaMotorcycle className="text-orange-600 text-xs" />
+                        <p className="text-[9px] font-semibold text-orange-700 uppercase">
+                          Plate
+                        </p>
+                      </div>
+                      <p className="text-sm font-black text-gray-900 tracking-wide">
+                        {(() => {
+                          const captain = data.ride.captain;
+                          if (!captain) return "Loading...";
+                          if (!captain.vehicle) return "N/A";
+
+                          return (
+                            captain.vehicle.plate ||
+                            captain.vehicle.vehicleNumber ||
+                            captain.vehicle.plateNumber ||
+                            "N/A"
+                          );
+                        })()}
+                      </p>
+                    </div>
+
+                    {/* Phone */}
+                    <div className="bg-green-50 px-2 py-1.5 rounded border border-green-200">
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <MdPhone className="text-green-600 text-sm" />
+                        <p className="text-[9px] font-semibold text-green-700 uppercase">
+                          Phone
+                        </p>
+                      </div>
+                      <p className="text-xs font-semibold text-gray-900 truncate">
+                        {(() => {
+                          const captain = data.ride.captain;
+                          if (!captain) return "Loading...";
+
+                          return (
+                            captain.phoneNumber ||
+                            captain.phone ||
+                            captain.mobile ||
+                            "N/A"
+                          );
+                        })()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Call Button - Compact */}
+                  <div className="flex-shrink-0 hidden sm:block">
+                    <a
+                      href={`tel:${data.ride.captain.phoneNumber}`}
+                      className="bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-lg text-xs font-bold transition-all duration-200 shadow hover:shadow-md active:scale-95 flex items-center justify-center"
+                      title="Call Rider"
+                    >
+                      <MdPhone className="text-lg" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Mobile Call Button */}
+                <div className="mt-2 sm:hidden">
+                  <a
+                    href={`tel:${data.ride.captain.phoneNumber}`}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition-all duration-200 shadow hover:shadow-md active:scale-95 flex items-center justify-center gap-1.5"
+                  >
+                    <MdPhone className="text-base" />
+                    <span>Call Rider</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Delivery OTP Info Box - Always visible when OTP available */}
-      {data && otp && (
-        <div className="mb-6 animate-fadeIn">
-          <div className="bg-gradient-to-r from-orange-50 via-pink-50 to-purple-50 border-2 border-purple-300 rounded-xl p-5 shadow-lg">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center shadow-md">
-                  <span className="text-2xl">🔑</span>
+      {/* Beautiful OTP Display - Shows when ride is accepted and OTP is available */}
+      {(rideAccepted ||
+        data?.rideStatus === "accepted" ||
+        data?.rideStatus === "ongoing") && (
+        <div className="mb-4 animate-fadeIn">
+          {/* Professional OTP Card - Desktop Optimized, Mobile Responsive */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200 overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-stretch">
+              {/* Left Side - OTP Display (Mobile: Full width, Desktop: 50%) */}
+              <div className="flex-1 bg-white p-4 sm:p-5 border-b sm:border-b-0 sm:border-r border-purple-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                    <FaKey className="text-sm text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-800">
+                      Delivery OTP
+                    </h3>
+                    <p className="text-xs text-gray-500">Verification Code</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1">
-                <h4 className="text-lg font-bold text-purple-900 mb-2 flex items-center gap-2">
-                  Delivery Verification OTP
-                  <MdCheckCircle className="text-green-500" />
-                </h4>
-                <p className="text-sm text-purple-800 mb-3">
-                  The captain will need this OTP to pick up the order. Please
-                  verify the captain's identity before sharing.
-                </p>
-                <div className="bg-white rounded-lg p-4 border-2 border-purple-200 shadow-inner">
-                  <div className="flex items-center justify-between">
+
+                {/* OTP Display */}
+                <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg p-4 text-center border border-purple-300">
+                  {data?.rideOTP || data?.ride?.otp || otp ? (
                     <div>
-                      <p className="text-xs text-gray-600 mb-1">
-                        Your OTP Code:
+                      <p className="text-xs text-gray-600 mb-1 font-medium">
+                        YOUR CODE
                       </p>
-                      <p className="text-3xl font-black text-purple-600 tracking-widest select-all">
-                        {otp}
+                      <p className="text-4xl sm:text-5xl font-black text-purple-600 tracking-widest font-mono">
+                        {data?.rideOTP || data?.ride?.otp || otp}
                       </p>
                     </div>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(otp);
-                        toast.success("OTP copied to clipboard!");
-                      }}
-                      className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
-                    >
-                      Copy
-                    </button>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2 py-3">
+                      <div className="animate-spin rounded-full h-7 w-7 border-2 border-purple-300 border-t-purple-600"></div>
+                      <p className="text-sm text-gray-600 font-medium">
+                        Loading...
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Side - Instructions (Mobile: Full width, Desktop: 50%) */}
+              <div className="flex-1 p-4 sm:p-5 flex flex-col justify-center">
+                <div className="space-y-3">
+                  {/* Status Badge */}
+                  <div className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 px-3 py-1.5 rounded-full">
+                    <MdCheckCircle className="text-sm" />
+                    <span className="text-xs font-semibold">
+                      Captain Accepted
+                    </span>
+                  </div>
+
+                  {/* Instructions */}
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-purple-600">
+                          1
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-700 leading-relaxed">
+                        Wait for captain to arrive at pickup location
+                      </p>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-purple-600">
+                          2
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-700 leading-relaxed">
+                        Verify captain identity and share this OTP
+                      </p>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <div className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-purple-600">
+                          3
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-700 leading-relaxed">
+                        Captain enters OTP to start delivery
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Security Notice */}
+                  <div className="flex items-start gap-2 bg-amber-50 rounded-md p-2.5 border border-amber-200">
+                    <MdWarning className="text-amber-600 text-sm flex-shrink-0 mt-0.5" />
+                    <p className="text-[10px] sm:text-xs text-amber-800 leading-tight">
+                      <span className="font-semibold">Security:</span> Do not
+                      share OTP via phone/message
+                    </p>
                   </div>
                 </div>
               </div>
@@ -701,7 +851,7 @@ const OrderDetails = () => {
         </div>
       )}
 
-      {/* Chat with Customer Button */}
+      {/* Removed Captain Accepted Alert */}
       {data?.user?._id && (
         <div className="mb-6">
           <Link to={`/dashboard-messages?userId=${data.user._id}`}>
@@ -715,141 +865,104 @@ const OrderDetails = () => {
 
       {/* Order Status Section */}
       <div className="mb-6">
-        <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-          <MdInfo size={20} className="text-blue-600" />
-          Order Status
-        </h4>
-      </div>
-
-      {/* Current Status Display */}
-      <div className="mb-4 bg-gray-50 border border-gray-200 rounded-lg p-3">
-        <p className="text-sm text-gray-600">
-          Current Status:{" "}
-          <span className="font-semibold text-gray-800">
-            {data?.status || "Loading..."}
-          </span>
-        </p>
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 max-w-md">
+          <h4 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <MdInfo size={20} className="text-indigo-600" />
+            Order Status
+          </h4>
+          <div className="space-y-2 text-sm text-gray-700">
+            <div className="flex justify-between items-center">
+              <span>Current Status:</span>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  data?.status === "Delivered"
+                    ? "bg-green-100 text-green-700"
+                    : data?.status === "Processing"
+                    ? "bg-blue-100 text-blue-700"
+                    : data?.status === "Pending"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                {data?.status || "Loading..."}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Show Notify Rider / Confirm Order buttons based on ride status */}
       {data && data.status === "Pending" ? (
-        <div className="mt-4 space-y-3 max-w-2xl">
+        <div className="mt-4 space-y-3 max-w-md">
           {/* Show info message based on state */}
           {!data.ride ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-              <p className="text-blue-800 font-medium text-sm flex items-center gap-2">
-                <MdInfo size={18} />
-                Click "Notify to Rider" to create a ride request for this order
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+              <p className="text-blue-800 font-medium text-xs flex items-center gap-2">
+                <MdInfo size={16} />
+                Click "Notify Rider" to create a ride request
               </p>
             </div>
           ) : !rideAccepted ? (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
-              <p className="text-yellow-800 font-medium text-sm flex items-center gap-2">
-                <MdInfo size={18} />
-                Waiting for captain to accept the ride...
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2.5">
+              <p className="text-yellow-800 font-medium text-xs flex items-center gap-2">
+                <MdInfo size={16} />
+                Waiting for captain to accept...
               </p>
             </div>
           ) : (
             <>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
-                <p className="text-green-800 font-medium text-sm flex items-center gap-2">
-                  <MdCheckCircle size={18} />
-                  Captain accepted! You can now confirm the order.
+              <div className="bg-green-50 border border-green-200 rounded-lg p-2.5">
+                <p className="text-green-800 font-medium text-xs flex items-center gap-2">
+                  <MdCheckCircle size={16} />
+                  Captain accepted! You can now confirm.
                 </p>
               </div>
-
-              {/* Debug info - Remove after testing */}
-              {process.env.NODE_ENV === "development" && (
-                <div className="bg-gray-100 border border-gray-300 rounded p-2 mb-2 text-xs space-y-1">
-                  <p>
-                    <strong>Debug:</strong> showOTP={String(showOTP)}, otp="
-                    {otp}", rideAccepted={String(rideAccepted)}
-                  </p>
-                  <p>
-                    <strong>Order:</strong> rideOTP="{data?.rideOTP}",
-                    rideStatus="{data?.rideStatus}"
-                  </p>
-                  {data?.ride && (
-                    <p>
-                      <strong>Ride:</strong> status="{data.ride.status}", otp="
-                      {data.ride.otp}"
-                    </p>
-                  )}
-                  <button
-                    onClick={() => {
-                      console.log("🧪 Test: Manually setting OTP");
-                      setOtp("TEST1234");
-                      setShowOTP(true);
-                      setRideAccepted(true);
-                    }}
-                    className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
-                  >
-                    Test OTP Display
-                  </button>
-                </div>
-              )}
-
-              {/* Show OTP on order details page - Visible until ride starts */}
-              {showOTP && otp ? (
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 mb-3">
-                  <p className="text-purple-900 font-bold text-lg text-center mb-2">
-                    🔐 Delivery OTP
-                  </p>
-                  <div className="bg-white rounded-lg p-3 text-center">
-                    <p className="text-3xl font-bold text-purple-600 tracking-widest">
-                      {otp}
-                    </p>
-                  </div>
-                  <p className="text-purple-700 text-xs text-center mt-2">
-                    Give this OTP to captain when they arrive to pick up the
-                    order
-                  </p>
-                </div>
-              ) : showOTP && !otp ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
-                  <p className="text-red-800 font-medium text-sm flex items-center gap-2">
-                    <MdInfo size={18} />
-                    OTP not loaded yet. Please refresh the page.
-                  </p>
-                </div>
-              ) : null}
             </>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            {!data.ride ? (
-              // Show Notify to Rider button if no ride created yet
-              <button
-                onClick={handleNotifyRider}
-                className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2.5 px-4 rounded-lg font-semibold text-sm hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
-              >
-                <MdCheckCircle size={18} />
-                Notify to Rider
-              </button>
-            ) : rideAccepted ? (
-              // Show Confirm Order button after captain accepts
+          <div className="flex flex-col sm:flex-row gap-2">
+            {/* Show Confirm Order button ONLY if captain accepted */}
+            {rideAccepted ||
+            data?.rideStatus === "accepted" ||
+            data?.rideStatus === "ongoing" ? (
               <button
                 onClick={handleConfirmOrder}
-                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2.5 px-4 rounded-lg font-semibold text-sm hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 px-3 rounded-lg font-semibold text-xs hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow hover:shadow-md active:scale-95 flex items-center justify-center gap-1.5"
               >
-                <MdCheckCircle size={18} /> Confirm Order
+                <MdCheckCircle size={16} /> Confirm Order
+              </button>
+            ) : !data.ride || data.ride.status === "pending" ? (
+              // Show Notify to Rider button if no ride OR ride is still pending
+              <button
+                onClick={handleNotifyRider}
+                disabled={data.ride && data.ride.status === "pending"}
+                className={`flex-1 ${
+                  data.ride && data.ride.status === "pending"
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                } py-2 px-3 rounded-lg font-semibold text-xs transition-all duration-200 shadow hover:shadow-md active:scale-95 flex items-center justify-center gap-1.5`}
+              >
+                <MdInfo size={16} />
+                {data.ride && data.ride.status === "pending"
+                  ? "Waiting..."
+                  : "Notify Rider"}
               </button>
             ) : (
-              // Show disabled button while waiting
+              // Show disabled waiting button
               <button
                 disabled
-                className="flex-1 bg-gray-300 text-gray-500 py-2.5 px-4 rounded-lg font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 bg-gray-300 text-gray-500 py-2 px-3 rounded-lg font-semibold text-xs cursor-not-allowed flex items-center justify-center gap-1.5"
               >
-                <MdInfo size={18} />
-                Waiting for Captain...
+                <MdInfo size={16} />
+                Waiting...
               </button>
             )}
 
             <button
               onClick={handleCancelOrder}
-              className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-2.5 px-4 rounded-lg font-semibold text-sm hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+              className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-2 px-3 rounded-lg font-semibold text-xs hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow hover:shadow-md active:scale-95 flex items-center justify-center gap-1.5"
             >
-              <MdCancel size={18} />
+              <MdCancel size={16} />
               Cancel Order
             </button>
           </div>
@@ -857,17 +970,19 @@ const OrderDetails = () => {
       ) : data &&
         (data.status === "Cancelled" || data.status === "Cancelled by Shop") ? (
         /* Show cancelled message - Status update hidden for cancelled orders */
-        <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4 max-w-2xl">
-          <p className="text-red-800 font-medium text-sm sm:text-base flex items-center gap-2">
-            <MdCancel size={20} />
+        <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 max-w-md">
+          <p className="text-red-800 font-medium text-xs flex items-center gap-2">
+            <MdCancel size={16} />
             This order has been cancelled
           </p>
         </div>
       ) : data &&
         data.status &&
         data.status !== "Pending" &&
-        data.status !== "Processing" ? (
-        /* Show status dropdown for confirmed orders only (not for pending, cancelled or processing) */
+        data.status !== "Processing" &&
+        data.status !== "On the way" &&
+        data.status !== "Delivered" ? (
+        /* Show status dropdown for confirmed orders only (not for pending, cancelled, processing, on the way, or delivered) */
         <div className="mt-4 space-y-3 max-w-md">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-blue-800 font-medium text-sm mb-2 flex items-center gap-2">
@@ -880,12 +995,11 @@ const OrderDetails = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
             >
               {[
-                "Confirmed by Shop",
+                "Confirmed",
+                "Preparing",
+                "Prepared",
                 "Transferred to delivery partner",
-                "Shipping",
-                "Received",
                 "On the way",
-                "Delivered",
               ].map((option, index) => (
                 <option value={option} key={index}>
                   {option}
@@ -901,6 +1015,23 @@ const OrderDetails = () => {
             <MdUpdate size={18} />
             Update Status
           </button>
+        </div>
+      ) : data && data.status === "On the way" ? (
+        /* Show locked message when order is on the way */
+        <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 max-w-md">
+          <p className="text-green-800 font-medium text-xs flex items-center gap-2">
+            <MdCheckCircle size={16} />
+            Order is on the way - Status will update to "Delivered" when captain
+            completes delivery
+          </p>
+        </div>
+      ) : data && data.status === "Delivered" ? (
+        /* Show delivered message */
+        <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 max-w-md">
+          <p className="text-green-800 font-medium text-xs flex items-center gap-2">
+            <MdCheckCircle size={16} />
+            Order has been delivered successfully!
+          </p>
         </div>
       ) : null}
     </div>

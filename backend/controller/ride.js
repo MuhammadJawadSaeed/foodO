@@ -111,10 +111,11 @@ module.exports.confirmRide = async (req, res) => {
     }
 
     // NEW: Notify shop/cook about captain acceptance
-    if (io && ride.orderId) {
-      console.log("Fetching order for ride:", ride.orderId);
+    if (io && (ride.order || ride.orderId)) {
+      const rideOrderId = String(ride.order || ride.orderId);
+      console.log("Fetching order for ride:", rideOrderId);
       const Order = require("../model/order");
-      const order = await Order.findById(ride.orderId);
+      const order = await Order.findById(rideOrderId);
 
       if (order && order.cart && order.cart[0] && order.cart[0].shopId) {
         const shopId = order.cart[0].shopId;
@@ -124,25 +125,27 @@ module.exports.confirmRide = async (req, res) => {
         const Ride = require("../model/ride.model");
         const rideWithOTP = await Ride.findById(ride._id).select("+otp");
 
-        // IMPORTANT: Save OTP to order so cook can see it anytime
+        // IMPORTANT: Save OTP AND RIDE REFERENCE to order so cook can see it anytime
         const updatedOrder = await Order.findByIdAndUpdate(
-          ride.orderId,
+          rideOrderId,
           {
+            ride: ride._id, // 🔥 CRITICAL: Link the ride to the order
             rideStatus: "accepted",
             rideOTP: rideWithOTP.otp,
           },
           { new: true } // Return updated document
         );
 
-        console.log("✅ OTP saved to order successfully!");
+        console.log("✅ OTP and Ride saved to order successfully!");
         console.log("Order ID:", updatedOrder._id);
+        console.log("Ride ID:", updatedOrder.ride);
         console.log("Ride Status:", updatedOrder.rideStatus);
         console.log("Ride OTP:", updatedOrder.rideOTP);
 
         // Emit to shop's room (shops join with their ID as room)
         console.log("🚀 Emitting ride-accepted to shop room:", shopId);
         console.log("Event payload:", {
-          orderId: ride.orderId,
+          orderId: rideOrderId,
           ride: {
             _id: rideWithOTP._id,
             status: rideWithOTP.status,
@@ -151,7 +154,7 @@ module.exports.confirmRide = async (req, res) => {
         });
 
         io.to(shopId).emit("ride-accepted", {
-          orderId: ride.orderId,
+          orderId: rideOrderId,
           ride: {
             _id: rideWithOTP._id,
             status: rideWithOTP.status,
@@ -160,6 +163,8 @@ module.exports.confirmRide = async (req, res) => {
               _id: req.captain._id,
               fullname: req.captain.fullname,
               phoneNumber: req.captain.phoneNumber,
+              vehicle: req.captain.vehicle,
+              profileImage: req.captain.profileImage,
             },
           },
         });
@@ -172,7 +177,7 @@ module.exports.confirmRide = async (req, res) => {
         if (shop && shop.socketId) {
           console.log("📡 Also emitting to shop socketId:", shop.socketId);
           io.to(shop.socketId).emit("ride-accepted", {
-            orderId: ride.orderId,
+            orderId: rideOrderId,
             ride: {
               _id: rideWithOTP._id,
               status: rideWithOTP.status,
@@ -181,6 +186,8 @@ module.exports.confirmRide = async (req, res) => {
                 _id: req.captain._id,
                 fullname: req.captain.fullname,
                 phoneNumber: req.captain.phoneNumber,
+                vehicle: req.captain.vehicle,
+                profileImage: req.captain.profileImage,
               },
             },
           });
@@ -221,6 +228,34 @@ module.exports.startRide = async (req, res) => {
     });
 
     console.log(ride);
+
+    // Update order status to "On the way" when ride starts
+    if (ride.order) {
+      const Order = require("../model/order");
+      const updatedOrder = await Order.findByIdAndUpdate(
+        ride.order,
+        { status: "On the way" },
+        { new: true }
+      );
+
+      console.log("Order status updated to 'On the way':", updatedOrder?._id);
+
+      // Notify shop about ride start
+      if (updatedOrder?.cart?.[0]?.shopId) {
+        const Shop = require("../model/shop");
+        const shop = await Shop.findById(updatedOrder.cart[0].shopId);
+
+        const io = req.app.get("io");
+        if (io && shop && shop.socketId) {
+          console.log("Notifying shop about ride start");
+          io.to(shop.socketId).emit("ride-started", {
+            orderId: updatedOrder._id,
+            status: "On the way",
+            rideId: ride._id,
+          });
+        }
+      }
+    }
 
     const io = req.app.get("io");
     if (io && ride.user.socketId) {
@@ -458,14 +493,21 @@ module.exports.getPendingRides = async (req, res) => {
       !captain.location.lng
     ) {
       console.log(
-        "Captain location not available, returning all pending rides"
+        "Captain location not available, returning all UNACCEPTED pending rides"
       );
-      const allPendingRides = await rideService.getAllPendingRides();
+      // Only show rides that are pending and not accepted by anyone
+      const allPendingRides = await rideModel
+        .find({
+          status: "pending",
+          captain: null, // Not accepted by any captain yet
+        })
+        .populate("user")
+        .populate("orderId");
 
       return res.status(200).json({
         rides: allPendingRides,
         message:
-          "Location not available. Showing all pending rides. Please wait for location update.",
+          "Location not available. Showing all new pending rides. Please wait for location update.",
       });
     }
 
@@ -473,22 +515,119 @@ module.exports.getPendingRides = async (req, res) => {
     const latitude = captain.location.lat || captain.location.ltd;
     const longitude = captain.location.lng;
 
-    console.log(`Searching for rides near: lat=${latitude}, lng=${longitude}`);
+    console.log(
+      `Searching for NEW pending rides near: lat=${latitude}, lng=${longitude}`
+    );
 
-    // Get all pending rides within 5km radius
-    const pendingRides = await rideService.getPendingRidesInRadius(
+    // Get only UNACCEPTED pending rides within 5km radius
+    const pendingRides = await rideService.getUnacceptedPendingRidesInRadius(
       latitude,
       longitude,
       5 // 5km radius
     );
 
-    console.log(`Found ${pendingRides.length} pending rides within 5km`);
+    console.log(
+      `Found ${pendingRides.length} unaccepted pending rides within 5km`
+    );
 
     return res.status(200).json({
       rides: pendingRides,
     });
   } catch (err) {
     console.error("Error fetching pending rides:", err);
+    return res.status(500).json({
+      message: err.message,
+      error: err.toString(),
+    });
+  }
+};
+
+// NEW: Get captain's accepted/in-progress rides
+module.exports.getMyCaptainRides = async (req, res) => {
+  console.log("=== Get My Captain Rides Controller ===");
+  console.log("Captain ID:", req.captain?._id);
+
+  try {
+    const captain = req.captain;
+
+    if (!captain) {
+      console.log("❌ No captain authenticated");
+      return res.status(401).json({
+        message: "Captain not authenticated",
+      });
+    }
+
+    // Debug: Check all rides with this captain (any status)
+    const allCaptainRides = await rideModel.find({ captain: captain._id });
+    console.log(
+      `📊 Total rides assigned to captain: ${allCaptainRides.length}`
+    );
+    allCaptainRides.forEach((r) => {
+      console.log(`   - Ride ${r._id}: Status=${r.status}`);
+    });
+
+    // Get rides that this captain has accepted or are ongoing
+    const myRides = await rideModel
+      .find({
+        captain: captain._id,
+        status: { $in: ["accepted", "ongoing"] }, // Accepted or ongoing rides
+      })
+      .populate("user")
+      .populate("order")
+      .sort({ createdAt: -1 });
+
+    console.log(
+      `✅ Found ${myRides.length} active rides for captain ${captain._id}`
+    );
+
+    // Log each ride's status for debugging
+    myRides.forEach((ride, index) => {
+      console.log(
+        `  Ride ${index + 1}: ID=${ride._id}, Status=${ride.status}, Captain=${
+          ride.captain
+        }`
+      );
+    });
+
+    return res.status(200).json({
+      rides: myRides,
+      count: myRides.length,
+    });
+  } catch (err) {
+    console.error("❌ Error fetching captain rides:", err);
+    return res.status(500).json({
+      message: err.message,
+      error: err.toString(),
+    });
+  }
+};
+
+// Get single ride with OTP
+module.exports.getRideById = async (req, res) => {
+  try {
+    const { rideId } = req.params;
+
+    console.log("🔍 Fetching ride by ID with OTP:", rideId);
+
+    const ride = await rideModel
+      .findById(rideId)
+      .populate("user")
+      .populate("captain")
+      .populate("order")
+      .select("+otp"); // EXPLICITLY INCLUDE OTP
+
+    if (!ride) {
+      return res.status(404).json({ message: "Ride not found" });
+    }
+
+    console.log("✅ Found ride with OTP:", ride.otp);
+
+    res.status(200).json({
+      success: true,
+      ride,
+    });
+  } catch (err) {
+    console.error("❌ Error fetching ride:", err);
     return res.status(500).json({
       message: err.message,
       error: err.toString(),

@@ -22,11 +22,12 @@ const LiveTracking = ({ ride }) => {
   const [destinationCoords, setDestinationCoords] = useState(null);
   const [directions, setDirections] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const mapRef = useRef(null);
 
   // Geocode addresses to coordinates
   useEffect(() => {
-    if (ride && mapLoaded) {
+    if (ride && googleMapsLoaded && window.google && window.google.maps) {
       const geocoder = new window.google.maps.Geocoder();
 
       // Geocode pickup address
@@ -63,7 +64,7 @@ const LiveTracking = ({ ride }) => {
         });
       }
     }
-  }, [ride, mapLoaded]);
+  }, [ride, googleMapsLoaded]);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -107,7 +108,13 @@ const LiveTracking = ({ ride }) => {
 
   // Calculate directions when all coordinates are available
   useEffect(() => {
-    if (pickupCoords && destinationCoords && mapLoaded) {
+    if (
+      pickupCoords &&
+      destinationCoords &&
+      googleMapsLoaded &&
+      window.google &&
+      window.google.maps
+    ) {
       const directionsService = new window.google.maps.DirectionsService();
 
       directionsService.route(
@@ -125,11 +132,18 @@ const LiveTracking = ({ ride }) => {
         }
       );
     }
-  }, [pickupCoords, destinationCoords, mapLoaded]);
+  }, [pickupCoords, destinationCoords, googleMapsLoaded]);
 
   // Auto-fit map bounds to show all markers
   useEffect(() => {
-    if (mapRef.current && pickupCoords && destinationCoords) {
+    if (
+      mapRef.current &&
+      pickupCoords &&
+      destinationCoords &&
+      googleMapsLoaded &&
+      window.google &&
+      window.google.maps
+    ) {
       const bounds = new window.google.maps.LatLngBounds();
 
       // Include pickup and destination in bounds
@@ -174,8 +188,33 @@ const LiveTracking = ({ ride }) => {
     setMapLoaded(true);
   };
 
+  const onGoogleMapsLoad = () => {
+    console.log("✅ Google Maps API loaded successfully");
+    setGoogleMapsLoaded(true);
+  };
+
+  // Don't render anything until Google Maps API is loaded
+  if (!googleMapsLoaded) {
+    return (
+      <LoadScript
+        googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+        onLoad={onGoogleMapsLoad}
+      >
+        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading Map...</p>
+          </div>
+        </div>
+      </LoadScript>
+    );
+  }
+
   return (
-    <LoadScript googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+    <LoadScript
+      googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+      onLoad={onGoogleMapsLoad}
+    >
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={currentPosition}
@@ -196,17 +235,19 @@ const LiveTracking = ({ ride }) => {
         }}
       >
         {/* Captain's current location - Blue marker */}
-        <Marker
-          position={currentPosition}
-          title="Your Current Location"
-          icon={{
-            url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-            scaledSize: new window.google.maps.Size(40, 40),
-          }}
-        />
+        {mapLoaded && window.google && window.google.maps && (
+          <Marker
+            position={currentPosition}
+            title="Your Current Location"
+            icon={{
+              url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+              scaledSize: new window.google.maps.Size(40, 40),
+            }}
+          />
+        )}
 
         {/* Pickup location - Green marker with label */}
-        {pickupCoords && (
+        {pickupCoords && mapLoaded && window.google && window.google.maps && (
           <Marker
             position={pickupCoords}
             icon={{
@@ -225,23 +266,26 @@ const LiveTracking = ({ ride }) => {
         )}
 
         {/* Destination location - Red marker with label */}
-        {destinationCoords && (
-          <Marker
-            position={destinationCoords}
-            icon={{
-              url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-              scaledSize: new window.google.maps.Size(50, 50),
-            }}
-            label={{
-              text: "DESTINATION",
-              color: "#ffffff",
-              fontSize: "14px",
-              fontWeight: "bold",
-              className: "marker-label",
-            }}
-            title={`Destination: ${ride?.destination || "Destination"}`}
-          />
-        )}
+        {destinationCoords &&
+          mapLoaded &&
+          window.google &&
+          window.google.maps && (
+            <Marker
+              position={destinationCoords}
+              icon={{
+                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                scaledSize: new window.google.maps.Size(50, 50),
+              }}
+              label={{
+                text: "DESTINATION",
+                color: "#ffffff",
+                fontSize: "14px",
+                fontWeight: "bold",
+                className: "marker-label",
+              }}
+              title={`Destination: ${ride?.destination || "Destination"}`}
+            />
+          )}
 
         {/* Route from pickup to destination */}
         {directions && (
