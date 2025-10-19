@@ -14,7 +14,7 @@ const RidePopUp = (props) => {
     : props.ride?.user?.name || "Customer";
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="bg-white rounded-2xl shadow-2xl p-4 lg:p-6 w-full max-h-[90vh] overflow-y-auto">
       <div className="p-1 text-center w-full absolute top-2 left-0 cursor-pointer">
         <div className="w-20 h-1 bg-gray-300 rounded-full mx-auto mb-2"></div>
         <i
@@ -25,7 +25,7 @@ const RidePopUp = (props) => {
         ></i>
       </div>
 
-      <h3 className="text-2xl font-bold mb-5 mt-8 text-gray-900 text-center">
+      <h3 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-5 mt-8 text-gray-900 text-center">
         New Ride Available!
       </h3>
 
@@ -95,10 +95,10 @@ const RidePopUp = (props) => {
       </div>
 
       {/* Ride Details */}
-      <div className="space-y-3">
+      <div className="grid lg:grid-cols-2 gap-3">
         {/* Restaurant Name & Order Items */}
         {props.ride?.order?.cart?.[0]?.shop && (
-          <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 border-2 border-orange-300">
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 border-2 border-orange-300 lg:col-span-2">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <i className="ri-store-2-fill text-white text-lg"></i>
@@ -182,7 +182,7 @@ const RidePopUp = (props) => {
 
         {/* Phone Number */}
         {phoneNumber && (
-          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+          <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 lg:col-span-2">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
                 <i className="ri-phone-fill text-white text-lg"></i>
@@ -211,7 +211,7 @@ const RidePopUp = (props) => {
         {/* Order Amount & Total Collection - Only for Cash on Delivery */}
         {props.ride?.order?.paymentInfo?.type === "Cash On Delivery" &&
           props.ride?.order?.totalPrice && (
-            <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200">
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200 lg:col-span-2">
               <div className="flex items-center justify-between mb-2 pb-2 border-b border-orange-200">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -245,7 +245,7 @@ const RidePopUp = (props) => {
           )}
 
         {/* Fare */}
-        <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+        <div className="bg-green-50 rounded-lg p-3 border border-green-200 lg:col-span-2">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
               <i className="ri-currency-line text-white text-lg"></i>
@@ -264,12 +264,12 @@ const RidePopUp = (props) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-6 space-y-3">
+      <div className="mt-6 flex flex-col lg:flex-row gap-3">
         <button
           onClick={async () => {
             await props.confirmRide();
           }}
-          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 w-full text-white font-bold text-lg p-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
+          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 flex-1 text-white font-bold text-lg p-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
         >
           <i className="ri-check-line mr-2 text-xl"></i>
           Accept Ride
@@ -279,7 +279,7 @@ const RidePopUp = (props) => {
           onClick={() => {
             props.setRidePopupPanel(false);
           }}
-          className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold p-4 rounded-xl transition-colors flex items-center justify-center"
+          className="lg:flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold p-4 rounded-xl transition-colors flex items-center justify-center"
         >
           <i className="ri-close-line mr-2"></i>
           Ignore

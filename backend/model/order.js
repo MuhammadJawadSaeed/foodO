@@ -41,7 +41,7 @@ const orderSchema = new mongoose.Schema({
   },
   ride: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "ride",
+    ref: "PendingRide",
   },
   rideStatus: {
     type: String,

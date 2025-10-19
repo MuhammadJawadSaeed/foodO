@@ -28,6 +28,18 @@ app.use(express.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
+// Global request logger
+app.use((req, res, next) => {
+  console.log(`\n🌐 ${req.method} ${req.path}`);
+  console.log("Headers:", {
+    authorization: req.headers.authorization
+      ? `${req.headers.authorization.substring(0, 30)}...`
+      : "none",
+    cookie: req.headers.cookie ? "present" : "none",
+  });
+  next();
+});
+
 // Test route
 app.use("/test", (req, res) => {
   res.send("Hello world!");

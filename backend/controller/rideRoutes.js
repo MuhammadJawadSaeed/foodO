@@ -75,6 +75,13 @@ router.get(
   rideController.getMyCaptainRides
 );
 
+// Get captain's completed ride history
+router.get(
+  "/ride-history",
+  authMiddleware.authCaptain,
+  rideController.getCaptainRideHistory
+);
+
 // Get single ride by ID with OTP (for shop to fetch OTP)
 router.get("/:rideId", isAuthenticated, rideController.getRideById);
 

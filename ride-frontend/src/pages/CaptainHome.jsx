@@ -17,13 +17,28 @@ const CaptainHome = () => {
 
   const ridePopupPanelRef = useRef(null);
   const confirmRidePopupPanelRef = useRef(null);
+  const captainDetailsRef = useRef(null);
   const [ride, setRide] = useState(null);
   const [pendingRidesCount, setPendingRidesCount] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { socket } = useContext(SocketContext);
   const { captain } = useContext(CaptainDataContext);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Check if returning from a completed ride
+  useEffect(() => {
+    if (location.state?.rideCompleted) {
+      console.log("🎉 Ride completed! Refreshing stats...");
+      // Force refresh of CaptainDetails component
+      setRefreshKey((prev) => prev + 1);
+      // Also refresh pending rides count
+      fetchPendingRides();
+      // Clear the state to prevent re-triggering
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Load accepted ride from localStorage on page load (for page reload)
   // BUT validate it against database first to ensure it still exists
@@ -382,6 +397,11 @@ const CaptainHome = () => {
   useGSAP(
     function () {
       console.log("Ride popup animation triggered. State:", ridePopupPanel);
+      if (!ridePopupPanelRef.current) {
+        console.warn("ridePopupPanelRef is null, skipping animation");
+        return;
+      }
+
       if (ridePopupPanel) {
         console.log("Showing ride popup");
         gsap.to(ridePopupPanelRef.current, {
@@ -399,6 +419,11 @@ const CaptainHome = () => {
 
   useGSAP(
     function () {
+      if (!confirmRidePopupPanelRef.current) {
+        console.warn("confirmRidePopupPanelRef is null, skipping animation");
+        return;
+      }
+
       if (confirmRidePopupPanel) {
         gsap.to(confirmRidePopupPanelRef.current, {
           transform: "translateY(0)",
@@ -413,72 +438,185 @@ const CaptainHome = () => {
   );
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="p-6">
-        <CaptainDetails />
+    <div className="h-screen flex flex-col lg:flex-row overflow-hidden bg-gray-50">
+      {/* Left Sidebar - Captain Details (Enhanced for Desktop) */}
+      <div className="lg:w-[380px] xl:w-[420px] h-screen overflow-y-auto border-r border-gray-200 bg-white flex-shrink-0 shadow-lg scrollbar-hide">
+        <div className="p-4 lg:p-6 pb-20 lg:pb-6">
+          <CaptainDetails key={refreshKey} refreshKey={refreshKey} />
+
+          {/* Quick Actions Section */}
+          <div className="mt-6 space-y-3">
+            <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+              <i className="ri-dashboard-line text-orange-600"></i>
+              Quick Actions
+            </h3>
+
+            {/* View All Pending Rides */}
+            <Link
+              to="/captain-pending-rides"
+              className="relative flex items-center gap-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all text-sm w-full"
+            >
+              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                <i className="ri-notification-3-line text-xl"></i>
+              </div>
+              <div className="flex-1">
+                <div className="font-bold">Pending Rides</div>
+                <div className="text-xs text-white/80">
+                  View all available rides
+                </div>
+              </div>
+              {pendingRidesCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center animate-pulse shadow-lg">
+                  {pendingRidesCount}
+                </span>
+              )}
+            </Link>
+
+            {/* My Active Rides */}
+            <Link
+              to="/captain-pending-rides"
+              state={{ defaultTab: "active" }}
+              className="flex items-center gap-3 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-orange-500 text-gray-700 px-4 py-3 rounded-xl font-semibold transition-all text-sm w-full"
+            >
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                <i className="ri-taxi-line text-xl text-orange-600"></i>
+              </div>
+              <div className="flex-1">
+                <div className="font-bold">My Active Rides</div>
+                <div className="text-xs text-gray-500">
+                  View ongoing deliveries
+                </div>
+              </div>
+            </Link>
+
+            {/* Ride History */}
+            <Link
+              to="/captain-pending-rides"
+              state={{ defaultTab: "history" }}
+              className="flex items-center gap-3 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-green-500 text-gray-700 px-4 py-3 rounded-xl font-semibold transition-all text-sm w-full"
+            >
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <i className="ri-history-line text-xl text-green-600"></i>
+              </div>
+              <div className="flex-1">
+                <div className="font-bold">Ride History</div>
+                <div className="text-xs text-gray-500">
+                  View completed rides
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Map Area */}
-      <div className="flex-1 relative bg-gray-100">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <i className="ri-map-2-line text-6xl text-gray-400 mb-4"></i>
-            <p className="text-xl text-gray-500 font-semibold">Live Map View</p>
-            <p className="text-sm text-gray-400 mt-2">
-              Your location is being tracked
+      {/* Right Side - Main Content Area (Hidden on mobile) */}
+      <div className="hidden lg:flex flex-1 lg:w-auto relative bg-gradient-to-br from-gray-50 to-gray-100 overflow-y-auto">
+        {/* Hero Section */}
+        <div className="min-h-full flex items-center justify-center py-8 px-4 w-full">
+          <div className="text-center w-full max-w-3xl">
+            {/* Map Icon & Status */}
+            <div className="relative inline-block mb-6">
+              <div className="w-32 h-32 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-2xl">
+                <i className="ri-map-2-line text-6xl text-white"></i>
+              </div>
+              <div className="absolute -bottom-2 -right-2 bg-green-500 rounded-full p-3 shadow-lg animate-pulse">
+                <i className="ri-record-circle-line text-2xl text-white"></i>
+              </div>
+            </div>
+
+            {/* Status Text */}
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
+              You're Online & Ready!
+            </h2>
+            <p className="text-lg text-gray-600 mb-6">
+              Your location is being tracked. New ride requests will appear
+              here.
             </p>
-            <div className="mt-4 inline-flex items-center gap-2 bg-green-100 px-4 py-2 rounded-full">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-green-700">
+
+            {/* Status Badge */}
+            <div className="inline-flex items-center gap-3 bg-white rounded-full px-6 py-3 shadow-lg mb-6">
+              <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-base font-bold text-gray-800">
                 Online & Available
               </span>
             </div>
 
-            {/* Pending Rides Count Badge */}
+            {/* Pending Rides Alert */}
             {pendingRidesCount > 0 && (
-              <div className="mt-4 inline-flex items-center gap-2 bg-blue-100 px-4 py-2 rounded-full">
-                <i className="ri-notification-badge-line text-blue-600"></i>
-                <span className="text-sm font-medium text-blue-700">
-                  {pendingRidesCount} Pending{" "}
-                  {pendingRidesCount === 1 ? "Ride" : "Rides"}
-                </span>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-orange-300 rounded-2xl p-6 mb-6 shadow-lg animate-pulse">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <i className="ri-notification-badge-line text-4xl text-orange-600"></i>
+                  <div className="text-left">
+                    <h3 className="text-2xl font-bold text-gray-800">
+                      {pendingRidesCount} New{" "}
+                      {pendingRidesCount === 1 ? "Ride" : "Rides"}!
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Customers are waiting for delivery
+                    </p>
+                  </div>
+                </div>
+
+                <Link
+                  to="/captain-pending-rides"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-xl font-bold shadow-md hover:shadow-xl transition-all text-base"
+                >
+                  <i className="ri-eye-line text-xl"></i>
+                  View Pending Rides
+                </Link>
               </div>
             )}
 
-            {/* Show Pending Ride Button */}
+            {/* Show Single Pending Ride Button */}
             {ride && !ridePopupPanel && !confirmRidePopupPanel && (
-              <div className="mt-6">
+              <div className="mb-6">
                 <button
                   onClick={() => {
-                    // Check ride status
                     if (ride.status === "pending") {
                       setRidePopupPanel(true);
                     } else if (ride.status === "accepted") {
                       setConfirmRidePopupPanel(true);
                     }
                   }}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg flex items-center gap-2 mx-auto animate-pulse"
+                  className="inline-flex items-center gap-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-lg animate-bounce"
                 >
-                  <i className="ri-notification-3-line text-xl"></i>
-                  View Pending Ride
+                  <i className="ri-notification-3-line text-2xl"></i>
+                  View Your Pending Ride
                 </button>
               </div>
             )}
 
-            {/* View All Pending Rides Button */}
-            <div className="mt-4">
-              <Link
-                to="/captain-pending-rides"
-                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-colors"
-              >
-                <i className="ri-list-check-2 text-xl"></i>
-                View All Pending Rides
-                {pendingRidesCount > 0 && (
-                  <span className="bg-white text-indigo-600 px-2 py-1 rounded-full text-xs font-bold">
-                    {pendingRidesCount}
-                  </span>
-                )}
-              </Link>
+            {/* Info Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+              <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i className="ri-timer-line text-2xl text-blue-600"></i>
+                </div>
+                <h4 className="font-bold text-gray-800 mb-1">Quick Response</h4>
+                <p className="text-xs text-gray-600">
+                  Accept rides instantly and start earning
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i className="ri-money-dollar-circle-line text-2xl text-green-600"></i>
+                </div>
+                <h4 className="font-bold text-gray-800 mb-1">Earn More</h4>
+                <p className="text-xs text-gray-600">
+                  Higher earnings during peak hours
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i className="ri-shield-check-line text-2xl text-purple-600"></i>
+                </div>
+                <h4 className="font-bold text-gray-800 mb-1">Safe Delivery</h4>
+                <p className="text-xs text-gray-600">
+                  OTP verification for secure handoff
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -489,32 +627,30 @@ const CaptainHome = () => {
         <div className="fixed inset-0 bg-black bg-opacity-60 z-40"></div>
       )}
 
-      {/* Ride request popup - full screen */}
+      {/* Ride request popup - centered on screen */}
       {ridePopupPanel && (
         <div
           ref={ridePopupPanelRef}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-transparent"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-full h-full flex items-center justify-center">
-              <RidePopUp
-                ride={ride}
-                setRidePopupPanel={setRidePopupPanel}
-                setConfirmRidePopupPanel={setConfirmRidePopupPanel}
-                confirmRide={confirmRide}
-              />
-            </div>
+          <div className="w-full max-w-2xl lg:max-w-3xl">
+            <RidePopUp
+              ride={ride}
+              setRidePopupPanel={setRidePopupPanel}
+              setConfirmRidePopupPanel={setConfirmRidePopupPanel}
+              confirmRide={confirmRide}
+            />
           </div>
         </div>
       )}
 
-      {/* Confirm ride popup - full screen */}
+      {/* Confirm ride popup - centered on screen */}
       {confirmRidePopupPanel && (
         <div
           ref={confirmRidePopupPanelRef}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-transparent"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full max-w-2xl lg:max-w-3xl">
             <ConfirmRidePopUp
               ride={ride}
               setConfirmRidePopupPanel={setConfirmRidePopupPanel}

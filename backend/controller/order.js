@@ -6,6 +6,7 @@ const { isAuthenticated, isSeller, isAdmin } = require("../middleware/auth");
 const Order = require("../model/order");
 const Shop = require("../model/shop");
 const Product = require("../model/product");
+const PendingRide = require("../model/ride.model");
 const rideService = require("../utils/ride.service");
 const mapService = require("../utils/maps.service");
 
@@ -134,8 +135,7 @@ router.post(
         await order.save();
 
         // Get ride with OTP
-        const rideModel = require("../model/ride.model");
-        const rideWithOTP = await rideModel.findById(ride._id).select("+otp");
+        const rideWithOTP = await PendingRide.findById(ride._id).select("+otp");
 
         // Prepare ride data
         rideData = {
@@ -175,9 +175,9 @@ router.post(
 
           const io = req.app.get("io");
           if (io && captainsInRadius.length > 0) {
-            const rideWithUser = await rideModel
-              .findOne({ _id: ride._id })
-              .populate("user");
+            const rideWithUser = await PendingRide.findOne({
+              _id: ride._id,
+            }).populate("user");
 
             console.log("Notifying captains about new ride:", ride._id);
             let notifiedCount = 0;
@@ -273,10 +273,14 @@ router.post(
       console.log("Order status updated to Confirmed by Shop");
 
       // Get ride with OTP
-      const rideModel = require("../model/ride.model");
-      const rideWithOTP = await rideModel
-        .findById(order.ride._id)
-        .select("+otp");
+      const rideWithOTP = await PendingRide.findById(order.ride._id).select(
+        "+otp"
+      );
+
+      if (!rideWithOTP) {
+        console.log("Ride not found in PendingRide collection");
+        return next(new ErrorHandler("Ride not found", 404));
+      }
 
       // Prepare ride data with OTP
       const rideData = {
@@ -477,23 +481,44 @@ router.put(
         });
       }
 
+      // Define valid status transitions
+      const validStatuses = [
+        "Confirmed",
+        "Confirmed by Shop",
+        "Preparing",
+        "Prepared",
+        "Transferred to delivery partner",
+        "Shipping",
+        "Received",
+        "On the way",
+        "Delivered",
+      ];
+
+      console.log(
+        `📝 Status update request: "${order.status}" → "${req.body.status}"`
+      );
+
       // Only allow valid status transitions
       if (
         req.body.status === "Confirmed by Shop" &&
         order.status === "Pending"
       ) {
         order.status = "Confirmed by Shop";
+        console.log(`✅ Order status updated to "${req.body.status}"`);
       } else if (
-        [
-          "Transferred to delivery partner",
-          "Shipping",
-          "Received",
-          "On the way",
-          "Delivered",
-        ].includes(req.body.status) &&
-        order.status !== "Cancelled"
+        validStatuses.includes(req.body.status) &&
+        order.status !== "Cancelled" &&
+        order.status !== "Cancelled by Shop"
       ) {
+        const oldStatus = order.status;
         order.status = req.body.status;
+        console.log(
+          `✅ Order status updated from "${oldStatus}" to "${req.body.status}"`
+        );
+      } else {
+        console.log(
+          `❌ Invalid status transition from "${order.status}" to "${req.body.status}"`
+        );
       }
 
       if (req.body.status === "Delivered") {
@@ -518,6 +543,25 @@ router.put(
       }
 
       await order.save({ validateBeforeSave: false });
+
+      // Emit socket event to notify captain about order status update
+      const io = req.app.get("io");
+      if (io && order.ride) {
+        // Find the ride to get captain's socket ID
+        const PendingRide = require("../model/ride.model");
+        const ride = await PendingRide.findById(order.ride).populate("captain");
+
+        if (ride && ride.captain && ride.captain.socketId) {
+          console.log(
+            `📡 Emitting order status update to captain ${ride.captain._id}`
+          );
+          io.to(ride.captain.socketId).emit("order-status-updated", {
+            orderId: order._id,
+            status: order.status,
+            rideId: ride._id,
+          });
+        }
+      }
 
       res.status(200).json({
         success: true,

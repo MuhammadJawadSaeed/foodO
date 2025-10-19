@@ -313,6 +313,37 @@ module.exports.endRide = async (req, res) => {
 
     console.log("Ride ended successfully. Status:", ride.status);
 
+    // Move completed ride to CompletedRide collection
+    const CompletedRide = require("../model/completedRide.model");
+    const completedRideData = {
+      user: ride.user._id || ride.user,
+      captain: ride.captain._id || ride.captain,
+      order: ride.order,
+      pickup: ride.pickup,
+      destination: ride.destination,
+      fare: ride.fare,
+      status: "completed",
+      duration: ride.duration,
+      distance: ride.distance,
+      paymentID: ride.paymentID,
+      orderId: ride.orderId,
+      signature: ride.signature,
+      otp: ride.otp,
+      completionEvidence: completionEvidence,
+      completedAt: new Date(),
+      createdAt: ride.createdAt,
+    };
+
+    const completedRide = await CompletedRide.create(completedRideData);
+    console.log(
+      "✅ Ride moved to CompletedRide collection:",
+      completedRide._id
+    );
+
+    // Delete ride from PendingRide collection
+    await rideModel.findByIdAndDelete(rideId);
+    console.log("✅ Ride removed from PendingRide collection");
+
     // Update order status to Delivered if ride has an order
     if (ride.order) {
       const Order = require("../model/order");
@@ -358,112 +389,8 @@ module.exports.endRide = async (req, res) => {
       io.to(ride.user.socketId).emit("ride-ended", ride);
     }
 
-    // Update captain earnings and statistics
-    if (ride.captain && ride.fare) {
-      try {
-        console.log("=== Starting Captain Earnings Update ===");
-        console.log("Ride ID:", ride._id);
-        console.log("Captain ID:", ride.captain);
-        console.log("Fare Amount:", ride.fare);
-
-        const captainModel = require("../model/captain.model");
-        const captain = await captainModel.findById(ride.captain);
-
-        if (captain) {
-          console.log("Captain found:", captain.email);
-          console.log("Current earnings before update:", {
-            total: captain.earnings.total,
-            today: captain.earnings.today,
-          });
-          console.log("Current ride stats before update:", {
-            totalRides: captain.rideStats.totalRides,
-            completedRides: captain.rideStats.completedRides,
-          });
-
-          const now = new Date();
-          const today = new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate()
-          );
-
-          // Reset daily stats if needed
-          if (captain.lastDayReset && new Date(captain.lastDayReset) < today) {
-            captain.earnings.today = 0;
-            captain.rideStats.todayRides = 0;
-            captain.hoursOnline.today = 0;
-            captain.lastDayReset = now;
-          }
-
-          // Reset weekly stats if needed
-          const startOfWeek = new Date(now);
-          startOfWeek.setDate(
-            now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)
-          );
-          startOfWeek.setHours(0, 0, 0, 0);
-
-          if (
-            captain.lastWeekReset &&
-            new Date(captain.lastWeekReset) < startOfWeek
-          ) {
-            captain.earnings.thisWeek = 0;
-            captain.rideStats.thisWeekRides = 0;
-            captain.hoursOnline.thisWeek = 0;
-            captain.lastWeekReset = now;
-          }
-
-          // Reset monthly stats if needed
-          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-          if (
-            captain.lastMonthReset &&
-            new Date(captain.lastMonthReset) < startOfMonth
-          ) {
-            captain.earnings.thisMonth = 0;
-            captain.rideStats.thisMonthRides = 0;
-            captain.hoursOnline.thisMonth = 0;
-            captain.lastMonthReset = now;
-          }
-
-          // Update earnings
-          captain.earnings.total += ride.fare;
-          captain.earnings.today += ride.fare;
-          captain.earnings.thisWeek += ride.fare;
-          captain.earnings.thisMonth += ride.fare;
-
-          // Update ride stats
-          captain.rideStats.totalRides += 1;
-          captain.rideStats.completedRides += 1;
-          captain.rideStats.todayRides += 1;
-          captain.rideStats.thisWeekRides += 1;
-          captain.rideStats.thisMonthRides += 1;
-
-          await captain.save();
-
-          console.log("Captain earnings UPDATED successfully:", {
-            total: captain.earnings.total,
-            today: captain.earnings.today,
-            thisWeek: captain.earnings.thisWeek,
-            thisMonth: captain.earnings.thisMonth,
-          });
-          console.log("Captain ride stats UPDATED successfully:", {
-            totalRides: captain.rideStats.totalRides,
-            completedRides: captain.rideStats.completedRides,
-            todayRides: captain.rideStats.todayRides,
-          });
-          console.log("=== Captain Data SAVED to Database ===");
-        } else {
-          console.log("Captain NOT FOUND with ID:", ride.captain);
-        }
-      } catch (error) {
-        console.error("Error updating captain earnings:", error);
-        // Don't fail the request if earnings update fails
-      }
-    } else {
-      console.log("Skipping earnings update - Missing data:", {
-        hasCaptain: !!ride.captain,
-        hasFare: !!ride.fare,
-      });
-    }
+    // Captain earnings and ride statistics are already updated in ride.service.js
+    console.log("✅ Ride completion process finished successfully");
 
     return res.status(200).json(ride);
   } catch (err) {
@@ -629,6 +556,55 @@ module.exports.getRideById = async (req, res) => {
   } catch (err) {
     console.error("❌ Error fetching ride:", err);
     return res.status(500).json({
+      message: err.message,
+      error: err.toString(),
+    });
+  }
+};
+
+// Get captain's completed ride history
+module.exports.getCaptainRideHistory = async (req, res) => {
+  console.log("=== Get Captain Ride History Controller ===");
+  console.log("Request headers:", req.headers);
+  console.log("Captain from middleware:", req.captain?._id);
+
+  try {
+    const captain = req.captain;
+
+    if (!captain) {
+      console.log("❌ No captain authenticated");
+      return res.status(401).json({
+        success: false,
+        message: "Captain not authenticated",
+      });
+    }
+
+    console.log("✅ Captain authenticated, fetching completed rides...");
+
+    const CompletedRide = require("../model/completedRide.model");
+
+    // Get completed rides for this captain
+    const completedRides = await CompletedRide.find({
+      captain: captain._id,
+      status: "completed",
+    })
+      .populate("user")
+      .populate("order")
+      .sort({ completedAt: -1 }); // Sort by completion date, newest first
+
+    console.log(
+      `✅ Found ${completedRides.length} completed rides for captain ${captain._id}`
+    );
+
+    return res.status(200).json({
+      success: true,
+      rides: completedRides,
+      count: completedRides.length,
+    });
+  } catch (err) {
+    console.error("❌ Error fetching captain ride history:", err);
+    return res.status(500).json({
+      success: false,
       message: err.message,
       error: err.toString(),
     });

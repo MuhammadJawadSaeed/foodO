@@ -28,6 +28,7 @@ const UserOrderDetails = () => {
   const { isAuthenticated } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const { id } = useParams();
+  const [hasShownDeliveryMessage, setHasShownDeliveryMessage] = useState(false);
 
   const data = orders && orders.find((item) => item._id === id);
 
@@ -45,20 +46,24 @@ const UserOrderDetails = () => {
     }
 
     // Listen for order delivered event
-    socket.on("order-delivered", (data) => {
+    const handleOrderDelivered = (data) => {
       console.log("Order delivered event received:", data);
-      if (data.orderId === id) {
+      if (data.orderId === id && !hasShownDeliveryMessage) {
         toast.success("🎉 Your order has been delivered successfully!");
+        setHasShownDeliveryMessage(true);
         setOrderStatus("Delivered");
         // Refresh orders
         dispatch(getAllOrdersOfUser(user._id));
       }
-    });
+    };
+
+    socket.on("order-delivered", handleOrderDelivered);
 
     return () => {
+      socket.off("order-delivered", handleOrderDelivered);
       socket.disconnect();
     };
-  }, [user, id, dispatch]);
+  }, [user, id, dispatch, hasShownDeliveryMessage]);
 
   useEffect(() => {
     dispatch(getAllOrdersOfUser(user._id));
@@ -277,10 +282,22 @@ const UserOrderDetails = () => {
         </div>
       )}
 
-      <div className="border-t w-full text-right">
-        <h5 className="pt-3 text-[18px]">
-          Total Price: <strong>PKR{data?.totalPrice}</strong>
-        </h5>
+      <div className="border-t w-full pt-4">
+        {/* Items Subtotal */}
+        <div className="flex justify-between items-center px-2 mb-2">
+          <h5 className="text-[16px] text-gray-600">Items Subtotal:</h5>
+          <h5 className="text-[16px] font-semibold">
+            PKR {data?.totalPrice || 0}
+          </h5>
+        </div>
+
+        {/* Total */}
+        <div className="flex justify-between items-center bg-green-50 p-3 rounded-lg">
+          <h5 className="text-[18px] font-[600]">Total Price:</h5>
+          <h5 className="text-[18px] font-bold text-green-600">
+            PKR {data?.totalPrice}
+          </h5>
+        </div>
       </div>
       <br />
       <br />

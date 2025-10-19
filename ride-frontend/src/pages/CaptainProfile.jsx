@@ -103,267 +103,418 @@ const CaptainProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="flex items-center justify-between p-4">
-          <Link
-            to="/captain-home"
-            className="flex items-center gap-2 text-gray-700 hover:text-black"
-          >
-            <i className="ri-arrow-left-line text-2xl"></i>
-            <span className="font-medium">Back</span>
-          </Link>
-          <h1 className="text-xl font-semibold">Profile</h1>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="text-blue-600 font-medium"
-          >
-            {isEditing ? "Cancel" : "Edit"}
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header - Desktop & Mobile */}
+      <div className="bg-white shadow-md sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between py-4 lg:py-5">
+            <Link
+              to="/captain-home"
+              className="flex items-center gap-2 text-gray-700 hover:text-orange-600 transition-colors"
+            >
+              <i className="ri-arrow-left-line text-2xl"></i>
+              <span className="font-semibold text-lg hidden sm:inline">
+                Back to Home
+              </span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <i className="ri-user-settings-line text-2xl text-orange-600"></i>
+              <h1 className="text-xl lg:text-2xl font-bold text-gray-800">
+                Captain Profile
+              </h1>
+            </div>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className={`flex items-center gap-2 px-4 lg:px-6 py-2 rounded-lg font-semibold transition-all ${
+                isEditing
+                  ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
+              }`}
+            >
+              <i
+                className={`${
+                  isEditing ? "ri-close-line" : "ri-edit-line"
+                } text-xl`}
+              ></i>
+              <span className="hidden sm:inline">
+                {isEditing ? "Cancel" : "Edit Profile"}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Profile Content */}
-      <div className="p-6">
-        {/* Profile Image Section */}
-        <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-          <div className="flex flex-col items-center">
-            <div className="relative">
-              <img
-                src={profileImagePreview}
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
-              />
+      {/* Profile Content - Desktop Layout */}
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-10">
+        <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+          {/* Left Sidebar - Profile Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 lg:sticky lg:top-24">
+              {/* Profile Header with Gradient */}
+              <div className="bg-gradient-to-br from-orange-500 to-red-600 p-8 text-white text-center relative">
+                <div className="absolute inset-0 bg-black opacity-10"></div>
+                <div className="relative z-10">
+                  <div className="relative inline-block">
+                    <img
+                      src={profileImagePreview}
+                      alt="Profile"
+                      className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-2xl mx-auto"
+                    />
+                    {isEditing && (
+                      <label className="absolute bottom-0 right-0 bg-white text-orange-600 rounded-full p-3 cursor-pointer hover:bg-orange-50 shadow-lg transition-all">
+                        <i className="ri-camera-fill text-xl"></i>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <h2 className="text-2xl font-bold mt-4 capitalize">
+                    {captain?.fullname?.firstname} {captain?.fullname?.lastname}
+                  </h2>
+                  <p className="text-orange-100 mt-1 text-sm">
+                    {captain?.email}
+                  </p>
+                </div>
+              </div>
+
+              {/* Stats & Status */}
+              <div className="p-6">
+                <div className="flex items-center justify-center gap-2 bg-green-50 px-4 py-3 rounded-xl mb-6">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-700 font-semibold text-sm">
+                    {captain?.vehicle?.vehicleType || "Motorcycle"} Rider
+                  </span>
+                </div>
+
+                {/* Quick Info Cards */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <i className="ri-phone-line text-blue-600 text-lg"></i>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-500">Phone</p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        {phoneNumber}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                      <i className="ri-map-pin-line text-purple-600 text-lg"></i>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-500">City</p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        {captain?.city || "Not specified"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      <i className="ri-e-bike-2-line text-orange-600 text-lg"></i>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-500">Vehicle Plate</p>
+                      <p className="text-sm font-semibold text-gray-800 uppercase">
+                        {plate}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Logout Button */}
+                <button
+                  onClick={handleLogout}
+                  className="w-full mt-6 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 rounded-xl font-semibold hover:from-red-600 hover:to-red-700 flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg"
+                >
+                  <i className="ri-logout-box-line text-xl"></i>
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Content - Detailed Information */}
+          <div className="lg:col-span-2">
+            <form onSubmit={handleUpdateProfile} className="space-y-6">
+              {/* Personal Information Card */}
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <i className="ri-user-line text-xl"></i>
+                    Personal Information
+                  </h3>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* First Name */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        First Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={firstname}
+                        onChange={(e) => setFirstname(e.target.value)}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl disabled:bg-gray-50 disabled:text-gray-600 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
+                        required
+                      />
+                    </div>
+
+                    {/* Last Name */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        value={lastname}
+                        onChange={(e) => setLastname(e.target.value)}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl disabled:bg-gray-50 disabled:text-gray-600 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
+                      />
+                    </div>
+
+                    {/* Phone Number */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl disabled:bg-gray-50 disabled:text-gray-600 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
+                        required
+                      />
+                    </div>
+
+                    {/* Email (Read Only) */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Email Address
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="email"
+                          value={captain?.email}
+                          disabled
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                        />
+                        <i className="ri-lock-line absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                      </div>
+                    </div>
+
+                    {/* City (Read Only) */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        City
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={captain?.city || "Not specified"}
+                          disabled
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                        />
+                        <i className="ri-lock-line absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                        <i className="ri-information-line"></i>
+                        Cannot be changed after registration
+                      </p>
+                    </div>
+
+                    {/* CNIC (Read Only) */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        CNIC Number
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={captain?.cnicNumber}
+                          disabled
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600"
+                        />
+                        <i className="ri-lock-line absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                      </div>
+                    </div>
+
+                    {/* Address - Full Width */}
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Address <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        disabled={!isEditing}
+                        rows="3"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl disabled:bg-gray-50 disabled:text-gray-600 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all resize-none"
+                        required
+                        placeholder="Enter your complete address"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Vehicle Information Card */}
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <i className="ri-e-bike-2-line text-xl"></i>
+                    Vehicle Information
+                  </h3>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Vehicle Type (Read Only) */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Vehicle Type
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={captain?.vehicle?.vehicleType || "Motorcycle"}
+                          disabled
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-600 capitalize"
+                        />
+                        <i className="ri-lock-line absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                      </div>
+                    </div>
+
+                    {/* Plate Number */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Plate Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={plate}
+                        onChange={(e) => setPlate(e.target.value.toUpperCase())}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl disabled:bg-gray-50 disabled:text-gray-600 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all uppercase font-mono"
+                        required
+                        placeholder="ABC-123"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Documents Section */}
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 px-6 py-4">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <i className="ri-file-text-line text-xl"></i>
+                    Verification Documents
+                  </h3>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {/* CNIC Image */}
+                    <div className="group">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <i className="ri-id-card-line text-blue-600"></i>
+                          CNIC
+                        </p>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                          Verified
+                        </span>
+                      </div>
+                      <div className="relative overflow-hidden rounded-xl border-2 border-gray-200 group-hover:border-blue-400 transition-all">
+                        <img
+                          src={captain?.cnicImage?.url}
+                          alt="CNIC"
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      </div>
+                    </div>
+
+                    {/* Driving License */}
+                    <div className="group">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <i className="ri-car-line text-green-600"></i>
+                          Driving License
+                        </p>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                          Verified
+                        </span>
+                      </div>
+                      <div className="relative overflow-hidden rounded-xl border-2 border-gray-200 group-hover:border-green-400 transition-all">
+                        <img
+                          src={captain?.drivingLicense?.url}
+                          alt="License"
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      </div>
+                    </div>
+
+                    {/* Vehicle Image */}
+                    <div className="group md:col-span-2 xl:col-span-1">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          <i className="ri-motorbike-line text-orange-600"></i>
+                          Vehicle
+                        </p>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                          Verified
+                        </span>
+                      </div>
+                      <div className="relative overflow-hidden rounded-xl border-2 border-gray-200 group-hover:border-orange-400 transition-all">
+                        <img
+                          src={captain?.vehicleImage?.url}
+                          alt="Vehicle"
+                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Update Button */}
               {isEditing && (
-                <label className="absolute bottom-0 right-0 bg-blue-600 text-white rounded-full p-2 cursor-pointer hover:bg-blue-700">
-                  <i className="ri-camera-line text-xl"></i>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </label>
+                <div className="flex gap-4">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-xl font-bold hover:from-orange-600 hover:to-red-600 disabled:from-gray-400 disabled:to-gray-500 flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl"
+                  >
+                    {loading ? (
+                      <>
+                        <i className="ri-loader-4-line text-xl animate-spin"></i>
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <i className="ri-save-line text-xl"></i>
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
-            </div>
-            <h2 className="text-2xl font-bold mt-4 capitalize">
-              {captain?.fullname?.firstname} {captain?.fullname?.lastname}
-            </h2>
-            <p className="text-gray-500 mt-1">{captain?.email}</p>
-            <div className="mt-3 bg-green-100 px-4 py-2 rounded-full">
-              <span className="text-green-700 font-medium">
-                {captain?.vehicle?.vehicleType || "Motorcycle"} Rider
-              </span>
-            </div>
+            </form>
           </div>
         </div>
-
-        {/* Profile Details Form */}
-        <form onSubmit={handleUpdateProfile}>
-          <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-
-            <div className="space-y-4">
-              {/* First Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  value={firstname}
-                  onChange={(e) => setFirstname(e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-600"
-                  required
-                />
-              </div>
-
-              {/* Last Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  value={lastname}
-                  onChange={(e) => setLastname(e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-600"
-                />
-              </div>
-
-              {/* Phone Number */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-600"
-                  required
-                />
-              </div>
-
-              {/* Email (Read Only) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={captain?.email}
-                  disabled
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-                />
-              </div>
-
-              {/* Address */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Address
-                </label>
-                <textarea
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  disabled={!isEditing}
-                  rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-600"
-                  required
-                />
-              </div>
-
-              {/* City (Read Only) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  City
-                </label>
-                <input
-                  type="text"
-                  value={captain?.city || "Not specified"}
-                  disabled
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  City cannot be changed after registration
-                </p>
-              </div>
-
-              {/* CNIC (Read Only) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CNIC Number
-                </label>
-                <input
-                  type="text"
-                  value={captain?.cnicNumber}
-                  disabled
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Vehicle Information */}
-          <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">Vehicle Information</h3>
-
-            <div className="space-y-4">
-              {/* Vehicle Type (Read Only) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Vehicle Type
-                </label>
-                <input
-                  type="text"
-                  value={captain?.vehicle?.vehicleType || "Motorcycle"}
-                  disabled
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 capitalize"
-                />
-              </div>
-
-              {/* Plate Number */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Plate Number
-                </label>
-                <input
-                  type="text"
-                  value={plate}
-                  onChange={(e) => setPlate(e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-600"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Documents Section */}
-          <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">Documents</h3>
-
-            <div className="space-y-4">
-              {/* CNIC Image */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">CNIC</p>
-                <img
-                  src={captain?.cnicImage?.url}
-                  alt="CNIC"
-                  className="w-full h-48 object-cover rounded-lg border border-gray-300"
-                />
-              </div>
-
-              {/* Driving License */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">
-                  Driving License
-                </p>
-                <img
-                  src={captain?.drivingLicense?.url}
-                  alt="License"
-                  className="w-full h-48 object-cover rounded-lg border border-gray-300"
-                />
-              </div>
-
-              {/* Vehicle Image */}
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">
-                  Vehicle
-                </p>
-                <img
-                  src={captain?.vehicleImage?.url}
-                  alt="Vehicle"
-                  className="w-full h-48 object-cover rounded-lg border border-gray-300"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Update Button */}
-          {isEditing && (
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold mb-4 hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              {loading ? "Updating..." : "Save Changes"}
-            </button>
-          )}
-        </form>
-
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 flex items-center justify-center gap-2"
-        >
-          <i className="ri-logout-box-line text-xl"></i>
-          Logout
-        </button>
       </div>
     </div>
   );

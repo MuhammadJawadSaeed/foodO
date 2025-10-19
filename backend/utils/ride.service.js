@@ -237,22 +237,88 @@ module.exports.endRide = async ({ rideId, captain, completionEvidence }) => {
         order.paymentInfo &&
         order.paymentInfo.type === "Cash On Delivery"
       ) {
-        // Calculate captain's earnings (ride fare + order total)
+        // Calculate captain's earnings (only ride fare - delivery fee)
         const rideFare = ride.fare || 0;
         const orderAmount = order.totalPrice || 0;
-        const captainEarnings = rideFare + orderAmount;
+        const captainEarnings = rideFare; // Captain only earns delivery fee
 
         console.log(`\n💰 === EARNINGS CALCULATION START ===`);
         console.log(`📦 Order ID: ${order._id}`);
-        console.log(`🚴 Ride Fare (Delivery): PKR ${rideFare}`);
-        console.log(`🍔 Order Amount (Food): PKR ${orderAmount}`);
+        console.log(
+          `🚴 Ride Fare (Delivery Fee - Captain Earns): PKR ${rideFare}`
+        );
+        console.log(
+          `🍔 Order Amount (Food - Goes to Shop): PKR ${orderAmount}`
+        );
         console.log(`💵 Total Captain Earnings: PKR ${captainEarnings}`);
 
         // Update captain's earnings (total + separated by type)
         const captainModel = require("../model/captain.model");
 
-        // Get captain before update to show the difference
+        // Get captain and check if resets are needed
         const captainBefore = await captainModel.findById(captain._id);
+
+        // Check and apply resets before incrementing
+        const now = new Date();
+        const today = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const resetUpdates = {};
+
+        // Reset daily stats if needed
+        if (
+          captainBefore.lastDayReset &&
+          new Date(captainBefore.lastDayReset) < today
+        ) {
+          resetUpdates["earnings.today"] = 0;
+          resetUpdates["rideFeeEarnings.today"] = 0;
+          resetUpdates["orderFeeEarnings.today"] = 0;
+          resetUpdates["rideStats.todayRides"] = 0;
+          resetUpdates["lastDayReset"] = now;
+        }
+
+        // Reset weekly stats if needed
+        if (
+          captainBefore.lastWeekReset &&
+          new Date(captainBefore.lastWeekReset) < startOfWeek
+        ) {
+          resetUpdates["earnings.thisWeek"] = 0;
+          resetUpdates["rideFeeEarnings.thisWeek"] = 0;
+          resetUpdates["orderFeeEarnings.thisWeek"] = 0;
+          resetUpdates["rideStats.thisWeekRides"] = 0;
+          resetUpdates["lastWeekReset"] = now;
+        }
+
+        // Reset monthly stats if needed
+        if (
+          captainBefore.lastMonthReset &&
+          new Date(captainBefore.lastMonthReset) < startOfMonth
+        ) {
+          resetUpdates["earnings.thisMonth"] = 0;
+          resetUpdates["rideFeeEarnings.thisMonth"] = 0;
+          resetUpdates["orderFeeEarnings.thisMonth"] = 0;
+          resetUpdates["rideStats.thisMonthRides"] = 0;
+          resetUpdates["lastMonthReset"] = now;
+        }
+
+        // Apply resets if any
+        if (Object.keys(resetUpdates).length > 0) {
+          await captainModel.findByIdAndUpdate(captain._id, {
+            $set: resetUpdates,
+          });
+          console.log(
+            "✅ Applied time period resets:",
+            Object.keys(resetUpdates)
+          );
+        }
+
         console.log(`\n📊 Captain BEFORE Update:`);
         console.log(
           `   - Total Earnings: PKR ${captainBefore.earnings?.total || 0}`
@@ -272,7 +338,7 @@ module.exports.endRide = async ({ rideId, captain, completionEvidence }) => {
           captain._id,
           {
             $inc: {
-              // Total earnings
+              // Total earnings (only delivery fee)
               "earnings.total": captainEarnings,
               "earnings.today": captainEarnings,
               "earnings.thisWeek": captainEarnings,
@@ -282,7 +348,7 @@ module.exports.endRide = async ({ rideId, captain, completionEvidence }) => {
               "rideFeeEarnings.today": rideFare,
               "rideFeeEarnings.thisWeek": rideFare,
               "rideFeeEarnings.thisMonth": rideFare,
-              // Order fee earnings (food payment)
+              // Order fee earnings (for tracking - not captain's money)
               "orderFeeEarnings.total": orderAmount,
               "orderFeeEarnings.today": orderAmount,
               "orderFeeEarnings.thisWeek": orderAmount,

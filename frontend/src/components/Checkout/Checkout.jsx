@@ -82,8 +82,8 @@ const Checkout = () => {
     0
   );
 
-  // this is shipping cost variable
-  const shipping = subTotalPrice * 0.1;
+  // Shipping is now handled separately (not charged at checkout)
+  const shipping = 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -384,11 +384,6 @@ const CartData = ({
       <div className="flex justify-between">
         <h3 className="text-[16px] font-[400] text-[#000000a4]">subtotal:</h3>
         <h5 className="text-[18px] font-[600]">PKR{subTotalPrice}</h5>
-      </div>
-      <br />
-      <div className="flex justify-between">
-        <h3 className="text-[16px] font-[400] text-[#000000a4]">shipping:</h3>
-        <h5 className="text-[18px] font-[600]">PKR{shipping.toFixed(2)}</h5>
       </div>
       <br />
       <div className="flex justify-between border-b pb-3">

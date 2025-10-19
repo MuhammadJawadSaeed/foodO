@@ -556,12 +556,13 @@ const OrderDetails = () => {
 
       {/* Total Price */}
       <div className="border-t border-gray-200 pt-4 mb-6">
+        {/* Total */}
         <div className="flex justify-between items-center bg-green-50 p-4 rounded-lg">
           <span className="text-base sm:text-lg font-semibold text-gray-700">
-            Total Price:
+            Total Order Amount:
           </span>
           <span className="text-lg sm:text-xl font-bold text-green-600">
-            PKR {data?.totalPrice}
+            PKR {data?.totalPrice || 0}
           </span>
         </div>
       </div>
@@ -851,11 +852,14 @@ const OrderDetails = () => {
         </div>
       )}
 
-      {/* Removed Captain Accepted Alert */}
+      {/* Chat with Customer Button */}
       {data?.user?._id && (
         <div className="mb-6">
-          <Link to={`/dashboard-messages?userId=${data.user._id}`}>
-            <button className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-green-600 text-white py-2.5 px-6 rounded-lg font-semibold text-sm hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2">
+          <Link
+            to={`/dashboard-messages?userId=${data.user._id}`}
+            className="inline-block"
+          >
+            <button className="w-auto bg-gradient-to-r from-green-500 to-green-600 text-white py-2.5 px-6 rounded-lg font-semibold text-sm hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2">
               <MdChat size={20} />
               Chat with Customer
             </button>

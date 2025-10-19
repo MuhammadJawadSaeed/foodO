@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const pendingRideSchema = new mongoose.Schema({
+const completedRideSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -9,6 +9,7 @@ const pendingRideSchema = new mongoose.Schema({
   captain: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "captain",
+    required: true,
   },
   order: {
     type: mongoose.Schema.Types.ObjectId,
@@ -29,8 +30,8 @@ const pendingRideSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["pending", "accepted", "ongoing"],
-    default: "pending",
+    enum: ["completed", "cancelled"],
+    default: "completed",
   },
 
   duration: {
@@ -53,8 +54,6 @@ const pendingRideSchema = new mongoose.Schema({
 
   otp: {
     type: String,
-    select: false,
-    required: true,
   },
 
   // Completion Evidence
@@ -69,12 +68,13 @@ const pendingRideSchema = new mongoose.Schema({
 
   completedAt: {
     type: Date,
+    required: true,
   },
 
   createdAt: {
     type: Date,
-    default: Date.now(),
+    required: true,
   },
 });
 
-module.exports = mongoose.model("PendingRide", pendingRideSchema);
+module.exports = mongoose.model("CompletedRide", completedRideSchema);
