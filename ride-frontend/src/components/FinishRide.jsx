@@ -103,11 +103,11 @@ const FinishRide = (props) => {
         <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-200">
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1">
-              <p className="text-[10px] text-gray-600 font-semibold uppercase mb-0.5">
+              <p className="text-xs text-blue-700 font-semibold uppercase mb-1">
                 Order ID
               </p>
-              <p className="text-xs font-bold text-gray-900 truncate">
-                #{props.ride.order._id?.slice(-8) || "N/A"}
+              <p className="text-sm font-bold text-gray-900 truncate">
+                #{props.ride.order._id?.slice(0, 8) || "N/A"}
               </p>
             </div>
             <div className="flex-1 text-right">

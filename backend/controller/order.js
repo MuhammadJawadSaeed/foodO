@@ -369,9 +369,17 @@ router.get(
   "/get-all-orders/:userId",
   catchAsyncErrors(async (req, res, next) => {
     try {
-      const orders = await Order.find({ "user._id": req.params.userId }).sort({
-        createdAt: -1,
-      });
+      const orders = await Order.find({ "user._id": req.params.userId })
+        .populate({
+          path: "ride",
+          populate: {
+            path: "captain",
+            select: "fullname phoneNumber profileImage vehicle location", // Include captain location
+          },
+        })
+        .sort({
+          createdAt: -1,
+        });
 
       res.status(200).json({
         success: true,

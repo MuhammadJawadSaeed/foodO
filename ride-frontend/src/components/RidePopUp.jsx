@@ -38,7 +38,7 @@ const RidePopUp = (props) => {
                 Order ID
               </p>
               <p className="text-xs font-bold text-gray-900 truncate">
-                #{props.ride.order._id?.slice(-8) || "N/A"}
+                #{props.ride.order._id?.slice(0, 8) || "N/A"}
               </p>
             </div>
             <div className="flex-1 text-right">

@@ -121,6 +121,15 @@ io.on("connection", (socket) => {
     console.log(
       `Captain ${userId} location updated: lat=${latitude}, lng=${location.lng}`
     );
+
+    // Broadcast captain location to all connected clients (for user tracking)
+    io.emit("captain-location-updated", {
+      captainId: userId,
+      location: {
+        lat: latitude,
+        lng: location.lng,
+      },
+    });
   });
 
   socket.on("disconnect", () => {

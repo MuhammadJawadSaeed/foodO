@@ -798,7 +798,8 @@ const CaptainPendingRides = () => {
                             </p>
                             <p className="text-[10px] text-gray-600">
                               {ride.order.cart?.length || 0} items • #
-                              {ride.order._id?.slice(-6).toUpperCase() || "N/A"}
+                              {ride.order._id?.slice(0, 8).toUpperCase() ||
+                                "N/A"}
                             </p>
                           </div>
                         </div>

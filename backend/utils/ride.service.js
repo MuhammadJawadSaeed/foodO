@@ -83,10 +83,30 @@ module.exports.createRide = async ({
 
   const fare = await getFare(pickup, destination);
 
+  // Get coordinates for pickup and destination
+  let pickupCoords = null;
+  let destinationCoords = null;
+
+  try {
+    pickupCoords = await mapService.getAddressCoordinate(pickup);
+    console.log("✅ Pickup coordinates:", pickupCoords);
+  } catch (error) {
+    console.log("⚠️ Could not get pickup coordinates:", error.message);
+  }
+
+  try {
+    destinationCoords = await mapService.getAddressCoordinate(destination);
+    console.log("✅ Destination coordinates:", destinationCoords);
+  } catch (error) {
+    console.log("⚠️ Could not get destination coordinates:", error.message);
+  }
+
   const ride = await rideModel.create({
     user,
     pickup,
     destination,
+    pickupCoordinates: pickupCoords,
+    destinationCoordinates: destinationCoords,
     otp: getOtp(6),
     fare: fare[vehicleType],
     order: orderId || null,

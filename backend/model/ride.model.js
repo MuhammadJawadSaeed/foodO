@@ -18,9 +18,17 @@ const pendingRideSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  pickupCoordinates: {
+    lat: { type: Number },
+    lng: { type: Number },
+  },
   destination: {
     type: String,
     required: true,
+  },
+  destinationCoordinates: {
+    lat: { type: Number },
+    lng: { type: Number },
   },
   fare: {
     type: Number,
