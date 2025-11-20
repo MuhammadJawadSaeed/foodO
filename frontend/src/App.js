@@ -21,6 +21,10 @@ import {
   OrderDetailsPage,
   TrackOrderPage,
   UserInbox,
+  AboutPage,
+  TermsPage,
+  PrivacyPage,
+  ContactPage,
 } from "./routes/Routes.js";
 import {
   ShopDashboardPage,
@@ -40,7 +44,7 @@ import {
   AdminDashboardSellers,
   AdminDashboardOrders,
   AdminDashboardProducts,
-  AdminDashboardWithdraw
+  AdminDashboardWithdraw,
 } from "./routes/AdminRoutes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -55,6 +59,7 @@ import axios from "axios";
 import { server } from "./server";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import CookieConsent from "./components/Layout/CookieConsent";
 
 const App = () => {
   const [stripeApikey, setStripeApiKey] = useState("");
@@ -103,6 +108,10 @@ const App = () => {
         <Route path="/product/:id" element={<ProductDetailsPage />} />
         <Route path="/best-selling" element={<BestSellingPage />} />
         <Route path="/faq" element={<FAQPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route
           path="/checkout"
           element={
@@ -261,7 +270,7 @@ const App = () => {
             </ProtectedAdminRoute>
           }
         />
-         <Route
+        <Route
           path="/admin-products"
           element={
             <ProtectedAdminRoute>
@@ -269,7 +278,7 @@ const App = () => {
             </ProtectedAdminRoute>
           }
         />
-         <Route
+        <Route
           path="/admin-withdraw-request"
           element={
             <ProtectedAdminRoute>
@@ -290,6 +299,7 @@ const App = () => {
         pauseOnHover
         theme="dark"
       />
+      <CookieConsent />
     </BrowserRouter>
   );
 };
