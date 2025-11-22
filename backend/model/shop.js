@@ -61,6 +61,10 @@ const shopSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  isOnline: {
+    type: Boolean,
+    default: true,
+  },
   transactions: [
     {
       amount: {

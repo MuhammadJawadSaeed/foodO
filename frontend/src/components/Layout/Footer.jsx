@@ -5,123 +5,176 @@ import {
   AiFillYoutube,
   AiOutlineTwitter,
 } from "react-icons/ai";
+import { HiMail, HiPhone, HiLocationMarker } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import {
   footercompanyLinks,
   footerProductLinks,
   footerSupportLinks,
+  footerLegalLinks,
 } from "../../static/data";
 
 const Footer = () => {
   return (
-    <div className="bg-[#fff] text-black ">
-      <hr className="w-[80%] mx-auto" />
-      {/* <div className="md:flex md:justify-between md:items-center sm:px-12 px-4 bg-[#fff] py-7">
-        <h1 className="lg:text-4xl text-3xl md:mb-0 mb-6 lg:leading-normal font-semibold md:w-2/5">
-          <span className="text-orange-500">Subscribe</span> us for get news{" "}
-          <br />
-          events and offers
-        </h1>
-        <div>
-          <input
-            type="text"
-            required
-            placeholder="Enter your email..."
-            className="text-gray-800 border
-                  sm:w-72 w-full sm:mr-5 mr-1 lg:mb-0 mb-4 py-2.5 rounded-lg px-2 focus:outline-none"
-          />
-          <button className="bg-orange-500 hover:bg-orange-600 duration-300 px-5 py-2.5 rounded-lg text-white md:w-auto w-full">
-            Submit
-          </button>
+    <div className="bg-gradient-to-br from-orange-50 via-white to-orange-50">
+      {/* Main Footer Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+          {/* Brand Section */}
+          <div className="lg:col-span-1">
+            <div className="flex items-center mb-4">
+              <h1 className="text-3xl font-bold text-gray-800">food</h1>
+              <h1 className="text-3xl font-bold text-orange-500">O</h1>
+            </div>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Bringing homemade flavors to your doorstep. Fresh, authentic, and
+              delicious.
+            </p>
+            <div className="flex gap-3">
+              <a
+                href="#"
+                className="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center hover:bg-orange-500 hover:text-white transition duration-300"
+              >
+                <AiFillFacebook size={20} />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center hover:bg-orange-500 hover:text-white transition duration-300"
+              >
+                <AiOutlineTwitter size={20} />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center hover:bg-orange-500 hover:text-white transition duration-300"
+              >
+                <AiFillInstagram size={20} />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center hover:bg-orange-500 hover:text-white transition duration-300"
+              >
+                <AiFillYoutube size={20} />
+              </a>
+            </div>
+          </div>
+
+          {/* Company Links */}
+          <div>
+            <h3 className="text-gray-900 font-bold text-lg mb-4">Company</h3>
+            <ul className="space-y-3">
+              {footerProductLinks.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    to={link.link}
+                    className="text-gray-600 hover:text-orange-600 transition duration-300 text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* For Customers */}
+          <div>
+            <h3 className="text-gray-900 font-bold text-lg mb-4">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              {footercompanyLinks.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    to={link.link}
+                    className="text-gray-600 hover:text-orange-600 transition duration-300 text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support */}
+          <div>
+            <h3 className="text-gray-900 font-bold text-lg mb-4">Support</h3>
+            <ul className="space-y-3">
+              {footerSupportLinks.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    to={link.link}
+                    className="text-gray-600 hover:text-orange-600 transition duration-300 text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h3 className="text-gray-900 font-bold text-lg mb-4">Contact Us</h3>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-2 text-gray-600 text-sm">
+                <HiLocationMarker
+                  className="text-orange-500 mt-1 flex-shrink-0"
+                  size={18}
+                />
+                <span>Lahore, Pakistan</span>
+              </li>
+              <li className="flex items-center gap-2 text-gray-600 text-sm">
+                <HiPhone className="text-orange-500 flex-shrink-0" size={18} />
+                <span>+92 300 0000000</span>
+              </li>
+              <li className="flex items-center gap-2 text-gray-600 text-sm">
+                <HiMail className="text-orange-500 flex-shrink-0" size={18} />
+                <span>support@foodo.pk</span>
+              </li>
+            </ul>
+            <div className="mt-6">
+              <p className="text-xs text-gray-500 mb-2">Download Our App</p>
+              <div className="flex gap-2">
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/512px-Google_Play_Store_badge_EN.svg.png"
+                  alt="Google Play"
+                  className="h-10 cursor-pointer hover:opacity-80 transition"
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </div> */}
-      <div className="grid grid-cols-1 sm:gird-cols-3 lg:grid-cols-4 gap-6 sm:px-8 px-5 py-16 sm:text-center">
-        <ul className="px-5 text-center sm:text-start flex sm:block flex-col items-center">
-          {/* <img
-            src="https://shopo.quomodothemes.website/assets/images/logo.svg"
-            alt=""
-            style={{ filter: "brightness(0) invert(1)" }}
-          /> */}
-          <div className="flex items-center">
-            <h1 className="text-[36px] font-semibold text-gray-700  ">food</h1>
-            <h1 className="text-[38px] font-semibold text-orange-500">O</h1>
-          </div>
-          <br />
-          <p>One click, endless homemade flavors – order now on Foodo!</p>
-          <div className="flex items-center mt-[15px]">
-            <AiFillFacebook size={25} className="cursor-pointer" />
-            <AiOutlineTwitter
-              size={25}
-              style={{ marginLeft: "15px", cursor: "pointer" }}
-            />
-            <AiFillInstagram
-              size={25}
-              style={{ marginLeft: "15px", cursor: "pointer" }}
-            />
-            <AiFillYoutube
-              size={25}
-              style={{ marginLeft: "15px", cursor: "pointer" }}
-            />
-          </div>
-        </ul>
-
-        <ul className="text-center sm:text-start">
-          <h1 className="mb-1 font-semibold">Company</h1>
-          {footerProductLinks.map((link, index) => (
-            <li key={index}>
-              <Link
-                className="text-gray-400 hover:text-gray-800 duration-300
-                   text-sm cursor-pointer leading-6"
-                to={link.link}
-              >
-                {link.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <ul className="text-center sm:text-start">
-          <h1 className="mb-1 font-semibold">Shop</h1>
-          {footercompanyLinks.map((link, index) => (
-            <li key={index}>
-              <Link
-                className="text-gray-400 hover:text-gray-800 duration-300
-                   text-sm cursor-pointer leading-6"
-                to={link.link}
-              >
-                {link.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <ul className="text-center sm:text-start">
-          <h1 className="mb-1 font-semibold">Support</h1>
-          {footerSupportLinks.map((link, index) => (
-            <li key={index}>
-              <Link
-                className="text-gray-400 hover:text-gray-800 duration-300
-                   text-sm cursor-pointer leading-6"
-                to={link.link}
-              >
-                {link.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
       </div>
 
-      <div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10
-         text-center pt-2 text-gray-400 text-sm pb-8"
-      >
-        <span>© 2025 Comsians. All rights reserved.</span>
-        <span>Terms · Privacy Policy</span>
-        <div className="sm:block flex items-center justify-center w-full">
-          <img
-            src="https://hamart-shop.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ffooter-payment.a37c49ac.png&w=640&q=75"
-            alt=""
-          />
+      {/* Bottom Bar */}
+      <div className="border-t border-orange-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="md:flex md:justify-between md:items-center">
+            <div className="text-center md:text-left mb-4 md:mb-0">
+              <p className="text-gray-600 text-sm">
+                © 2025{" "}
+                <span className="text-orange-600 font-semibold">foodO</span>.
+                All rights reserved.
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center md:justify-end gap-4 text-sm">
+              {footerLegalLinks.map((link, index) => (
+                <Link
+                  key={index}
+                  to={link.link}
+                  className="text-gray-600 hover:text-orange-600 transition duration-300"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 flex justify-center md:justify-end">
+            <img
+              src="https://hamart-shop.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Ffooter-payment.a37c49ac.png&w=640&q=75"
+              alt="Payment Methods"
+              className="h-8 opacity-60"
+            />
+          </div>
         </div>
       </div>
     </div>

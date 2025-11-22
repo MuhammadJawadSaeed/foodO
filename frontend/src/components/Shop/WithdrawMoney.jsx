@@ -102,62 +102,69 @@ const WithdrawMoney = () => {
   const availableBalance = seller?.availableBalance.toFixed(2);
 
   return (
-    <div className="w-full h-[90vh] p-8">
-      <div className="w-full bg-white h-full rounded flex items-center justify-center flex-col">
-        <h5 className="text-[20px] pb-4">
-          Available Balance: PKR {availableBalance}
-        </h5>
-        <div
-          className={`${styles.button} text-white !h-[42px] !rounded`}
-          onClick={() => (availableBalance < 50 ? error() : setOpen(true))}
-        >
-          Withdraw
+    <div className="w-full p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+          <h3 className="text-white font-bold text-lg">Withdraw Money</h3>
+        </div>
+        <div className="p-8 flex flex-col items-center justify-center">
+          <div className="text-center mb-6">
+            <p className="text-sm text-gray-600 mb-2">Available Balance</p>
+            <p className="text-4xl font-bold text-orange-600">
+              PKR {availableBalance}
+            </p>
+          </div>
+          <button
+            onClick={() => (availableBalance < 50 ? error() : setOpen(true))}
+            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors shadow-md"
+          >
+            Withdraw Money
+          </button>
         </div>
       </div>
       {open && (
-        <div className="w-full h-screen z-[9999] fixed top-0 left-0 flex items-center justify-center bg-[#0000004e]">
-          <div
-            className={`w-[95%] 800px:w-[50%] bg-white shadow rounded ${
-              paymentMethod ? "h-[80vh] overflow-y-scroll" : "h-[unset]"
-            } min-h-[40vh] p-3`}
-          >
-            <div className="w-full flex justify-end">
-              <RxCross1
-                size={25}
-                onClick={() => setOpen(false) || setPaymentMethod(false)}
-                className="cursor-pointer"
-              />
+        <div className="w-full h-screen z-[9999] fixed top-0 left-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-white font-bold text-xl">
+                {paymentMethod ? "Add Withdraw Method" : "Withdraw Money"}
+              </h2>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  setPaymentMethod(false);
+                }}
+                className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-1 transition-colors"
+              >
+                <RxCross1 size={24} />
+              </button>
             </div>
-            {paymentMethod ? (
-              <div>
-                <h3 className="text-[22px] font-Poppins text-center font-[600]">
-                  Add new Withdraw Method:
-                </h3>
-                <form onSubmit={handleSubmit}>
+
+            <div className="p-6">
+              {paymentMethod ? (
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Bank Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      name=""
                       required
                       value={bankInfo.bankName}
                       onChange={(e) =>
                         setBankInfo({ ...bankInfo, bankName: e.target.value })
                       }
-                      id=""
-                      placeholder="Enter your Bank name!"
-                      className={`${styles.input} mt-2`}
+                      placeholder="Enter your bank name"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     />
                   </div>
-                  <div className="pt-2">
-                    <label>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Bank Country <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      name=""
                       value={bankInfo.bankCountry}
                       onChange={(e) =>
                         setBankInfo({
@@ -165,20 +172,18 @@ const WithdrawMoney = () => {
                           bankCountry: e.target.value,
                         })
                       }
-                      id=""
                       required
-                      placeholder="Enter your bank Country!"
-                      className={`${styles.input} mt-2`}
+                      placeholder="Enter your bank country"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     />
                   </div>
-                  <div className="pt-2">
-                    <label>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Bank Swift Code <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      name=""
-                      id=""
                       required
                       value={bankInfo.bankSwiftCode}
                       onChange={(e) =>
@@ -187,20 +192,18 @@ const WithdrawMoney = () => {
                           bankSwiftCode: e.target.value,
                         })
                       }
-                      placeholder="Enter your Bank Swift Code!"
-                      className={`${styles.input} mt-2`}
+                      placeholder="Enter your bank swift code"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     />
                   </div>
 
-                  <div className="pt-2">
-                    <label>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Bank Account Number{" "}
                       <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
-                      name=""
-                      id=""
                       value={bankInfo.bankAccountNumber}
                       onChange={(e) =>
                         setBankInfo({
@@ -209,17 +212,17 @@ const WithdrawMoney = () => {
                         })
                       }
                       required
-                      placeholder="Enter your bank account number!"
-                      className={`${styles.input} mt-2`}
+                      placeholder="Enter your bank account number"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     />
                   </div>
-                  <div className="pt-2">
-                    <label>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Bank Holder Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      name=""
                       required
                       value={bankInfo.bankHolderName}
                       onChange={(e) =>
@@ -228,21 +231,18 @@ const WithdrawMoney = () => {
                           bankHolderName: e.target.value,
                         })
                       }
-                      id=""
-                      placeholder="Enter your bank Holder name!"
-                      className={`${styles.input} mt-2`}
+                      placeholder="Enter bank holder name"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     />
                   </div>
 
-                  <div className="pt-2">
-                    <label>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Bank Address <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      name=""
                       required
-                      id=""
                       value={bankInfo.bankAddress}
                       onChange={(e) =>
                         setBankInfo({
@@ -250,82 +250,107 @@ const WithdrawMoney = () => {
                           bankAddress: e.target.value,
                         })
                       }
-                      placeholder="Enter your bank address!"
-                      className={`${styles.input} mt-2`}
+                      placeholder="Enter your bank address"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className={`${styles.button} mb-3 text-white`}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition-colors shadow-md"
                   >
-                    Add
+                    Add Withdraw Method
                   </button>
                 </form>
-              </div>
-            ) : (
-              <>
-                <h3 className="text-[22px] font-Poppins">
-                  Available Withdraw Methods:
-                </h3>
+              ) : (
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Available Withdraw Methods
+                  </h3>
 
-                {seller && seller?.withdrawMethod ? (
-                  <div>
-                    <div className="800px:flex w-full justify-between items-center">
-                      <div className="800px:w-[50%]">
-                        <h5>
-                          Account Number:{" "}
-                          {"*".repeat(
-                            seller?.withdrawMethod.bankAccountNumber.length - 3
-                          ) +
-                            seller?.withdrawMethod.bankAccountNumber.slice(-3)}
-                        </h5>
-                        <h5>Bank Name: {seller?.withdrawMethod.bankName}</h5>
+                  {seller && seller?.withdrawMethod ? (
+                    <div className="space-y-4">
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <div>
+                              <p className="text-xs text-gray-500">
+                                Account Number
+                              </p>
+                              <p className="text-sm font-semibold text-gray-900">
+                                {"*".repeat(
+                                  seller?.withdrawMethod.bankAccountNumber
+                                    .length - 3
+                                ) +
+                                  seller?.withdrawMethod.bankAccountNumber.slice(
+                                    -3
+                                  )}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500">Bank Name</p>
+                              <p className="text-sm font-semibold text-gray-900">
+                                {seller?.withdrawMethod.bankName}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => deleteHandler()}
+                            className="text-red-500 hover:text-red-700 p-2"
+                          >
+                            <AiOutlineDelete size={20} />
+                          </button>
+                        </div>
                       </div>
-                      <div className="800px:w-[50%]">
-                        <AiOutlineDelete
-                          size={25}
-                          className="cursor-pointer"
-                          onClick={() => deleteHandler()}
-                        />
+
+                      <div className="bg-orange-50 rounded-lg p-4">
+                        <p className="text-sm text-gray-600 mb-1">
+                          Available Balance
+                        </p>
+                        <p className="text-2xl font-bold text-orange-600 mb-4">
+                          {availableBalance} PKR
+                        </p>
+
+                        <div className="flex gap-3 items-end">
+                          <div className="flex-1">
+                            <label className="block text-xs font-semibold text-gray-700 mb-2">
+                              Amount to Withdraw
+                            </label>
+                            <input
+                              type="number"
+                              placeholder="Enter amount..."
+                              value={withdrawAmount}
+                              onChange={(e) =>
+                                setWithdrawAmount(e.target.value)
+                              }
+                              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                            />
+                          </div>
+                          <button
+                            onClick={withdrawHandler}
+                            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors"
+                          >
+                            Withdraw
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <br />
-                    <h4>Available Balance: {availableBalance} PKR</h4>
-                    <br />
-                    <div className="800px:flex w-full items-center">
-                      <input
-                        type="number"
-                        placeholder="Amount..."
-                        value={withdrawAmount}
-                        onChange={(e) => setWithdrawAmount(e.target.value)}
-                        className="800px:w-[100px] w-[full] border 800px:mr-3 p-1 rounded"
-                      />
-                      <div
-                        className={`${styles.button} !h-[42px] text-white`}
-                        onClick={withdrawHandler}
-                      >
-                        Withdraw
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-[18px] pt-2">
-                      No Withdraw Methods available!
-                    </p>
-                    <div className="w-full flex items-center">
-                      <div
-                        className={`${styles.button} text-[#fff] text-[18px] mt-4`}
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600 mb-4">
+                        No withdraw methods available
+                      </p>
+                      <button
                         onClick={() => setPaymentMethod(true)}
+                        className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
                       >
-                        Add new
-                      </div>
+                        Add Withdraw Method
+                      </button>
                     </div>
-                  </div>
-                )}
-              </>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

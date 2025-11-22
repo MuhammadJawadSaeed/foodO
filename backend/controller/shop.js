@@ -361,6 +361,56 @@ router.put(
   })
 );
 
+// Update shop online/offline status
+router.put(
+  "/update-shop-status",
+  isSeller,
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      console.log("=== Update Shop Status Route ===");
+      console.log("Request body:", req.body);
+      console.log("Seller ID:", req.seller?._id);
+
+      const { isOnline } = req.body;
+
+      if (isOnline === undefined) {
+        return next(new ErrorHandler("isOnline field is required", 400));
+      }
+
+      const shop = await Shop.findById(req.seller._id);
+
+      if (!shop) {
+        console.log("Shop not found for ID:", req.seller._id);
+        return next(new ErrorHandler("Shop not found", 404));
+      }
+
+      console.log("Current shop status:", shop.isOnline);
+      console.log("New status:", isOnline);
+
+      shop.isOnline = isOnline;
+      await shop.save();
+
+      // Update all products with new shop status
+      const Product = require("../model/product");
+      await Product.updateMany(
+        { shopId: shop._id.toString() },
+        { $set: { "shop.isOnline": isOnline } }
+      );
+
+      console.log("Shop status and products updated successfully");
+
+      res.status(200).json({
+        success: true,
+        shop,
+        message: `Shop is now ${isOnline ? "online" : "offline"}`,
+      });
+    } catch (error) {
+      console.error("Error updating shop status:", error);
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
 // all sellers --- for admin
 router.get(
   "/admin-all-sellers",

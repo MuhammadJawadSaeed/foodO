@@ -37,13 +37,6 @@ const AllProducts = () => {
       minWidth: 100,
       flex: 0.6,
     },
-    {
-      field: "Stock",
-      headerName: "Stock",
-      type: "number",
-      minWidth: 80,
-      flex: 0.5,
-    },
 
     {
       field: "sold",
@@ -98,7 +91,6 @@ const AllProducts = () => {
         id: item._id,
         name: item.name,
         price: "PKR " + item.discountPrice,
-        Stock: item.stock,
         sold: item?.sold_out,
       });
     });
@@ -108,14 +100,22 @@ const AllProducts = () => {
       {isLoading ? (
         <Loader />
       ) : (
-        <div className="w-full mx-8 pt-1 mt-10 bg-white">
-          <DataGrid
-            rows={row}
-            columns={columns}
-            pageSize={10}
-            disableSelectionOnClick
-            autoHeight
-          />
+        <div className="w-full p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen">
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+              <h3 className="text-white font-bold text-lg">All Products</h3>
+            </div>
+            <div className="p-6">
+              <DataGrid
+                rows={row}
+                columns={columns}
+                pageSize={10}
+                disableSelectionOnClick
+                autoHeight
+                className="border-0"
+              />
+            </div>
+          </div>
         </div>
       )}
     </>

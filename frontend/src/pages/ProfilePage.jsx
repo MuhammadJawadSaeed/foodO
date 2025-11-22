@@ -18,11 +18,19 @@ const ProfilePage = () => {
       ) : (
         <>
           <Header />
-          <div className={` flex bg-[#fff] py-10 px-2`}>
-            <div className="w-[50px] 800px:w-[335px] sticky 800px:mt-0 mt-[18%]">
-              <ProfileSideBar active={active} setActive={setActive} />
+          <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="grid lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-1">
+                  <div className="sticky top-6">
+                    <ProfileSideBar active={active} setActive={setActive} />
+                  </div>
+                </div>
+                <div className="lg:col-span-3">
+                  <ProfileContent active={active} />
+                </div>
+              </div>
             </div>
-            <ProfileContent active={active} />
           </div>
           <Footer />
         </>

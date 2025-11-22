@@ -247,59 +247,82 @@ export const categoriesData = [
   },
 ];
 
+// Company Info
 export const footerProductLinks = [
   {
-    name: "About us",
+    name: "About Us",
     link: "/about",
   },
   {
-    name: "Terms and Conditions",
-    link: "/terms",
+    name: "How It Works",
+    link: "/how-it-works",
   },
   {
-    name: "Our Blog",
-    link: "/faq",
+    name: "Careers",
+    link: "/careers",
   },
   {
-    name: "Privacy Policy",
-    link: "/privacy",
-  },
-  {
-    name: "Security",
-    link: "/privacy",
+    name: "Our Story",
+    link: "/our-story",
   },
 ];
 
+// For Customers
 export const footercompanyLinks = [
   {
-    name: "All city",
-    link: "/home",
+    name: "Browse Menu",
+    link: "/products",
   },
   {
-    name: "Partner with us",
-    link: "/shop-create",
+    name: "Become a Partner",
+    link: "/become-partner",
   },
   {
-    name: "Popular",
+    name: "Popular Dishes",
     link: "/best-selling",
+  },
+  {
+    name: "Special Offers",
+    link: "/offers",
   },
 ];
 
+// Support
 export const footerSupportLinks = [
   {
     name: "FAQ",
     link: "/faq",
   },
   {
-    name: "Reviews",
-    link: "/products",
-  },
-  {
     name: "Contact Us",
     link: "/contact",
   },
   {
-    name: "Delivering",
+    name: "Delivery Info",
+    link: "/delivery-info",
+  },
+  {
+    name: "Safety",
+    link: "/safety",
+  },
+];
+
+// Legal
+export const footerLegalLinks = [
+  {
+    name: "Terms of Service",
+    link: "/terms",
+  },
+  {
+    name: "Privacy Policy",
+    link: "/privacy",
+  },
+  {
+    name: "Cookie Policy",
+    link: "/privacy",
+  },
+  {
+    name: "Sitemap",
     link: "/home",
   },
 ];

@@ -126,9 +126,9 @@ const Checkout = () => {
   console.log(discountPercentenge);
 
   return (
-    <div className="w-full flex flex-col items-center py-8">
-      <div className="w-[90%] 1000px:w-[70%] block 800px:flex">
-        <div className="w-full 800px:w-[65%]">
+    <div className="w-full">
+      <div className="grid lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
           <ShippingInfo
             user={user}
             country={country}
@@ -151,7 +151,7 @@ const Checkout = () => {
             setPhoneNumber={setPhoneNumber}
           />
         </div>
-        <div className="w-full 800px:w-[35%] 800px:mt-0 mt-8">
+        <div className="lg:col-span-1">
           <CartData
             handleSubmit={handleSubmit}
             totalPrice={totalPrice}
@@ -163,11 +163,13 @@ const Checkout = () => {
           />
         </div>
       </div>
-      <div
-        className={`${styles.button} w-[150px] 800px:w-[280px] mt-10`}
-        onClick={paymentSubmit}
-      >
-        <h5 className="text-white">Go to Payment</h5>
+      <div className="flex justify-center">
+        <button
+          onClick={paymentSubmit}
+          className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg w-full max-w-md"
+        >
+          Proceed to Payment
+        </button>
       </div>
     </div>
   );
@@ -195,37 +197,43 @@ const ShippingInfo = ({
   setPhoneNumber,
 }) => {
   return (
-    <div className="w-full 800px:w-[95%] bg-white rounded-md p-5 pb-8">
-      <h5 className="text-[18px] font-[500]">Shipping Address</h5>
-      <br />
-      <form>
-        <div className="w-full flex pb-3">
-          <div className="w-[50%]">
-            <label className="block pb-2">Full Name</label>
-            <input
-              type="text"
-              value={user && user.name}
-              required
-              className={`${styles.input} !w-[95%]`}
-            />
-          </div>
-          <div className="w-[50%]">
-            <label className="block pb-2">Email Address</label>
-            <input
-              type="email"
-              value={user && user.email}
-              required
-              className={`${styles.input}`}
-            />
-          </div>
-        </div>
+    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+        <h2 className="text-white font-bold text-lg">Shipping Address</h2>
+      </div>
 
-        <div className="w-full flex pb-3">
-          <div className="w-[50%]">
-            <label className="block pb-2">
-              Phone Number <span className="text-red-500">*</span>
-            </label>
-            <div className="!w-[95%]">
+      <div className="p-6">
+        <form className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={user && user.name}
+                disabled
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={user && user.email}
+                disabled
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Phone Number <span className="text-red-500">*</span>
+              </label>
               <PhoneInput
                 value={phoneNumber}
                 onChange={setPhoneNumber}
@@ -233,139 +241,181 @@ const ShippingInfo = ({
                 placeholder="300 123 4567"
               />
             </div>
-          </div>
-          <div className="w-[50%]">
-            <label className="block pb-2">Zip Code</label>
-            <input
-              type="number"
-              value={zipCode}
-              onChange={(e) => setZipCode(e.target.value)}
-              required
-              className={`${styles.input}`}
-            />
-          </div>
-        </div>
-
-        {/* Country - Fixed to Pakistan */}
-        <div className="w-full pb-2">
-          <label className="block pb-2">Country</label>
-          <input
-            type="text"
-            value="Pakistan"
-            disabled
-            className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-700 px-3 cursor-not-allowed"
-          />
-        </div>
-
-        {/* City Selection - Choose from list or type custom */}
-        <div className="w-full pb-2">
-          <label className="block pb-2">
-            City <span className="text-red-500">*</span>
-          </label>
-
-          {/* Toggle between dropdown and custom input */}
-          <div className="flex items-center gap-2 mb-2">
-            <label className="flex items-center gap-1 cursor-pointer">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Zip Code
+              </label>
               <input
-                type="radio"
-                name="cityOption"
-                checked={!useCustomCity}
-                onChange={() => setUseCustomCity(false)}
-                className="cursor-pointer"
+                type="number"
+                value={zipCode}
+                onChange={(e) => setZipCode(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                placeholder="Enter zip code"
               />
-              <span className="text-sm">Select from list</span>
-            </label>
-            <label className="flex items-center gap-1 cursor-pointer">
-              <input
-                type="radio"
-                name="cityOption"
-                checked={useCustomCity}
-                onChange={() => setUseCustomCity(true)}
-                className="cursor-pointer"
-              />
-              <span className="text-sm">Type your city</span>
-            </label>
+            </div>
           </div>
 
-          {!useCustomCity ? (
-            <select
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              required
-              className="w-[95%] border h-[40px] rounded-[5px] px-2"
-            >
-              <option value="">Choose your city</option>
-              {pakistanCities.map((cityName) => (
-                <option key={cityName} value={cityName}>
-                  {cityName}
-                </option>
-              ))}
-            </select>
-          ) : (
+          {/* Country - Fixed to Pakistan */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Country
+            </label>
             <input
               type="text"
-              value={customCity}
-              onChange={(e) => setCustomCity(e.target.value)}
-              placeholder="Enter your city name"
-              required
-              className="w-[95%] border h-[40px] rounded-[5px] px-3"
+              value="Pakistan"
+              disabled
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed text-sm"
             />
+          </div>
+
+          {/* City Selection - Choose from list or type custom */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              City <span className="text-red-500">*</span>
+            </label>
+
+            {/* Toggle between dropdown and custom input */}
+            <div className="flex items-center gap-4 mb-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="cityOption"
+                  checked={!useCustomCity}
+                  onChange={() => setUseCustomCity(false)}
+                  className="cursor-pointer text-orange-500 focus:ring-orange-500"
+                />
+                <span className="text-sm text-gray-700">Select from list</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="cityOption"
+                  checked={useCustomCity}
+                  onChange={() => setUseCustomCity(true)}
+                  className="cursor-pointer text-orange-500 focus:ring-orange-500"
+                />
+                <span className="text-sm text-gray-700">Type your city</span>
+              </label>
+            </div>
+
+            {!useCustomCity ? (
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+              >
+                <option value="">Choose your city</option>
+                {pakistanCities.map((cityName) => (
+                  <option key={cityName} value={cityName}>
+                    {cityName}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={customCity}
+                onChange={(e) => setCustomCity(e.target.value)}
+                placeholder="Enter your city name"
+                required
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+              />
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Address Line 1
+              </label>
+              <input
+                type="text"
+                required
+                value={address1}
+                onChange={(e) => setAddress1(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                placeholder="Street, building, etc."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Address Line 2
+              </label>
+              <input
+                type="text"
+                value={address2}
+                onChange={(e) => setAddress2(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                placeholder="Apartment, suite, etc."
+              />
+            </div>
+          </div>
+        </form>
+
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <button
+            className="text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center gap-2"
+            onClick={() => setUserInfo(!userInfo)}
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            Choose from saved addresses
+          </button>
+
+          {userInfo && (
+            <div className="mt-3 space-y-2">
+              {user &&
+                user.addresses.map((item, index) => (
+                  <label
+                    key={index}
+                    className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mt-1 cursor-pointer text-orange-500 focus:ring-orange-500"
+                      onChange={() => {
+                        setAddress1(item.address1);
+                        setAddress2(item.address2);
+                        setZipCode(item.zipCode);
+                        setCountry(item.country);
+                        setCity(item.city);
+                      }}
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-semibold text-gray-900 block">
+                        {item.addressType}
+                      </span>
+                      <span className="text-xs text-gray-600">
+                        {item.address1}, {item.address2}, {item.city},{" "}
+                        {item.country} - {item.zipCode}
+                      </span>
+                    </div>
+                  </label>
+                ))}
+            </div>
           )}
         </div>
-
-        <div className="w-full flex pb-3">
-          <div className="w-[50%]">
-            <label className="block pb-2">Address1</label>
-            <input
-              type="address"
-              required
-              value={address1}
-              onChange={(e) => setAddress1(e.target.value)}
-              className={`${styles.input} !w-[95%]`}
-            />
-          </div>
-          <div className="w-[50%]">
-            <label className="block pb-2">Address2</label>
-            <input
-              type="address"
-              value={address2}
-              onChange={(e) => setAddress2(e.target.value)}
-              required
-              className={`${styles.input}`}
-            />
-          </div>
-        </div>
-
-        <div></div>
-      </form>
-      <h5
-        className="text-[18px] cursor-pointer text-orange-500 inline-block"
-        onClick={() => setUserInfo(!userInfo)}
-      >
-        Choose From saved address
-      </h5>
-      {userInfo && (
-        <div>
-          {user &&
-            user.addresses.map((item, index) => (
-              <div className="w-full flex mt-1">
-                <input
-                  type="checkbox"
-                  className="mr-3"
-                  value={item.addressType}
-                  onClick={() =>
-                    setAddress1(item.address1) ||
-                    setAddress2(item.address2) ||
-                    setZipCode(item.zipCode) ||
-                    setCountry(item.country) ||
-                    setCity(item.city)
-                  }
-                />
-                <h2>{item.addressType}</h2>
-              </div>
-            ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -380,37 +430,59 @@ const CartData = ({
   discountPercentenge,
 }) => {
   return (
-    <div className="w-full bg-[#fff] rounded-md p-5 pb-8">
-      <div className="flex justify-between">
-        <h3 className="text-[16px] font-[400] text-[#000000a4]">subtotal:</h3>
-        <h5 className="text-[18px] font-[600]">PKR{subTotalPrice}</h5>
+    <div className="bg-white rounded-xl shadow-md overflow-hidden sticky top-6">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+        <h2 className="text-white font-bold text-lg">Order Summary</h2>
       </div>
-      <br />
-      <div className="flex justify-between border-b pb-3">
-        <h3 className="text-[16px] font-[400] text-[#000000a4]">Discount:</h3>
-        <h5 className="text-[18px] font-[600]">
-          -{" "}
-          {discountPercentenge ? "PKR" + discountPercentenge.toString() : null}
-        </h5>
+
+      <div className="p-6 space-y-4">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-gray-600">Subtotal</span>
+          <span className="text-base font-semibold text-gray-900">
+            PKR {subTotalPrice}
+          </span>
+        </div>
+
+        {discountPercentenge && (
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Discount</span>
+            <span className="text-base font-semibold text-green-600">
+              - PKR {discountPercentenge}
+            </span>
+          </div>
+        )}
+
+        <div className="pt-4 border-t border-gray-200">
+          <div className="flex justify-between items-center">
+            <span className="text-base font-bold text-gray-900">Total</span>
+            <span className="text-xl font-bold text-orange-600">
+              PKR {totalPrice}
+            </span>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">
+            Have a coupon code?
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <input
+              type="text"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+              placeholder="Enter coupon code"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm shadow-md"
+            >
+              Apply Coupon
+            </button>
+          </form>
+        </div>
       </div>
-      <h5 className="text-[18px] font-[600] text-end pt-3">PKR{totalPrice}</h5>
-      <br />
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          className={`${styles.input} h-[40px] pl-2`}
-          placeholder="Coupoun code"
-          value={couponCode}
-          onChange={(e) => setCouponCode(e.target.value)}
-          required
-        />
-        <input
-          className={`w-full h-[40px] border border-orange-500 text-center text-orange-500 rounded-[3px] mt-8 cursor-pointer`}
-          required
-          value="Apply code"
-          type="submit"
-        />
-      </form>
     </div>
   );
 };

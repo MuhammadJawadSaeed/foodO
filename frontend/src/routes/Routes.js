@@ -21,6 +21,13 @@ import AboutPage from "../pages/AboutPage";
 import TermsPage from "../pages/TermsPage";
 import PrivacyPage from "../pages/PrivacyPage";
 import ContactPage from "../pages/ContactPage";
+import HowItWorksPage from "../pages/HowItWorksPage";
+import CareersPage from "../pages/CareersPage";
+import OurStoryPage from "../pages/OurStoryPage";
+import BecomePartnerPage from "../pages/BecomePartnerPage";
+import OffersPage from "../pages/OffersPage";
+import DeliveryInfoPage from "../pages/DeliveryInfoPage";
+import SafetyPage from "../pages/SafetyPage";
 
 export {
   LoginPage,
@@ -46,4 +53,11 @@ export {
   TermsPage,
   PrivacyPage,
   ContactPage,
+  HowItWorksPage,
+  CareersPage,
+  OurStoryPage,
+  BecomePartnerPage,
+  OffersPage,
+  DeliveryInfoPage,
+  SafetyPage,
 };

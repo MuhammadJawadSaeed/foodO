@@ -1,43 +1,88 @@
-import React from 'react'
-import styles from '../../styles/styles'
+import React from "react";
+import styles from "../../styles/styles";
 
-const CheckoutSteps = ({active}) => {
-    console.log(active);
+const CheckoutSteps = ({ active }) => {
   return (
-    <div className='w-full flex justify-center'>
-        <div className="w-[90%] 800px:w-[50%] flex items-center flex-wrap">
-               <div className={`${styles.noramlFlex}`}>
-                <div className={`${styles.cart_button}`}>
-                       <span className={`${styles.cart_button_text}`}>1.Shipping</span>
-                </div>
-                <div className={`${
-                    active > 1 ? "w-[30px] 800px:w-[70px] h-[4px] !bg-orange-500"
-                    : "w-[30px] 800px:w-[70px] h-[4px] !bg-[#FDE1E6]"
-                }`} />
-               </div>
+    <div className="w-full flex justify-center mb-8">
+      <div className="w-full max-w-2xl">
+        <div className="flex items-center justify-between">
+          {/* Step 1 - Shipping */}
+          <div className="flex flex-col items-center flex-1">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+                active >= 1
+                  ? "bg-orange-500 text-white shadow-lg"
+                  : "bg-gray-200 text-gray-500"
+              }`}
+            >
+              1
+            </div>
+            <span
+              className={`mt-2 text-xs sm:text-sm font-medium ${
+                active >= 1 ? "text-orange-600" : "text-gray-500"
+              }`}
+            >
+              Shipping
+            </span>
+          </div>
 
-               <div className={`${styles.noramlFlex}`}>
-                <div className={`${active > 1 ? `${styles.cart_button}` : `${styles.cart_button} !bg-[#FDE1E6]`}`}>
-                    <span className={`${active > 1 ? `${styles.cart_button_text}` : `${styles.cart_button_text} !text-orange-500`}`}>
-                        2.Payment
-                    </span>
-                </div>
-               </div>
+          {/* Connector 1-2 */}
+          <div
+            className={`flex-1 h-1 mx-2 transition-all ${
+              active > 1 ? "bg-orange-500" : "bg-gray-200"
+            }`}
+          />
 
-               <div className={`${styles.noramlFlex}`}>
-               <div className={`${
-                    active > 3 ? "w-[30px] 800px:w-[70px] h-[4px] !bg-orange-500"
-                    : "w-[30px] 800px:w-[70px] h-[4px] !bg-[#FDE1E6]"
-                }`} />
-                <div className={`${active > 2 ? `${styles.cart_button}` : `${styles.cart_button} !bg-[#FDE1E6]`}`}>
-                    <span className={`${active > 2 ? `${styles.cart_button_text}` : `${styles.cart_button_text} !text-orange-500`}`}>
-                        3.Success
-                    </span>
-                </div>
-               </div>
+          {/* Step 2 - Payment */}
+          <div className="flex flex-col items-center flex-1">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+                active >= 2
+                  ? "bg-orange-500 text-white shadow-lg"
+                  : "bg-gray-200 text-gray-500"
+              }`}
+            >
+              2
+            </div>
+            <span
+              className={`mt-2 text-xs sm:text-sm font-medium ${
+                active >= 2 ? "text-orange-600" : "text-gray-500"
+              }`}
+            >
+              Payment
+            </span>
+          </div>
+
+          {/* Connector 2-3 */}
+          <div
+            className={`flex-1 h-1 mx-2 transition-all ${
+              active > 2 ? "bg-orange-500" : "bg-gray-200"
+            }`}
+          />
+
+          {/* Step 3 - Success */}
+          <div className="flex flex-col items-center flex-1">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+                active >= 3
+                  ? "bg-orange-500 text-white shadow-lg"
+                  : "bg-gray-200 text-gray-500"
+              }`}
+            >
+              3
+            </div>
+            <span
+              className={`mt-2 text-xs sm:text-sm font-medium ${
+                active >= 3 ? "text-orange-600" : "text-gray-500"
+              }`}
+            >
+              Success
+            </span>
+          </div>
         </div>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default CheckoutSteps
+export default CheckoutSteps;

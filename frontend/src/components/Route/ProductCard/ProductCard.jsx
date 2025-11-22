@@ -49,19 +49,24 @@ const ProductCard = ({ data, isEvent }) => {
     if (isItemExists) {
       toast.error("Item already in cart!");
     } else {
-      if (data.stock < 1) {
-        toast.error("Product stock limited!");
-      } else {
-        const cartData = { ...data, qty: 1 };
-        dispatch(addTocart(cartData));
-        toast.success("Item added to cart successfully!");
-      }
+      const cartData = { ...data, qty: 1 };
+      dispatch(addTocart(cartData));
+      toast.success("Item added to cart successfully!");
     }
   };
 
   return (
     <>
       <div className="w-[250px] bg-white border mx-auto rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 relative">
+        {/* Shop Status Badge */}
+        {data.shop?.isOnline === false && (
+          <div className="absolute top-2 left-2 z-10">
+            <span className="bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
+              Offline
+            </span>
+          </div>
+        )}
+
         <Link
           to={`${
             isEvent === true
@@ -72,7 +77,9 @@ const ProductCard = ({ data, isEvent }) => {
           <img
             src={data.images && data.images[0]?.url}
             alt={data.name}
-            className="w-full h-[180px] object-cover"
+            className={`w-full h-[180px] object-cover ${
+              data.shop?.isOnline === false ? "opacity-60" : ""
+            }`}
           />
         </Link>
 
@@ -121,14 +128,22 @@ const ProductCard = ({ data, isEvent }) => {
               className="bg-white p-1 rounded-full shadow-md hover:shadow-lg"
               onClick={() => removeFromWishlistHandler(data)}
             >
-              <AiFillHeart size={22} color="#FF6600" title="Remove from wishlist" />
+              <AiFillHeart
+                size={22}
+                color="#FF6600"
+                title="Remove from wishlist"
+              />
             </button>
           ) : (
             <button
               className="bg-white p-1 rounded-full shadow-md hover:shadow-lg"
               onClick={() => addToWishlistHandler(data)}
             >
-              <AiOutlineHeart size={22} color="#FF6600" title="Add to wishlist" />
+              <AiOutlineHeart
+                size={22}
+                color="#FF6600"
+                title="Add to wishlist"
+              />
             </button>
           )}
 
@@ -140,10 +155,25 @@ const ProductCard = ({ data, isEvent }) => {
           </button>
 
           <button
-            className="bg-white p-1 rounded-full shadow-md hover:shadow-lg"
-            onClick={() => addToCartHandler(data._id)}
+            className={`bg-white p-1 rounded-full shadow-md hover:shadow-lg ${
+              data.shop?.isOnline === false
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+            onClick={() =>
+              data.shop?.isOnline !== false && addToCartHandler(data._id)
+            }
+            disabled={data.shop?.isOnline === false}
           >
-            <AiOutlineShoppingCart size={25} color="#FF6600" title="Add to cart" />
+            <AiOutlineShoppingCart
+              size={25}
+              color="#FF6600"
+              title={
+                data.shop?.isOnline === false
+                  ? "Restaurant offline"
+                  : "Add to cart"
+              }
+            />
           </button>
         </div>
 

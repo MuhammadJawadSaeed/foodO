@@ -8,6 +8,30 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Loader from "../components/Layout/Loader";
 
+// Optimized Image Component with lazy loading
+const OptimizedImage = ({ src, alt, className, priority = false }) => {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div className="relative overflow-hidden">
+      {!loaded && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className} ${
+          loaded ? "opacity-100" : "opacity-0"
+        } transition-opacity duration-300`}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        fetchpriority={priority ? "high" : "auto"}
+        onLoad={() => setLoaded(true)}
+      />
+    </div>
+  );
+};
+
 const StartPage = () => {
   const [selectedCity, setSelectedCity] = useState("");
   const { isSeller } = useSelector((state) => state.seller);
@@ -21,6 +45,16 @@ const StartPage = () => {
 
     handleResize();
     window.addEventListener("resize", handleResize);
+
+    // Preload critical images for hero section
+    const preloadImages = [assets.food_2];
+    preloadImages.forEach((src) => {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = src;
+      document.head.appendChild(link);
+    });
 
     // Simulate initial loading
     setTimeout(() => setLoading(false), 800);
@@ -40,16 +74,15 @@ const StartPage = () => {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-white">
       <Header2 activeHeading={1} />
 
-      {/* Hero Section */}
-      <div className="relative w-full bg-gradient-to-br from-orange-50 via-white to-gray-50 mt-[70px] pt-6 md:pt-8 pb-8 md:pb-12 overflow-hidden">
+      <div className="relative w-full bg-gradient-to-br from-orange-200 via-white to-gray-200 pt-[70px] md:pt-[70px] pb-8 md:pb-12">
         {/* Decorative circles */}
         <div className="absolute top-20 md:top-24 right-10 w-64 h-64 bg-orange-100/30 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 left-10 w-96 h-96 bg-orange-100/20 rounded-full blur-3xl"></div>
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-0 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
             {/* Left Content */}
             <div className="text-gray-800">
@@ -94,10 +127,11 @@ const StartPage = () => {
 
             {/* Right Image - Hidden on mobile */}
             <div className="hidden md:block">
-              <img
+              <OptimizedImage
                 src={assets.food_2}
                 alt="Delicious Food"
                 className="w-full h-auto rounded-xl shadow-lg"
+                priority={true}
               />
             </div>
           </div>
@@ -227,7 +261,7 @@ const StartPage = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left Image */}
             <div className="order-2 md:order-1">
-              <img
+              <OptimizedImage
                 src={assets.food_3}
                 alt="Join as Chef"
                 className="w-full h-auto rounded-2xl shadow-xl"
@@ -386,11 +420,11 @@ const StartPage = () => {
                 className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 onClick={() => handleCityClick(city)}
               >
-                <div className="relative h-40 sm:h-44 md:h-48 w-full overflow-hidden">
-                  <img
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                <div className="relative h-40 sm:h-44 md:h-48 w-full overflow-hidden bg-gray-200">
+                  <OptimizedImage
                     src={assets[city]}
                     alt={city}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-4">

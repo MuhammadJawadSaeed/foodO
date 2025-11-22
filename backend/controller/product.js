@@ -42,7 +42,7 @@ router.post(
         const productData = req.body;
         productData.images = imagesLinks;
         productData.shop = shop;
-        productData.city = shop.city;  // Save the shop's city in the product
+        productData.city = shop.city; // Save the shop's city in the product
 
         const product = await Product.create(productData);
 
@@ -56,7 +56,6 @@ router.post(
     }
   })
 );
-
 
 // get all products of a shop
 router.get(
@@ -85,14 +84,14 @@ router.delete(
 
       if (!product) {
         return next(new ErrorHandler("Product is not found with this id", 404));
-      }    
+      }
 
       for (let i = 0; 1 < product.images.length; i++) {
         const result = await cloudinary.v2.uploader.destroy(
           product.images[i].public_id
         );
       }
-    
+
       await product.remove();
 
       res.status(201).json({
@@ -110,11 +109,25 @@ router.get(
   "/get-all-products",
   catchAsyncErrors(async (req, res, next) => {
     try {
+      const Shop = require("../model/shop");
       const products = await Product.find().sort({ createdAt: -1 });
+
+      // Refresh shop status for each product
+      const productsWithFreshShopData = await Promise.all(
+        products.map(async (product) => {
+          const shop = await Shop.findById(product.shopId).select("isOnline");
+          if (shop) {
+            const productObj = product.toObject();
+            productObj.shop.isOnline = shop.isOnline;
+            return productObj;
+          }
+          return product.toObject();
+        })
+      );
 
       res.status(201).json({
         success: true,
-        products,
+        products: productsWithFreshShopData,
       });
     } catch (error) {
       return next(new ErrorHandler(error, 400));

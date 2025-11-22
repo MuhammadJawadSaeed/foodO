@@ -78,50 +78,61 @@ const ProfileContent = ({ active }) => {
   };
 
   return (
-    <div className="w-full bg-white">
+    <div className="w-full">
       {/* profile */}
       {active === 1 && (
-        <>
-          <div className="flex justify-center w-full">
-            <div className="relative">
-              <img
-                src={`${user?.avatar?.url}`}
-                className="w-[150px] h-[150px] rounded-full object-cover border-[3px] border-[#f97316]"
-                alt=""
-              />
-              <div className="w-[30px] h-[30px] bg-[#fff] rounded-full flex items-center justify-center cursor-pointer absolute bottom-[5px] right-[5px]">
-                <input
-                  type="file"
-                  id="image"
-                  className="hidden"
-                  onChange={handleImage}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+            <h2 className="text-white font-bold text-lg">
+              Profile Information
+            </h2>
+          </div>
+
+          <div className="p-6">
+            {/* Avatar Section */}
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                <img
+                  src={`${user?.avatar?.url}`}
+                  className="w-28 h-28 rounded-full object-cover border-4 border-orange-200 shadow-lg"
+                  alt={user?.name}
                 />
-                <label htmlFor="image">
-                  <AiOutlineCamera />
-                </label>
+                <div className="absolute bottom-0 right-0 w-9 h-9 bg-orange-500 rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-orange-600 transition-colors">
+                  <input
+                    type="file"
+                    id="image"
+                    className="hidden"
+                    onChange={handleImage}
+                  />
+                  <label htmlFor="image" className="cursor-pointer">
+                    <AiOutlineCamera className="text-white" size={18} />
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-          <br />
-          <br />
-          <div className="w-full px-5">
-            <form className="" onSubmit={handleSubmit} aria-required={true}>
-              <div className="w-full 800px:flex block pb-3">
-                <div className=" w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Full Name</label>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Name
+                  </label>
                   <input
                     type="text"
-                    className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
-                <div className=" w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Email Address</label>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address
+                  </label>
                   <input
-                    type="text"
-                    className={`${styles.input} !w-[95%] mb-1 800px:mb-0`}
+                    type="email"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -129,38 +140,43 @@ const ProfileContent = ({ active }) => {
                 </div>
               </div>
 
-              <div className="w-full 800px:flex block pb-3">
-                <div className=" w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Phone Number</label>
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number
+                  </label>
                   <input
                     type="number"
-                    className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm"
                     required
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                   />
                 </div>
-
-                <div className=" w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Enter your password</label>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Password (to confirm changes)
+                  </label>
                   <input
                     type="password"
-                    className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
                   />
                 </div>
               </div>
-              <input
-                className={`w-[250px] h-[40px] border border-[#f97316] text-center text-[#f97316] rounded-[3px] mt-8 cursor-pointer`}
-                required
-                value="Update"
+
+              <button
                 type="submit"
-              />
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-2.5 rounded-lg transition-colors text-sm shadow-md"
+              >
+                Update Profile
+              </button>
             </form>
           </div>
-        </>
+        </div>
       )}
 
       {/* order */}
@@ -274,14 +290,19 @@ const AllOrders = () => {
     });
 
   return (
-    <div className="pl-8 pt-1">
-      <DataGrid
-        rows={row}
-        columns={columns}
-        pageSize={10}
-        disableSelectionOnClick
-        autoHeight
-      />
+    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+        <h2 className="text-white font-bold text-lg">My Orders</h2>
+      </div>
+      <div className="p-4">
+        <DataGrid
+          rows={row}
+          columns={columns}
+          pageSize={10}
+          disableSelectionOnClick
+          autoHeight
+        />
+      </div>
     </div>
   );
 };
@@ -447,14 +468,19 @@ const TrackOrder = () => {
     });
 
   return (
-    <div className="pl-8 pt-1">
-      <DataGrid
-        rows={row}
-        columns={columns}
-        pageSize={10}
-        disableSelectionOnClick
-        autoHeight
-      />
+    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+        <h2 className="text-white font-bold text-lg">Track Orders</h2>
+      </div>
+      <div className="p-4">
+        <DataGrid
+          rows={row}
+          columns={columns}
+          pageSize={10}
+          disableSelectionOnClick
+          autoHeight
+        />
+      </div>
     </div>
   );
 };
@@ -483,53 +509,66 @@ const ChangePassword = () => {
         toast.error(error.response.data.message);
       });
   };
+
   return (
-    <div className="w-full px-5">
-      <h1 className="block text-[25px] text-center font-[600] text-[#000000ba] pb-2">
-        Change Password
-      </h1>
-      <div className="w-full">
+    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+        <h2 className="text-white font-bold text-lg">Change Password</h2>
+      </div>
+
+      <div className="p-6">
         <form
-          aria-required
           onSubmit={passwordChangeHandler}
-          className="flex flex-col items-center"
+          className="max-w-xl mx-auto space-y-4"
         >
-          <div className=" w-[100%] 800px:w-[50%] mt-5">
-            <label className="block pb-2">Enter your old password</label>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Current Password
+            </label>
             <input
               type="password"
-              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm"
               required
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
+              placeholder="Enter your current password"
             />
           </div>
-          <div className=" w-[100%] 800px:w-[50%] mt-2">
-            <label className="block pb-2">Enter your new password</label>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              New Password
+            </label>
             <input
               type="password"
-              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm"
               required
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Enter your new password"
             />
           </div>
-          <div className=" w-[100%] 800px:w-[50%] mt-2">
-            <label className="block pb-2">Enter your confirm password</label>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Confirm New Password
+            </label>
             <input
               type="password"
-              className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm"
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            <input
-              className={`w-[95%] h-[40px] border border-[#f97316] text-center text-[#f97316] rounded-[3px] mt-8 cursor-pointer`}
-              required
-              value="Update"
-              type="submit"
+              placeholder="Confirm your new password"
             />
           </div>
+
+          <button
+            type="submit"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm shadow-md mt-2"
+          >
+            Update Password
+          </button>
         </form>
       </div>
     </div>
@@ -597,24 +636,32 @@ const Address = () => {
   };
 
   return (
-    <div className="w-full px-5">
+    <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
+        <h2 className="text-white font-bold text-lg">My Addresses</h2>
+        <button
+          onClick={() => setOpen(true)}
+          className="bg-white text-orange-600 hover:bg-orange-50 font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+        >
+          Add New
+        </button>
+      </div>
+
       {open && (
-        <div className="fixed w-full h-screen bg-[#0000004b] top-0 left-0 flex items-center justify-center ">
-          <div className="w-[35%] top-4 h-[80vh] bg-white rounded shadow relative overflow-y-scroll">
-            <div className="w-full flex justify-end p-3">
-              <RxCross1
-                size={30}
-                className="cursor-pointer"
+        <div className="fixed w-full h-screen bg-black bg-opacity-50 top-0 left-0 flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-white font-bold text-lg">Add New Address</h2>
+              <button
                 onClick={() => setOpen(false)}
-              />
+                className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors"
+              >
+                <RxCross1 size={20} />
+              </button>
             </div>
-            <h1 className="text-center text-[25px] font-Poppins">
-              Add New Address
-            </h1>
-            <div className="w-full">
-              <form aria-required onSubmit={handleSubmit} className="w-full">
-                <div className="w-full block p-4">
-                  {/* <div className="w-full pb-2">
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {/* <div className="w-full pb-2">
                     <label className="block pb-2">Country</label>
                     <select
                       name=""
@@ -639,7 +686,7 @@ const Address = () => {
                     </select>
                   </div> */}
 
-                  {/* <div className="w-full pb-2">
+              {/* <div className="w-full pb-2">
                     <label className="block pb-2">Choose your City</label>
                     <select
                       name=""
@@ -663,190 +710,224 @@ const Address = () => {
                         ))}
                     </select>
                   </div> */}
-                  {/* Country (only Pakistan) */}
-                  <div className="w-full pb-2">
-                    <label className="block pb-2">Country</label>
+              {/* Country (only Pakistan) */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Country
+                </label>
+                <input
+                  type="text"
+                  value="Pakistan"
+                  disabled
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed text-sm"
+                />
+              </div>
+
+              {/* City - Select from list or type custom */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  City <span className="text-red-500">*</span>
+                </label>
+
+                {/* Toggle between dropdown and custom input */}
+                <div className="flex items-center gap-4 mb-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
-                      type="text"
-                      value="Pakistan"
-                      disabled
-                      className="w-[95%] border h-[40px] rounded-[5px] bg-gray-100 text-gray-700 px-3 cursor-not-allowed"
+                      type="radio"
+                      name="profileCityOption"
+                      checked={!useCustomCity}
+                      onChange={() => setUseCustomCity(false)}
+                      className="cursor-pointer text-orange-500 focus:ring-orange-500"
                     />
-                  </div>
-
-                  {/* City - Select from list or type custom */}
-                  <div className="w-full pb-2">
-                    <label className="block pb-2">
-                      City <span className="text-red-500">*</span>
-                    </label>
-
-                    {/* Toggle between dropdown and custom input */}
-                    <div className="flex items-center gap-3 mb-2">
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="profileCityOption"
-                          checked={!useCustomCity}
-                          onChange={() => setUseCustomCity(false)}
-                          className="cursor-pointer"
-                        />
-                        <span className="text-sm">Select from list</span>
-                      </label>
-                      <label className="flex items-center gap-1 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="profileCityOption"
-                          checked={useCustomCity}
-                          onChange={() => setUseCustomCity(true)}
-                          className="cursor-pointer"
-                        />
-                        <span className="text-sm">Type your city</span>
-                      </label>
-                    </div>
-
-                    {!useCustomCity ? (
-                      <select
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        required
-                        className="w-[95%] border h-[40px] rounded-[5px] px-2"
-                      >
-                        <option value="">Choose your city</option>
-                        {pakistanCities.map((cityName) => (
-                          <option key={cityName} value={cityName}>
-                            {cityName}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={customCity}
-                        onChange={(e) => setCustomCity(e.target.value)}
-                        placeholder="Enter your city name"
-                        required
-                        className="w-[95%] border h-[40px] rounded-[5px] px-3"
-                      />
-                    )}
-                  </div>
-
-                  <div className="w-[95%] pb-2">
-                    <label className="block pb-2">Address 1</label>
+                    <span className="text-sm text-gray-700">
+                      Select from list
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
-                      type="address"
-                      className={`${styles.input}`}
-                      required
-                      value={address1}
-                      onChange={(e) => setAddress1(e.target.value)}
+                      type="radio"
+                      name="profileCityOption"
+                      checked={useCustomCity}
+                      onChange={() => setUseCustomCity(true)}
+                      className="cursor-pointer text-orange-500 focus:ring-orange-500"
                     />
-                  </div>
-                  <div className="w-[95%] pb-2">
-                    <label className="block pb-2">Address 2</label>
-                    <input
-                      type="address"
-                      className={`${styles.input}`}
-                      required
-                      value={address2}
-                      onChange={(e) => setAddress2(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="w-[95%] pb-2">
-                    <label className="block pb-2">Zip Code</label>
-                    <input
-                      type="number"
-                      className={`${styles.input}`}
-                      required
-                      value={zipCode}
-                      onChange={(e) => setZipCode(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="w-full pb-2">
-                    <label className="block pb-2">Address Type</label>
-                    <select
-                      name=""
-                      id=""
-                      value={addressType}
-                      onChange={(e) => setAddressType(e.target.value)}
-                      className="w-[95%] border h-[40px] rounded-[5px]"
-                    >
-                      <option value="" className="block border pb-2">
-                        Choose your Address Type
-                      </option>
-                      {addressTypeData &&
-                        addressTypeData.map((item) => (
-                          <option
-                            className="block pb-2"
-                            key={item.name}
-                            value={item.name}
-                          >
-                            {item.name}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-
-                  <div className=" w-[40%] pb-2">
-                    <input
-                      type="submit"
-                      className={`${styles.input} bg-orange-500 text-white font-semibold mt-5 cursor-pointer`}
-                      required
-                      readOnly
-                    />
-                  </div>
+                    <span className="text-sm text-gray-700">
+                      Type your city
+                    </span>
+                  </label>
                 </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="flex w-full items-center justify-between">
-        <h1 className="text-[25px] font-[600] text-[#000000ba] pb-2">
-          My Addresses
-        </h1>
-        <div
-          className={`${styles.button} !rounded-md`}
-          onClick={() => setOpen(true)}
-        >
-          <span className="text-[#fff]">Add New</span>
-        </div>
-      </div>
-      <br />
-      {user &&
-        user.addresses.map((item, index) => (
-          <div
-            className="w-full bg-white h-min 800px:h-[70px] rounded-[4px] flex items-center px-3 shadow justify-between pr-10 mb-5"
-            key={index}
-          >
-            <div className="flex items-center">
-              <h5 className="pl-5 font-[600]">{item.addressType}</h5>
-            </div>
-            <div className="pl-8 flex items-center">
-              <h6 className="text-[12px] 800px:text-[unset]">
-                {item.address1} {item.address2}
-              </h6>
-            </div>
-            <div className="pl-8 flex items-center">
-              <h6 className="text-[12px] 800px:text-[unset]">
-                {user && user.phoneNumber}
-              </h6>
-            </div>
-            <div className="min-w-[10%] flex items-center justify-between pl-8">
-              <AiOutlineDelete
-                size={25}
-                className="cursor-pointer"
-                onClick={() => handleDelete(item)}
-              />
-            </div>
-          </div>
-        ))}
 
-      {user && user.addresses.length === 0 && (
-        <h5 className="text-center pt-8 text-[18px]">
-          You not have any saved address!
-        </h5>
+                {!useCustomCity ? (
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">Choose your city</option>
+                    {pakistanCities.map((cityName) => (
+                      <option key={cityName} value={cityName}>
+                        {cityName}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={customCity}
+                    onChange={(e) => setCustomCity(e.target.value)}
+                    placeholder="Enter your city name"
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Address Line 1
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                  required
+                  value={address1}
+                  onChange={(e) => setAddress1(e.target.value)}
+                  placeholder="Street address, building, etc."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Address Line 2
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                  required
+                  value={address2}
+                  onChange={(e) => setAddress2(e.target.value)}
+                  placeholder="Apartment, suite, floor, etc."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Zip Code
+                </label>
+                <input
+                  type="number"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                  required
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                  placeholder="Enter zip code"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Address Type
+                </label>
+                <select
+                  value={addressType}
+                  onChange={(e) => setAddressType(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                  required
+                >
+                  <option value="">Choose address type</option>
+                  {addressTypeData.map((item) => (
+                    <option key={item.name} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm shadow-md"
+              >
+                Save Address
+              </button>
+            </form>
+          </div>
+        </div>
       )}
+
+      <div className="p-6">
+        {user && user.addresses.length > 0 ? (
+          <div className="space-y-3">
+            {user.addresses.map((item, index) => (
+              <div
+                key={index}
+                className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-orange-300 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold">
+                        {item.addressType}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-900 font-medium mb-1">
+                      {item.address1}, {item.address2}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {item.city}, {item.country} - {item.zipCode}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      <span className="font-medium">Phone:</span>{" "}
+                      {user.phoneNumber}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(item)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                    title="Delete address"
+                  >
+                    <AiOutlineDelete size={20} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <svg
+              className="w-16 h-16 text-gray-300 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No Addresses Yet
+            </h3>
+            <p className="text-gray-600 mb-4">
+              You haven't added any delivery addresses.
+            </p>
+            <button
+              onClick={() => setOpen(true)}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-lg text-sm transition-colors"
+            >
+              Add Your First Address
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { Button } from "@material-ui/core";
 import { DataGrid } from "@material-ui/data-grid";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { AiOutlineDelete } from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineGift } from "react-icons/ai";
 import { RxCross1 } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "../../styles/styles";
@@ -124,56 +124,63 @@ const AllCoupons = () => {
       {isLoading ? (
         <Loader />
       ) : (
-        <div className="w-full mx-8 pt-1 mt-10 bg-white">
-          <div className="w-full flex justify-end">
-            <div
-              className={`${styles.button} !w-max !h-[45px] px-3 !rounded-[5px] mr-3 mb-3`}
-              onClick={() => setOpen(true)}
-            >
-              <span className="text-white">Create Coupon Code</span>
+        <div className="w-full p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen">
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
+              <h3 className="text-white font-bold text-lg">Discount Codes</h3>
+              <button
+                onClick={() => setOpen(true)}
+                className="bg-white text-orange-600 hover:bg-orange-50 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 text-sm"
+              >
+                <AiOutlineGift size={18} />
+                Create Coupon
+              </button>
+            </div>
+            <div className="p-6">
+              <DataGrid
+                rows={row}
+                columns={columns}
+                pageSize={10}
+                disableSelectionOnClick
+                autoHeight
+                className="border-0"
+              />
             </div>
           </div>
-          <DataGrid
-            rows={row}
-            columns={columns}
-            pageSize={10}
-            disableSelectionOnClick
-            autoHeight
-          />
           {open && (
-            <div className="fixed top-0 left-0 w-full h-screen bg-[#00000062] z-[20000] flex items-center justify-center">
-              <div className="w-[90%] 800px:w-[40%] h-[90vh] bg-white overflow-y-scroll rounded-md shadow p-4">
-                <div className="w-full flex justify-end">
-                  <RxCross1
-                    size={30}
-                    className="cursor-pointer"
+            <div className="fixed top-0 left-0 w-full h-screen bg-black bg-opacity-50 z-[20000] flex items-center justify-center p-4">
+              <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
+                  <h2 className="text-white font-bold text-xl">
+                    Create Coupon Code
+                  </h2>
+                  <button
                     onClick={() => setOpen(false)}
-                  />
+                    className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-1 transition-colors"
+                  >
+                    <RxCross1 size={24} />
+                  </button>
                 </div>
-                <h5 className="text-[30px] font-Poppins text-center">
-                  Create Coupon code
-                </h5>
-                {/* create coupoun code */}
-                <form onSubmit={handleSubmit} aria-required={true}>
-                  <br />
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-5">
                   <div>
-                    <label className="pb-2">
-                      Name <span className="text-red-500">*</span>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Coupon Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       name="name"
                       required
                       value={name}
-                      className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Enter your coupon code name..."
+                      placeholder="Enter coupon code name..."
                     />
                   </div>
-                  <br />
+
                   <div>
-                    <label className="pb-2">
-                      Discount Percentenge{" "}
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Discount Percentage{" "}
                       <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -181,40 +188,47 @@ const AllCoupons = () => {
                       name="value"
                       value={value}
                       required
-                      className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                       onChange={(e) => setValue(e.target.value)}
-                      placeholder="Enter your coupon code value..."
+                      placeholder="Enter discount percentage..."
                     />
                   </div>
-                  <br />
-                  <div>
-                    <label className="pb-2">Min Amount</label>
-                    <input
-                      type="number"
-                      name="value"
-                      value={minAmount}
-                      className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      onChange={(e) => setMinAmout(e.target.value)}
-                      placeholder="Enter your coupon code min amount..."
-                    />
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Min Amount
+                      </label>
+                      <input
+                        type="number"
+                        name="value"
+                        value={minAmount}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                        onChange={(e) => setMinAmout(e.target.value)}
+                        placeholder="Minimum order amount..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Max Amount
+                      </label>
+                      <input
+                        type="number"
+                        name="value"
+                        value={maxAmount}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                        onChange={(e) => setMaxAmount(e.target.value)}
+                        placeholder="Maximum discount amount..."
+                      />
+                    </div>
                   </div>
-                  <br />
+
                   <div>
-                    <label className="pb-2">Max Amount</label>
-                    <input
-                      type="number"
-                      name="value"
-                      value={maxAmount}
-                      className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      onChange={(e) => setMaxAmount(e.target.value)}
-                      placeholder="Enter your coupon code max amount..."
-                    />
-                  </div>
-                  <br />
-                  <div>
-                    <label className="pb-2">Selected Product</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Selected Product
+                    </label>
                     <select
-                      className="w-full mt-2 border h-[35px] rounded-[5px]"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                       value={selectedProducts}
                       onChange={(e) => setSelectedProducts(e.target.value)}
                     >
@@ -229,14 +243,13 @@ const AllCoupons = () => {
                         ))}
                     </select>
                   </div>
-                  <br />
-                  <div>
-                    <input
-                      type="submit"
-                      value="Create"
-                      className="mt-2 appearance-none block w-full px-3 h-[35px] border border-gray-300 rounded-[3px] placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    />
-                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition-colors shadow-md"
+                  >
+                    Create Coupon Code
+                  </button>
                 </form>
               </div>
             </div>

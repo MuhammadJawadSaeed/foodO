@@ -30,26 +30,26 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   //   const [select, setSelect] = useState(false);
 
   const handleMessageSubmit = async () => {
-      if (isAuthenticated) {
-        const groupTitle = data._id + user._id;
-        const userId = user._id;
-        const sellerId = data.shop._id;
-        await axios
-          .post(`${server}/conversation/create-new-conversation`, {
-            groupTitle,
-            userId,
-            sellerId,
-          })
-          .then((res) => {
-            navigate(`/inbox?${res.data.conversation._id}`);
-          })
-          .catch((error) => {
-            toast.error(error.response.data.message);
-          });
-      } else {
-        toast.error("Please login to create a conversation");
-      }
-    };
+    if (isAuthenticated) {
+      const groupTitle = data._id + user._id;
+      const userId = user._id;
+      const sellerId = data.shop._id;
+      await axios
+        .post(`${server}/conversation/create-new-conversation`, {
+          groupTitle,
+          userId,
+          sellerId,
+        })
+        .then((res) => {
+          navigate(`/inbox?${res.data.conversation._id}`);
+        })
+        .catch((error) => {
+          toast.error(error.response.data.message);
+        });
+    } else {
+      toast.error("Please login to create a conversation");
+    }
+  };
 
   const decrementCount = () => {
     if (count > 1) {
@@ -66,13 +66,9 @@ const ProductDetailsCard = ({ setOpen, data }) => {
     if (isItemExists) {
       toast.error("Item already in cart!");
     } else {
-      if (data.stock < count) {
-        toast.error("Product stock limited!");
-      } else {
-        const cartData = { ...data, qty: count };
-        dispatch(addTocart(cartData));
-        toast.success("Item added to cart successfully!");
-      }
+      const cartData = { ...data, qty: count };
+      dispatch(addTocart(cartData));
+      toast.success("Item added to cart successfully!");
     }
   };
 
@@ -101,13 +97,47 @@ const ProductDetailsCard = ({ setOpen, data }) => {
           <div className="w-[90%] 800px:w-[60%] h-[90vh] overflow-y-scroll 800px:h-[75vh] bg-white rounded-md shadow-sm relative p-4">
             <RxCross1
               size={30}
-              className="absolute right-3 top-3 z-50"
+              className="absolute right-3 top-3 z-50 cursor-pointer hover:text-red-500"
               onClick={() => setOpen(false)}
             />
 
+            {/* Check if shop is offline */}
+            {data.shop?.isOnline === false && (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-red-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-semibold text-red-800">
+                      Restaurant Currently Offline
+                    </p>
+                    <p className="text-xs text-red-700 mt-1">
+                      This restaurant is not accepting orders at the moment.
+                      Please check back later.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="block w-full 800px:flex">
               <div className="w-full 800px:w-[50%]">
-                <img className="w-[85%] m-2 rounded-md" src={`${data.images && data.images[0]?.url}`} alt="" />
+                <img
+                  className="w-[85%] m-2 rounded-md"
+                  src={`${data.images && data.images[0]?.url}`}
+                  alt=""
+                />
                 <div className="flex">
                   <Link to={`/shop/preview/${data.shop._id}`} className="flex">
                     <img
@@ -119,7 +149,9 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                       <h3 className={`${styles.shop_name}`}>
                         {data.shop.name}
                       </h3>
-                      <h5 className="pb-3 text-[15px]">{data?.ratings} Ratings</h5>
+                      <h5 className="pb-3 text-[15px]">
+                        {data?.ratings} Ratings
+                      </h5>
                     </div>
                   </Link>
                 </div>
@@ -153,8 +185,9 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                 <div className="flex items-center mt-12 justify-between pr-3">
                   <div>
                     <button
-                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-l px-4 py-2 shadow-lg hover:opacity-75 transition duration-300 ease-in-out"
+                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-l px-4 py-2 shadow-lg hover:opacity-75 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={decrementCount}
+                      disabled={data.shop?.isOnline === false}
                     >
                       -
                     </button>
@@ -162,8 +195,9 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                       {count}
                     </span>
                     <button
-                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-l px-4 py-2 shadow-lg hover:opacity-75 transition duration-300 ease-in-out"
+                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-l px-4 py-2 shadow-lg hover:opacity-75 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={incrementCount}
+                      disabled={data.shop?.isOnline === false}
                     >
                       +
                     </button>
@@ -188,11 +222,25 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                   </div>
                 </div>
                 <div
-                  className={`${styles.button} mt-10 ml-8 rounded-[2px] w-[70%] h-11 flex items-center`}
-                  onClick={() => addToCartHandler(data._id)}
+                  className={`${
+                    styles.button
+                  } mt-10 ml-8 rounded-[2px] w-[70%] h-11 flex items-center justify-center ${
+                    data.shop?.isOnline === false
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer"
+                  }`}
+                  onClick={() =>
+                    data.shop?.isOnline !== false && addToCartHandler(data._id)
+                  }
                 >
                   <span className="text-[#fff] flex items-center">
-                    Add to cart <AiOutlineShoppingCart className="ml-1" />
+                    {data.shop?.isOnline !== false ? (
+                      <>
+                        Add to cart <AiOutlineShoppingCart className="ml-1" />
+                      </>
+                    ) : (
+                      "Restaurant Offline"
+                    )}
                   </span>
                 </div>
               </div>

@@ -11,17 +11,17 @@ import { HiOutlineReceiptRefund } from "react-icons/hi";
 
 const DashboardSideBar = ({ active }) => {
   return (
-    <div className="w-full h-[90vh] bg-white shadow-sm overflow-y-scroll sticky top-0 left-0 z-10">
-      {/* single item */}
-      <div className="w-full flex items-center p-4">
-        <Link to="/dashboard" className="w-full flex items-center">
+    <div className="w-full h-[90vh] bg-white shadow-lg overflow-y-scroll sticky top-0 left-0 z-10 border-r border-gray-200">
+      {/* Dashboard */}
+      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
+        <Link to="/dashboard" className="w-full flex items-center gap-3">
           <RxDashboard
-            size={30}
-            color={`${active === 1 ? "#f97316" : "#555"}`}
+            size={26}
+            color={`${active === 1 ? "#f97316" : "#6b7280"}`}
           />
           <h5
-            className={`hidden 800px:block pl-2 text-[18px] font-[400] ${
-              active === 1 ? "text-[#f97316]" : "text-[#555]"
+            className={`hidden 800px:block text-base font-medium ${
+              active === 1 ? "text-orange-500" : "text-gray-600"
             }`}
           >
             Dashboard
@@ -29,15 +29,16 @@ const DashboardSideBar = ({ active }) => {
         </Link>
       </div>
 
-      <div className="w-full flex items-center p-4">
-        <Link to="/dashboard-orders" className="w-full flex items-center">
+      {/* All Orders */}
+      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
+        <Link to="/dashboard-orders" className="w-full flex items-center gap-3">
           <FiShoppingBag
-            size={30}
-            color={`${active === 2 ? "#f97316" : "#555"}`}
+            size={26}
+            color={`${active === 2 ? "#f97316" : "#6b7280"}`}
           />
           <h5
-            className={`hidden 800px:block pl-2 text-[18px] font-[400] ${
-              active === 2 ? "text-[#f97316]" : "text-[#555]"
+            className={`hidden 800px:block text-base font-medium ${
+              active === 2 ? "text-orange-500" : "text-gray-600"
             }`}
           >
             All Orders
@@ -45,31 +46,39 @@ const DashboardSideBar = ({ active }) => {
         </Link>
       </div>
 
-      <div className="w-full flex items-center p-4">
-        <Link to="/dashboard-products" className="w-full flex items-center">
-          <FiPackage size={30} color={`${active === 3 ? "#f97316" : "#555"}`} />
+      {/* All Food Items */}
+      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
+        <Link
+          to="/dashboard-products"
+          className="w-full flex items-center gap-3"
+        >
+          <FiPackage
+            size={26}
+            color={`${active === 3 ? "#f97316" : "#6b7280"}`}
+          />
           <h5
-            className={`hidden 800px:block pl-2 text-[18px] font-[400] ${
-              active === 3 ? "text-[#f97316]" : "text-[#555]"
+            className={`hidden 800px:block text-base font-medium ${
+              active === 3 ? "text-orange-500" : "text-gray-600"
             }`}
           >
-            All Food Item 
+            All Food Items
           </h5>
         </Link>
       </div>
 
-      <div className="w-full flex items-center p-4">
+      {/* Create Food Item */}
+      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
         <Link
           to="/dashboard-create-product"
-          className="w-full flex items-center"
+          className="w-full flex items-center gap-3"
         >
           <AiOutlineFolderAdd
-            size={30}
-            color={`${active === 4 ? "#f97316" : "#555"}`}
+            size={26}
+            color={`${active === 4 ? "#f97316" : "#6b7280"}`}
           />
           <h5
-            className={`hidden 800px:block pl-2 text-[18px] font-[400] ${
-              active === 4 ? "text-[#f97316]" : "text-[#555]"
+            className={`hidden 800px:block text-base font-medium ${
+              active === 4 ? "text-orange-500" : "text-gray-600"
             }`}
           >
             Create Food Item
@@ -77,18 +86,19 @@ const DashboardSideBar = ({ active }) => {
         </Link>
       </div>
 
-      <div className="w-full flex items-center p-4">
+      {/* Withdraw Money */}
+      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
         <Link
           to="/dashboard-withdraw-money"
-          className="w-full flex items-center"
+          className="w-full flex items-center gap-3"
         >
           <CiMoneyBill
-            size={30}
-            color={`${active === 7 ? "#f97316" : "#555"}`}
+            size={26}
+            color={`${active === 7 ? "#f97316" : "#6b7280"}`}
           />
           <h5
-            className={`hidden 800px:block pl-2 text-[18px] font-[400] ${
-              active === 7 ? "text-[#f97316]" : "text-[#555]"
+            className={`hidden 800px:block text-base font-medium ${
+              active === 7 ? "text-orange-500" : "text-gray-600"
             }`}
           >
             Withdraw Money
@@ -96,15 +106,19 @@ const DashboardSideBar = ({ active }) => {
         </Link>
       </div>
 
-      <div className="w-full flex items-center p-4">
-        <Link to="/dashboard-messages" className="w-full flex items-center">
+      {/* Shop Inbox */}
+      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
+        <Link
+          to="/dashboard-messages"
+          className="w-full flex items-center gap-3"
+        >
           <BiMessageSquareDetail
-            size={30}
-            color={`${active === 8 ? "#f97316" : "#555"}`}
+            size={26}
+            color={`${active === 8 ? "#f97316" : "#6b7280"}`}
           />
           <h5
-            className={`hidden 800px:block pl-2 text-[18px] font-[400] ${
-              active === 8 ? "text-[#f97316]" : "text-[#555]"
+            className={`hidden 800px:block text-base font-medium ${
+              active === 8 ? "text-orange-500" : "text-gray-600"
             }`}
           >
             Shop Inbox
@@ -112,15 +126,19 @@ const DashboardSideBar = ({ active }) => {
         </Link>
       </div>
 
-      <div className="w-full flex items-center p-4">
-        <Link to="/dashboard-coupouns" className="w-full flex items-center">
+      {/* Discount Codes */}
+      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
+        <Link
+          to="/dashboard-coupouns"
+          className="w-full flex items-center gap-3"
+        >
           <AiOutlineGift
-            size={30}
-            color={`${active === 9 ? "#f97316" : "#555"}`}
+            size={26}
+            color={`${active === 9 ? "#f97316" : "#6b7280"}`}
           />
           <h5
-            className={`hidden 800px:block pl-2 text-[18px] font-[400] ${
-              active === 9 ? "text-[#f97316]" : "text-[#555]"
+            className={`hidden 800px:block text-base font-medium ${
+              active === 9 ? "text-orange-500" : "text-gray-600"
             }`}
           >
             Discount Codes
@@ -128,15 +146,16 @@ const DashboardSideBar = ({ active }) => {
         </Link>
       </div>
 
-      <div className="w-full flex items-center p-4">
-        <Link to="/settings" className="w-full flex items-center">
+      {/* Settings */}
+      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
+        <Link to="/settings" className="w-full flex items-center gap-3">
           <CiSettings
-            size={30}
-            color={`${active === 11 ? "#f97316" : "#555"}`}
+            size={26}
+            color={`${active === 11 ? "#f97316" : "#6b7280"}`}
           />
           <h5
-            className={`hidden 800px:block pl-2 text-[18px] font-[400] ${
-              active === 11 ? "text-[#f97316]" : "text-[#555]"
+            className={`hidden 800px:block text-base font-medium ${
+              active === 11 ? "text-orange-500" : "text-gray-600"
             }`}
           >
             Settings

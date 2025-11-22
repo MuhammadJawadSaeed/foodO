@@ -1,337 +1,280 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from "../components/Layout/Header";
 import Footer from "../components/Layout/Footer";
 
 const TermsPage = () => {
+  const [activeSection, setActiveSection] = useState("all");
+
+  const sections = [
+    { id: "all", label: "All Sections", icon: "M4 6h16M4 12h16M4 18h16" },
+    {
+      id: "user",
+      label: "User Terms",
+      icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
+    },
+    {
+      id: "chef",
+      label: "Chef Terms",
+      icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
+    },
+    {
+      id: "payment",
+      label: "Payments",
+      icon: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Header activeHeading={0} />
 
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-center">
-            Terms and Conditions
+      {/* Hero */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-orange-200 via-white to-gray-200 pt-[140px] pb-16 md:pb-24">
+        <div className="absolute top-10 right-10 w-72 h-72 bg-orange-100/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-10 left-10 w-96 h-96 bg-orange-100/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-orange-50/10 rounded-full blur-2xl animate-pulse delay-700"></div>
+
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 mb-4 px-6 py-2 bg-orange-100/50 backdrop-blur-sm rounded-full text-sm font-medium text-orange-700">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Legal Information
+          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-gray-800">
+            Terms & Conditions
           </h1>
-          <p className="text-lg text-center">Last Updated: November 13, 2025</p>
+          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+            Please read these terms carefully before using foodO
+          </p>
+          <p className="text-sm mt-4 text-gray-500">
+            Last Updated: November 22, 2025
+          </p>
+        </div>
+      </div>
+
+      {/* Quick Nav */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
+        <div className="bg-white rounded-2xl shadow-xl p-2 flex flex-wrap gap-2 justify-center">
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                activeSection === section.id
+                  ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+                  : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={section.icon}
+                />
+              </svg>
+              <span className="hidden sm:inline">{section.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-xl shadow-lg p-8 md:p-12">
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              1. Introduction
-            </h2>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              Welcome to foodO. These Terms and Conditions govern your use of
-              our platform, website, and services. By accessing or using foodO,
-              you agree to be bound by these terms. If you do not agree with any
-              part of these terms, please do not use our services.
-            </p>
-          </section>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-white rounded-2xl shadow-lg p-6 md:p-10 space-y-8">
+          {/* Introduction */}
+          {(activeSection === "all" || activeSection === "user") && (
+            <section className="border-l-4 border-blue-500 pl-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                1. Introduction
+              </h2>
+              <p className="text-gray-700 leading-relaxed">
+                Welcome to foodO! By accessing or using our platform, you agree
+                to be bound by these Terms and Conditions. If you do not agree
+                with any part of these terms, please do not use our services.
+              </p>
+            </section>
+          )}
 
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              2. Definitions
-            </h2>
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <strong className="text-gray-800">"Platform"</strong> - refers
-                  to the foodO website and mobile application
-                </li>
-                <li>
-                  <strong className="text-gray-800">"User"</strong> - any person
-                  who accesses or uses the Platform
-                </li>
-                <li>
-                  <strong className="text-gray-800">"Home Chef"</strong> -
-                  registered sellers offering food through our Platform
-                </li>
-                <li>
-                  <strong className="text-gray-800">"Customer"</strong> - users
-                  who purchase food from Home Chefs
-                </li>
-                <li>
-                  <strong className="text-gray-800">"Services"</strong> - all
-                  services provided by foodO including order placement, payment
-                  processing, and delivery coordination
-                </li>
-              </ul>
+          {/* User Accounts */}
+          {(activeSection === "all" || activeSection === "user") && (
+            <section className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    2. User Accounts
+                  </h2>
+                  <div className="space-y-3 text-gray-700">
+                    <p>
+                      <strong className="text-blue-600">Registration:</strong>{" "}
+                      You must provide accurate information during registration.
+                    </p>
+                    <p>
+                      <strong className="text-blue-600">Security:</strong> You
+                      are responsible for maintaining account confidentiality.
+                    </p>
+                    <p>
+                      <strong className="text-blue-600">Age:</strong> You must
+                      be at least 18 years old to create an account.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Chef Terms */}
+          {(activeSection === "all" || activeSection === "chef") && (
+            <section className="bg-gradient-to-br from-orange-50 to-pink-50 rounded-xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    3. Home Chef Terms
+                  </h2>
+                  <div className="space-y-3 text-gray-700">
+                    <p>
+                      <strong className="text-orange-600">
+                        Quality Standards:
+                      </strong>{" "}
+                      Chefs must maintain high food quality and hygiene
+                      standards.
+                    </p>
+                    <p>
+                      <strong className="text-orange-600">Pricing:</strong>{" "}
+                      Chefs set their own prices but must ensure they are
+                      reasonable.
+                    </p>
+                    <p>
+                      <strong className="text-orange-600">Commission:</strong>{" "}
+                      foodO charges a commission on each order as outlined in
+                      agreements.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Orders & Payments */}
+          {(activeSection === "all" || activeSection === "payment") && (
+            <section className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    4. Orders & Payments
+                  </h2>
+                  <div className="space-y-3 text-gray-700">
+                    <p>
+                      <strong className="text-green-600">
+                        Order Confirmation:
+                      </strong>{" "}
+                      Orders are confirmed when payment is processed and chef
+                      accepts.
+                    </p>
+                    <p>
+                      <strong className="text-green-600">
+                        Payment Methods:
+                      </strong>{" "}
+                      We accept cards, cash on delivery, and digital payments.
+                    </p>
+                    <p>
+                      <strong className="text-green-600">Refunds:</strong>{" "}
+                      Handled case-by-case according to our refund policy.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Important Notice */}
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-500 rounded-lg p-6">
+            <div className="flex items-start gap-3">
+              <svg
+                className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <div>
+                <h3 className="font-bold text-gray-900 mb-2">
+                  Important Notice
+                </h3>
+                <p className="text-gray-700 text-sm">
+                  These terms may be updated. Continued use of foodO after
+                  changes constitutes acceptance of modified terms. For
+                  questions, contact{" "}
+                  <a
+                    href="mailto:legal@foodo.pk"
+                    className="text-blue-600 hover:underline"
+                  >
+                    legal@foodo.pk
+                  </a>
+                </p>
+              </div>
             </div>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              3. User Accounts
-            </h2>
-            <div className="space-y-4 text-gray-600">
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">3.1 Registration:</strong> To
-                access certain features, you must create an account. You agree
-                to provide accurate, current, and complete information during
-                registration.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">3.2 Account Security:</strong>{" "}
-                You are responsible for maintaining the confidentiality of your
-                account credentials and for all activities under your account.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">3.3 Age Requirement:</strong>{" "}
-                You must be at least 18 years old to create an account and use
-                our services.
-              </p>
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              4. Home Chef Terms
-            </h2>
-            <div className="space-y-4 text-gray-600">
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">4.1 Registration:</strong>{" "}
-                Home Chefs must provide valid business information, including
-                necessary food handling certifications where applicable.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">4.2 Food Quality:</strong>{" "}
-                Home Chefs are responsible for ensuring food quality, safety,
-                and hygiene standards are maintained at all times.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">4.3 Pricing:</strong> Home
-                Chefs set their own prices but must ensure they are reasonable
-                and competitive. foodO reserves the right to moderate pricing.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">4.4 Commission:</strong> foodO
-                charges a commission on each order as outlined in the Home Chef
-                agreement.
-              </p>
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              5. Orders and Payments
-            </h2>
-            <div className="space-y-4 text-gray-600">
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">5.1 Order Placement:</strong>{" "}
-                Orders are confirmed only when payment is successfully processed
-                and Home Chef accepts the order.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">5.2 Payment Methods:</strong>{" "}
-                We accept various payment methods including credit/debit cards
-                and cash on delivery where available.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">5.3 Pricing:</strong> All
-                prices are in Pakistani Rupees (PKR) and include applicable
-                taxes.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">5.4 Refunds:</strong> Refund
-                requests are handled on a case-by-case basis according to our
-                refund policy.
-              </p>
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              6. Delivery
-            </h2>
-            <div className="space-y-4 text-gray-600">
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">6.1 Delivery Times:</strong>{" "}
-                Estimated delivery times are approximate and may vary due to
-                factors beyond our control.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">6.2 Delivery Areas:</strong>{" "}
-                We deliver to specified areas. Service availability depends on
-                your location.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">6.3 Failed Delivery:</strong>{" "}
-                If delivery cannot be completed due to incorrect address or
-                customer unavailability, additional charges may apply.
-              </p>
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              7. Cancellations and Refunds
-            </h2>
-            <div className="space-y-4 text-gray-600">
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">
-                  7.1 Customer Cancellation:
-                </strong>{" "}
-                Orders can be cancelled before Home Chef acceptance.
-                Post-acceptance cancellations may incur charges.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">
-                  7.2 Home Chef Cancellation:
-                </strong>{" "}
-                If a Home Chef cancels an order, full refund will be processed
-                to the customer.
-              </p>
-              <p className="leading-relaxed">
-                <strong className="text-gray-800">
-                  7.3 Refund Processing:
-                </strong>{" "}
-                Refunds typically take 5-7 business days to reflect in your
-                account.
-              </p>
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              8. User Conduct
-            </h2>
-            <div className="bg-orange-50 p-6 rounded-lg">
-              <p className="text-gray-600 mb-3">You agree not to:</p>
-              <ul className="list-disc list-inside space-y-2 text-gray-600">
-                <li>
-                  Use the Platform for any illegal or unauthorized purpose
-                </li>
-                <li>Violate any laws in your jurisdiction</li>
-                <li>Infringe upon the rights of others</li>
-                <li>Submit false or misleading information</li>
-                <li>Interfere with or disrupt the Platform's functionality</li>
-                <li>
-                  Attempt to gain unauthorized access to any part of the
-                  Platform
-                </li>
-              </ul>
-            </div>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              9. Intellectual Property
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              All content on the Platform, including text, graphics, logos,
-              images, and software, is the property of foodO or its content
-              suppliers and is protected by intellectual property laws. You may
-              not reproduce, distribute, or create derivative works without our
-              express written permission.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              10. Liability Limitation
-            </h2>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              foodO acts as an intermediary platform connecting customers with
-              Home Chefs. We do not prepare, handle, or deliver food directly.
-              While we strive to maintain quality standards, we are not liable
-              for:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-              <li>
-                Food quality, taste, or safety issues arising from Home Chef
-                preparation
-              </li>
-              <li>
-                Allergic reactions or health issues related to food consumption
-              </li>
-              <li>
-                Delays in delivery due to circumstances beyond our control
-              </li>
-              <li>Any indirect, incidental, or consequential damages</li>
-            </ul>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              11. Privacy
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              Your use of the Platform is also governed by our Privacy Policy,
-              which explains how we collect, use, and protect your personal
-              information.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              12. Modifications
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              We reserve the right to modify these Terms and Conditions at any
-              time. Changes will be effective immediately upon posting. Your
-              continued use of the Platform after changes constitutes acceptance
-              of the modified terms.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              13. Termination
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              We may terminate or suspend your account and access to the
-              Platform immediately, without prior notice, for any breach of
-              these Terms and Conditions or for any other reason at our sole
-              discretion.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              14. Governing Law
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              These Terms and Conditions are governed by the laws of Pakistan.
-              Any disputes arising from these terms shall be subject to the
-              exclusive jurisdiction of the courts in Pakistan.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              15. Contact Us
-            </h2>
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <p className="text-gray-600 mb-3">
-                If you have questions about these Terms and Conditions, please
-                contact us:
-              </p>
-              <ul className="space-y-2 text-gray-600">
-                <li>
-                  <strong className="text-gray-800">Email:</strong>{" "}
-                  support@foodo.com
-                </li>
-                <li>
-                  <strong className="text-gray-800">Phone:</strong>{" "}
-                  +92-XXX-XXXXXXX
-                </li>
-                <li>
-                  <strong className="text-gray-800">Address:</strong> foodO
-                  Headquarters, Pakistan
-                </li>
-              </ul>
-            </div>
-          </section>
-
-          <div className="border-t pt-6 mt-8">
-            <p className="text-sm text-gray-500 text-center">
-              By using foodO, you acknowledge that you have read, understood,
-              and agree to be bound by these Terms and Conditions.
-            </p>
           </div>
         </div>
       </div>

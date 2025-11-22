@@ -8,53 +8,55 @@ import { BiMessageSquareDetail } from "react-icons/bi";
 const DashboardHeader = () => {
   const { seller } = useSelector((state) => state.seller);
   return (
-    <div className="w-full h-[80px] bg-white shadow sticky top-0 left-0 z-30 flex items-center justify-between px-4">
+    <div className="w-full h-20 bg-white shadow-md sticky top-0 left-0 z-30 flex items-center justify-between px-6 border-b-2 border-orange-100">
       <div>
         <Link to="/dashboard">
-          <div className="flex items-center">
-            <h1 className="text-[36px] font-semibold text-gray-700  ">food</h1>
-            <h1 className="text-[38px] font-semibold text-orange-500">O</h1>
+          <div className="flex items-center hover:opacity-80 transition-opacity">
+            <h1 className="text-4xl font-bold text-gray-700">food</h1>
+            <h1 className="text-4xl font-bold text-orange-500">O</h1>
           </div>
-          {/* <img
-            src="https://shopo.quomodothemes.website/assets/images/logo.svg"
-            alt=""
-          /> */}
         </Link>
       </div>
-      <div className="flex items-center">
-        <div className="flex items-center mr-4">
-          <Link to="/dashboard-coupouns" className="800px:block hidden">
+      <div className="flex items-center gap-2">
+        <Link to="/dashboard-coupouns" className="800px:block hidden">
+          <div className="p-2 hover:bg-orange-50 rounded-lg transition-colors">
             <AiOutlineGift
-              color="#555"
-              size={30}
-              className="mx-5 cursor-pointer"
+              color="#f97316"
+              size={26}
+              className="cursor-pointer"
             />
-          </Link>
-          <Link to="/dashboard-products" className="800px:block hidden">
+          </div>
+        </Link>
+        <Link to="/dashboard-products" className="800px:block hidden">
+          <div className="p-2 hover:bg-orange-50 rounded-lg transition-colors">
             <FiShoppingBag
-              color="#555"
-              size={30}
-              className="mx-5 cursor-pointer"
+              color="#f97316"
+              size={26}
+              className="cursor-pointer"
             />
-          </Link>
-          <Link to="/dashboard-orders" className="800px:block hidden">
-            <FiPackage color="#555" size={30} className="mx-5 cursor-pointer" />
-          </Link>
-          <Link to="/dashboard-messages" className="800px:block hidden">
+          </div>
+        </Link>
+        <Link to="/dashboard-orders" className="800px:block hidden">
+          <div className="p-2 hover:bg-orange-50 rounded-lg transition-colors">
+            <FiPackage color="#f97316" size={26} className="cursor-pointer" />
+          </div>
+        </Link>
+        <Link to="/dashboard-messages" className="800px:block hidden">
+          <div className="p-2 hover:bg-orange-50 rounded-lg transition-colors">
             <BiMessageSquareDetail
-              color="#555"
-              size={30}
-              className="mx-5 cursor-pointer"
+              color="#f97316"
+              size={26}
+              className="cursor-pointer"
             />
-          </Link>
-          <Link to={`/shop/${seller._id}`}>
-            <img
-              src={`${seller.avatar?.url}`}
-              alt=""
-              className="w-[50px] h-[50px] rounded-full object-cover"
-            />
-          </Link>
-        </div>
+          </div>
+        </Link>
+        <Link to={`/shop/${seller._id}`} className="ml-3">
+          <img
+            src={`${seller.avatar?.url}`}
+            alt="Shop Avatar"
+            className="w-12 h-12 rounded-full object-cover border-2 border-orange-500 hover:border-orange-600 transition-colors"
+          />
+        </Link>
       </div>
     </div>
   );

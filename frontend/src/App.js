@@ -25,6 +25,13 @@ import {
   TermsPage,
   PrivacyPage,
   ContactPage,
+  HowItWorksPage,
+  CareersPage,
+  OurStoryPage,
+  BecomePartnerPage,
+  OffersPage,
+  DeliveryInfoPage,
+  SafetyPage,
 } from "./routes/Routes.js";
 import {
   ShopDashboardPage,
@@ -112,6 +119,13 @@ const App = () => {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/careers" element={<CareersPage />} />
+        <Route path="/our-story" element={<OurStoryPage />} />
+        <Route path="/become-partner" element={<BecomePartnerPage />} />
+        <Route path="/offers" element={<OffersPage />} />
+        <Route path="/delivery-info" element={<DeliveryInfoPage />} />
+        <Route path="/safety" element={<SafetyPage />} />
         <Route
           path="/checkout"
           element={

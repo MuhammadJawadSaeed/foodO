@@ -23,10 +23,6 @@ const productSchema = new mongoose.Schema({
     type: Number,
     required: [true, "Please enter your product price!"],
   },
-  stock: {
-    type: Number,
-    required: [true, "Please enter your product stock!"],
-  },
   images: [
     {
       public_id: {
@@ -53,10 +49,10 @@ const productSchema = new mongoose.Schema({
       productId: {
         type: String,
       },
-      createdAt:{
+      createdAt: {
         type: Date,
         default: Date.now(),
-      }
+      },
     },
   ],
   ratings: {
@@ -70,7 +66,8 @@ const productSchema = new mongoose.Schema({
     type: Object,
     required: true,
   },
-  city: {  // New field to store the shop's city
+  city: {
+    // New field to store the shop's city
     type: String,
     required: true,
   },

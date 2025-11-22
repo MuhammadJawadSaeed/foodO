@@ -579,7 +579,6 @@ router.put(
       async function updateOrder(id, qty) {
         const product = await Product.findById(id);
 
-        product.stock -= qty;
         product.sold_out += qty;
 
         await product.save({ validateBeforeSave: false });
