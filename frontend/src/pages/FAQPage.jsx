@@ -177,18 +177,18 @@ const FAQPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <Header activeHeading={0} />
 
       {/* Hero */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-orange-200 via-white to-gray-200 pt-[140px] pb-16 md:pb-24">
-        <div className="absolute top-10 right-10 w-72 h-72 bg-orange-100/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-orange-100/20 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-orange-50/10 rounded-full blur-2xl animate-pulse delay-700"></div>
+      <div className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-orange-100/50 to-pink-50 pt-[140px] pb-24 md:pb-32">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-orange-200/30 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-pink-200/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-100/20 rounded-full blur-3xl"></div>
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 mb-4 px-6 py-2 bg-orange-100/50 backdrop-blur-sm rounded-full text-sm font-medium text-orange-700">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <div className="inline-flex items-center gap-2 mb-6 px-6 py-2.5 bg-orange-100 rounded-full text-sm font-semibold text-orange-700 border border-orange-200 shadow-sm">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
@@ -197,25 +197,26 @@ const FAQPage = () => {
             </svg>
             Frequently Asked Questions
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-gray-800">
-            How Can We Help?
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-gray-900">
+            How Can We Help You?
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            Find answers to common questions about FoodO
+          <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Find instant answers to common questions about FoodO's services,
+            orders, and more
           </p>
 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto">
-            <div className="relative">
+            <div className="relative group">
               <input
                 type="text"
-                placeholder="Search for answers..."
+                placeholder="Type your question here..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-6 py-4 pl-14 text-gray-900 bg-white rounded-2xl shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-200 border-2 border-orange-100"
+                className="w-full px-6 py-5 pl-14 text-gray-900 bg-white rounded-2xl shadow-lg focus:outline-none focus:ring-4 focus:ring-orange-200 border-2 border-orange-100 placeholder-gray-400 text-base transition-all"
               />
               <svg
-                className="w-6 h-6 text-gray-400 absolute left-5 top-1/2 transform -translate-y-1/2"
+                className="w-6 h-6 text-orange-500 absolute left-5 top-1/2 transform -translate-y-1/2 group-focus-within:scale-110 transition-transform"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -227,23 +228,43 @@ const FAQPage = () => {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <svg
+                    className="w-5 h-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Category Filter */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
-        <div className="bg-white rounded-2xl shadow-xl p-4 overflow-x-auto">
+      <div className="relative z-[5] max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
+        <div className="bg-white rounded-2xl shadow-xl p-6 border border-orange-200 overflow-x-auto">
           <div className="flex gap-3 min-w-max">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition transform hover:scale-105 ${
+                className={`flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-md ${
                   selectedCategory === cat.id
-                    ? `bg-gradient-to-r ${cat.color} text-white shadow-lg`
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105"
+                    : "bg-white text-gray-700 hover:bg-orange-50 border-2 border-gray-200 hover:border-orange-300"
                 }`}
               >
                 <svg
@@ -259,7 +280,7 @@ const FAQPage = () => {
                     d={cat.icon}
                   />
                 </svg>
-                {cat.name}
+                <span className="whitespace-nowrap">{cat.name}</span>
               </button>
             ))}
           </div>
@@ -267,7 +288,7 @@ const FAQPage = () => {
       </div>
 
       {/* FAQ Accordion */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {filteredFAQs.length > 0 ? (
           <div className="space-y-4">
             {filteredFAQs.map((faq, index) => {
@@ -277,18 +298,20 @@ const FAQPage = () => {
               return (
                 <div
                   key={index}
-                  className="bg-white rounded-2xl shadow-md overflow-hidden transform hover:shadow-xl transition"
+                  className={`bg-white rounded-xl shadow-md overflow-hidden border-2 transition-all duration-300 ${
+                    openIndex === index
+                      ? "border-orange-300 shadow-lg"
+                      : "border-gray-100 hover:border-orange-200 hover:shadow-lg"
+                  }`}
                 >
                   <button
                     onClick={() => toggleAccordion(index)}
-                    className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-gray-50 transition"
+                    className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-orange-50/50 transition-all duration-300"
                   >
                     <div className="flex items-center gap-4 flex-1">
-                      <div
-                        className={`w-10 h-10 bg-gradient-to-br ${categoryData?.color} rounded-lg flex items-center justify-center flex-shrink-0`}
-                      >
+                      <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg
-                          className="w-5 h-5 text-white"
+                          className="w-5 h-5 text-orange-600"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -301,33 +324,47 @@ const FAQPage = () => {
                           />
                         </svg>
                       </div>
-                      <h3 className="text-lg font-bold text-gray-900">
+                      <h3 className="text-base font-bold text-gray-900 pr-4">
                         {faq.question}
                       </h3>
                     </div>
-                    <svg
-                      className={`w-6 h-6 text-gray-500 transform transition ${
-                        openIndex === index ? "rotate-180" : ""
+                    <div
+                      className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 ${
+                        openIndex === index
+                          ? "bg-orange-500 shadow-lg"
+                          : "bg-gray-100"
                       }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
+                      <svg
+                        className={`w-5 h-5 transform transition-all duration-300 ${
+                          openIndex === index
+                            ? "rotate-180 text-white"
+                            : "text-gray-600"
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
                   </button>
                   <div
                     className={`overflow-hidden transition-all duration-300 ${
-                      openIndex === index ? "max-h-96" : "max-h-0"
+                      openIndex === index
+                        ? "max-h-96 opacity-100"
+                        : "max-h-0 opacity-0"
                     }`}
                   >
-                    <div className="px-6 pb-6 pt-2 text-gray-600 leading-relaxed">
-                      {faq.answer}
+                    <div className="px-6 pb-5 pt-2">
+                      <div className="ml-14 pl-4 border-l-3 border-orange-300 text-gray-600 leading-relaxed">
+                        {faq.answer}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -335,60 +372,64 @@ const FAQPage = () => {
             })}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <svg
-              className="w-20 h-20 text-gray-300 mx-auto mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <h3 className="text-xl font-bold text-gray-700 mb-2">
-              No results found
+          <div className="text-center py-16 bg-white rounded-2xl shadow-lg border border-gray-100">
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full mb-6">
+              <svg
+                className="w-12 h-12 text-orange-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              No Results Found
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-lg mb-6">
               Try adjusting your search or category filter
             </p>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory("all");
+              }}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Reset Filters
+            </button>
           </div>
         )}
       </div>
 
       {/* Still Need Help */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="bg-gradient-to-br from-orange-500 via-pink-600 to-rose-500 text-white rounded-2xl shadow-xl p-8 text-center">
-          <svg
-            className="w-16 h-16 mx-auto mb-4 opacity-90"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-            />
-          </svg>
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">
-            Still Need Help?
-          </h2>
-          <p className="text-lg opacity-90 mb-6 max-w-2xl mx-auto">
-            Can't find what you're looking for? Our support team is here to
-            help!
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-white text-orange-600 px-6 py-3 rounded-xl font-medium hover:shadow-lg transform hover:scale-105 transition"
-            >
+      <div className="relative z-[5] max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="relative overflow-hidden bg-gradient-to-br from-orange-100 via-orange-50 to-pink-50 rounded-3xl shadow-lg p-10 md:p-12 text-center border-2 border-orange-200">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-200/20 rounded-full blur-3xl"></div>
+
+          <div className="relative z-10">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-200 rounded-2xl mb-6 shadow-md">
               <svg
-                className="w-5 h-5"
+                className="w-10 h-10 text-orange-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -397,30 +438,59 @@ const FAQPage = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
                 />
               </svg>
-              Contact Support
-            </a>
-            <a
-              href="tel:+923000000000"
-              className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium hover:bg-white/30 transition"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            </div>
+
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
+              Still Need Help?
+            </h2>
+            <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
+              Can't find what you're looking for? Our dedicated support team is
+              ready to assist you 24/7!
+            </p>
+
+            <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-xl mx-auto">
+              <a
+                href="/contact"
+                className="inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                />
-              </svg>
-              Call Us
-            </a>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                Contact Support
+              </a>
+              <a
+                href="tel:+923000000000"
+                className="inline-flex items-center justify-center gap-2.5 bg-white text-orange-600 px-8 py-4 rounded-xl font-bold hover:bg-orange-50 transition-all duration-300 border-2 border-orange-300 hover:border-orange-400 shadow-sm hover:shadow-md transform hover:scale-105"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  />
+                </svg>
+                Call Us Now
+              </a>
+            </div>
           </div>
         </div>
       </div>

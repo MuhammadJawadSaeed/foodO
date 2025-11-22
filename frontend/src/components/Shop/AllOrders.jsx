@@ -85,7 +85,7 @@ const AllOrders = () => {
   return (
     <>
       {isLoading ? (
-        <Loader />
+        <Loader fullScreen={true} />
       ) : (
         <div className="w-full p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen">
           <div className="bg-white rounded-xl shadow-md overflow-hidden">

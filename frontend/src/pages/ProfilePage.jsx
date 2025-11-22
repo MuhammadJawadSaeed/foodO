@@ -14,7 +14,7 @@ const ProfilePage = () => {
   return (
     <div>
       {loading ? (
-        <Loader />
+        <Loader fullScreen={true} />
       ) : (
         <>
           <Header />

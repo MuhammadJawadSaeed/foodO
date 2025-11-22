@@ -56,8 +56,8 @@ const StartPage = () => {
       document.head.appendChild(link);
     });
 
-    // Simulate initial loading
-    setTimeout(() => setLoading(false), 800);
+    // Quick loading - just for smooth transition
+    setTimeout(() => setLoading(false), 300);
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -70,7 +70,7 @@ const StartPage = () => {
   };
 
   if (loading) {
-    return <Loader fullScreen={true} useAnimation={true} />;
+    return <Loader fullScreen={true} />;
   }
 
   return (

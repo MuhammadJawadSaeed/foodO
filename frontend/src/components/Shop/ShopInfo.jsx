@@ -53,7 +53,7 @@ const ShopInfo = ({ isOwner }) => {
   return (
     <>
       {isLoading ? (
-        <Loader />
+        <Loader fullScreen={true} />
       ) : (
         <div className="bg-white rounded-xl shadow-md overflow-hidden sticky top-6">
           {/* Header with gradient background */}

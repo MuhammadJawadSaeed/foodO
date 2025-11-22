@@ -16,7 +16,7 @@ const HomePage = () => {
   }, []);
 
   if (loading) {
-    return <Loader fullScreen={true} useAnimation={false} />;
+    return <Loader fullScreen={true} />;
   }
 
   return (

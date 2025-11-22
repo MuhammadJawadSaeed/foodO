@@ -13,7 +13,8 @@ const BestSellingPage = () => {
 
   const location = useLocation();
   const selectedCityFromLocalStorage = localStorage.getItem("selectedCity");
-  const selectedCity = location.state?.selectedCity || selectedCityFromLocalStorage || "";
+  const selectedCity =
+    location.state?.selectedCity || selectedCityFromLocalStorage || "";
 
   useEffect(() => {
     // Save the selected city to localStorage so it persists after page refresh
@@ -28,7 +29,9 @@ const BestSellingPage = () => {
         : allProducts;
 
       // Create a shallow copy of the filtered data before sorting
-      const sortedData = [...allProductsData].sort((a, b) => b.sold_out - a.sold_out);
+      const sortedData = [...allProductsData].sort(
+        (a, b) => b.sold_out - a.sold_out
+      );
 
       setData(sortedData);
     }
@@ -37,7 +40,7 @@ const BestSellingPage = () => {
   return (
     <>
       {isLoading ? (
-        <Loader />
+        <Loader fullScreen={true} />
       ) : (
         <div>
           <Header activeHeading={2} />

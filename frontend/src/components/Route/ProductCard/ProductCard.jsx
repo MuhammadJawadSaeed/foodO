@@ -115,63 +115,87 @@ const ProductCard = ({ data, isEvent }) => {
                 )}
               </div>
               <span className="text-green-600 text-xs">
-                ({data?.sold_out} sold)
+                ({data?.sold_out} Orders Delivered)
               </span>
             </div>
           </Link>
         </div>
 
-        {/* Side Options */}
-        <div className="absolute top-2 right-2 flex flex-col gap-2">
+        {/* Action Icons */}
+        <div className="absolute top-2 right-2 flex flex-col gap-2 z-[5]">
+          {/* Wishlist Button */}
           {click ? (
             <button
-              className="bg-white p-1 rounded-full shadow-md hover:shadow-lg"
-              onClick={() => removeFromWishlistHandler(data)}
+              className="group bg-gradient-to-br from-orange-500 to-pink-500 p-2.5 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                removeFromWishlistHandler(data);
+              }}
+              title="Remove from wishlist"
             >
-              <AiFillHeart
-                size={22}
-                color="#FF6600"
-                title="Remove from wishlist"
-              />
+              <AiFillHeart size={18} className="text-white" />
             </button>
           ) : (
             <button
-              className="bg-white p-1 rounded-full shadow-md hover:shadow-lg"
-              onClick={() => addToWishlistHandler(data)}
+              className="group bg-white p-2.5 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border border-gray-100"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addToWishlistHandler(data);
+              }}
+              title="Add to wishlist"
             >
               <AiOutlineHeart
-                size={22}
-                color="#FF6600"
-                title="Add to wishlist"
+                size={18}
+                className="text-orange-500 group-hover:text-pink-500 transition-colors"
               />
             </button>
           )}
 
+          {/* Quick View Button */}
           <button
-            className="bg-white p-1 rounded-full shadow-md hover:shadow-lg"
-            onClick={() => setOpen(!open)}
+            className="group bg-white p-2.5 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 border border-gray-100"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(!open);
+            }}
+            title="Quick view"
           >
-            <AiOutlineEye size={22} color="#FF6600" title="Quick view" />
+            <AiOutlineEye
+              size={18}
+              className="text-orange-500 group-hover:text-orange-600 transition-colors"
+            />
           </button>
 
+          {/* Add to Cart Button */}
           <button
-            className={`bg-white p-1 rounded-full shadow-md hover:shadow-lg ${
+            className={`group p-2.5 rounded-full shadow-lg transition-all duration-300 border ${
               data.shop?.isOnline === false
-                ? "opacity-50 cursor-not-allowed"
-                : ""
+                ? "bg-gray-300 border-gray-400 opacity-60 cursor-not-allowed"
+                : "bg-white border-gray-100 hover:shadow-xl transform hover:scale-110"
             }`}
-            onClick={() =>
-              data.shop?.isOnline !== false && addToCartHandler(data._id)
-            }
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (data.shop?.isOnline !== false) {
+                addToCartHandler(data._id);
+              }
+            }}
             disabled={data.shop?.isOnline === false}
+            title={
+              data.shop?.isOnline === false
+                ? "Restaurant offline"
+                : "Add to cart"
+            }
           >
             <AiOutlineShoppingCart
-              size={25}
-              color="#FF6600"
-              title={
+              size={18}
+              className={
                 data.shop?.isOnline === false
-                  ? "Restaurant offline"
-                  : "Add to cart"
+                  ? "text-gray-500"
+                  : "text-orange-500 group-hover:text-orange-600 transition-colors"
               }
             />
           </button>

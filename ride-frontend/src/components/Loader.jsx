@@ -1,6 +1,6 @@
 import React from "react";
 
-const Loader = ({ fullScreen = true, size = "large", useAnimation = true }) => {
+const Loader = ({ fullScreen = true, size = "large" }) => {
   const sizeClasses = {
     small: "w-6 h-6 border-2",
     medium: "w-12 h-12 border-3",
@@ -58,7 +58,7 @@ const Loader = ({ fullScreen = true, size = "large", useAnimation = true }) => {
 
           {/* Subtitle */}
           <p className="text-gray-500 text-sm animate-pulse">
-            Preparing your delicious experience...
+            Getting your ride ready...
           </p>
         </div>
       </div>

@@ -346,49 +346,70 @@ const AboutPage = () => {
         </div>
       </div>
 
-      {/* Team Section */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="text-center mb-12">
-          <div className="inline-block mb-4 px-6 py-2 bg-orange-100 text-orange-600 rounded-full text-sm font-semibold">
-            Meet The Team
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Powered by Passion
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            A diverse team of food enthusiasts, tech experts, and customer
-            service professionals working together to bring you the best
-            homemade food experience
-          </p>
+      {/* Team Section - Powered by Passion */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-pink-50 py-16 md:py-20">
+        {/* Subtle Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-10 right-10 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 left-10 w-64 h-64 bg-pink-200/30 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="relative bg-gradient-to-br from-orange-50 to-pink-50 rounded-3xl p-8 md:p-12 border-2 border-orange-200">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-orange-200 to-transparent rounded-full blur-3xl opacity-50"></div>
-          <div className="relative text-center">
-            <div className="flex justify-center mb-6 space-x-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className={`w-12 h-12 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full border-4 border-white shadow-lg ${
-                    i > 1 ? "-ml-6" : ""
-                  }`}
-                ></div>
-              ))}
-              <div className="w-12 h-12 bg-gray-200 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-sm font-bold text-gray-600 -ml-6">
-                50+
-              </div>
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="inline-block mb-4 px-6 py-2 bg-orange-100 text-orange-600 rounded-full text-sm font-semibold">
+              Meet The Team
             </div>
-            <p className="text-xl md:text-2xl text-gray-800 font-medium max-w-3xl mx-auto leading-relaxed">
-              Our passionate team works around the clock to ensure you get the{" "}
-              <span className="text-orange-600 font-bold">freshest meals</span>,
-              the{" "}
-              <span className="text-orange-600 font-bold">best service</span>,
-              and an{" "}
-              <span className="text-orange-600 font-bold">
-                unforgettable experience
-              </span>{" "}
-              every single time.
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Powered by <span className="text-orange-600">Passion</span>
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+              Our dedicated team works together to bring you the best homemade
+              food experience
             </p>
+          </div>
+
+          {/* Main Card */}
+          <div className="relative bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-orange-100 to-pink-100 rounded-full blur-3xl opacity-50"></div>
+
+            <div className="relative text-center">
+              {/* Team Avatars */}
+              <div className="flex justify-center items-center mb-8">
+                <div className="flex -space-x-3">
+                  {[
+                    "from-orange-400 to-orange-500",
+                    "from-pink-400 to-pink-500",
+                    "from-purple-400 to-purple-500",
+                    "from-yellow-400 to-orange-500",
+                    "from-red-400 to-pink-500",
+                  ].map((gradient, i) => (
+                    <div
+                      key={i}
+                      className={`w-12 h-12 bg-gradient-to-br ${gradient} rounded-full border-4 border-white shadow-lg transform hover:scale-110 transition-transform duration-300`}
+                    ></div>
+                  ))}
+                  <div className="w-12 h-12 bg-gray-200 rounded-full border-4 border-white shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform duration-300">
+                    <span className="text-gray-700 font-bold text-sm">50+</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Message */}
+              <p className="text-xl md:text-2xl text-gray-800 font-medium max-w-3xl mx-auto leading-relaxed">
+                Our passionate team works around the clock to ensure you get the{" "}
+                <span className="text-orange-600 font-bold">
+                  freshest meals
+                </span>
+                , the{" "}
+                <span className="text-orange-600 font-bold">best service</span>,
+                and an{" "}
+                <span className="text-orange-600 font-bold">
+                  unforgettable experience
+                </span>{" "}
+                every single time.
+              </p>
+            </div>
           </div>
         </div>
       </div>

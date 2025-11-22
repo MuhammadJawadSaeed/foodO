@@ -120,7 +120,7 @@ const Footer = () => {
                   className="text-orange-500 mt-1 flex-shrink-0"
                   size={18}
                 />
-                <span>Lahore, Pakistan</span>
+                <span>Sahiwal, Pakistan</span>
               </li>
               <li className="flex items-center gap-2 text-gray-600 text-sm">
                 <HiPhone className="text-orange-500 flex-shrink-0" size={18} />

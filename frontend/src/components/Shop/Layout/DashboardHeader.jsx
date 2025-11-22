@@ -50,12 +50,25 @@ const DashboardHeader = () => {
             />
           </div>
         </Link>
-        <Link to={`/shop/${seller._id}`} className="ml-3">
+        <Link to={`/shop/${seller._id}`} className="ml-3 relative">
           <img
             src={`${seller.avatar?.url}`}
             alt="Shop Avatar"
             className="w-12 h-12 rounded-full object-cover border-2 border-orange-500 hover:border-orange-600 transition-colors"
           />
+          {/* Online/Offline Status Indicator */}
+          <div className="absolute -top-1 -right-1 flex items-center justify-center">
+            <span
+              className={`w-4 h-4 rounded-full border-2 border-white ${
+                seller?.isOnline !== false ? "bg-green-500" : "bg-red-500"
+              }`}
+              title={
+                seller?.isOnline !== false
+                  ? "Restaurant Online"
+                  : "Restaurant Offline"
+              }
+            ></span>
+          </div>
         </Link>
       </div>
     </div>

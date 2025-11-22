@@ -12,10 +12,11 @@ const ProductsPage = () => {
   const categoryData = searchParams.get("category");
   const { allProducts, isLoading } = useSelector((state) => state.products);
   const [data, setData] = useState([]);
-  
+
   const location = useLocation();
   const selectedCityFromLocalStorage = localStorage.getItem("selectedCity");
-  const selectedCity = location.state?.selectedCity || selectedCityFromLocalStorage || "";
+  const selectedCity =
+    location.state?.selectedCity || selectedCityFromLocalStorage || "";
 
   useEffect(() => {
     if (allProducts && allProducts.length > 0) {
@@ -42,7 +43,7 @@ const ProductsPage = () => {
   return (
     <>
       {isLoading ? (
-        <Loader />
+        <Loader fullScreen={true} />
       ) : (
         <div>
           <Header activeHeading={3} />

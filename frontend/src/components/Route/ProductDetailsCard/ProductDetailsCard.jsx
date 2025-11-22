@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   AiFillHeart,
+  AiFillStar,
   AiOutlineHeart,
   AiOutlineMessage,
   AiOutlineShoppingCart,
@@ -91,159 +92,227 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   };
 
   return (
-    <div className="bg-[#fff]">
+    <div
+      className="fixed w-full h-screen top-0 left-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={() => setOpen(false)}
+    >
       {data ? (
-        <div className="fixed w-full h-screen top-0 left-0 bg-[#00000030] z-40 flex items-center justify-center">
-          <div className="w-[90%] 800px:w-[60%] h-[90vh] overflow-y-scroll 800px:h-[75vh] bg-white rounded-md shadow-sm relative p-4">
+        <div
+          className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl relative"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close Button */}
+          <button
+            className="absolute right-4 top-4 z-50 p-2 bg-gray-100 hover:bg-red-100 rounded-full transition-colors group"
+            onClick={() => setOpen(false)}
+          >
             <RxCross1
-              size={30}
-              className="absolute right-3 top-3 z-50 cursor-pointer hover:text-red-500"
-              onClick={() => setOpen(false)}
+              size={20}
+              className="text-gray-600 group-hover:text-red-500 transition-colors"
             />
+          </button>
 
-            {/* Check if shop is offline */}
-            {data.shop?.isOnline === false && (
-              <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-red-500"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-semibold text-red-800">
-                      Restaurant Currently Offline
-                    </p>
-                    <p className="text-xs text-red-700 mt-1">
-                      This restaurant is not accepting orders at the moment.
-                      Please check back later.
-                    </p>
-                  </div>
+          {/* Restaurant Offline Warning */}
+          {data.shop?.isOnline === false && (
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 p-4 m-6 mb-4 rounded-r-lg">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-6 w-6 text-red-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-bold text-red-800">
+                    Restaurant Currently Offline
+                  </h3>
+                  <p className="text-xs text-red-700 mt-1">
+                    This restaurant is not accepting orders at the moment.
+                    Please check back later.
+                  </p>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            <div className="block w-full 800px:flex">
-              <div className="w-full 800px:w-[50%]">
+          <div className="grid md:grid-cols-2 gap-6 p-6">
+            {/* Left Column - Image & Shop Info */}
+            <div className="space-y-4">
+              {/* Product Image */}
+              <div className="relative rounded-xl overflow-hidden bg-gray-100">
                 <img
-                  className="w-[85%] m-2 rounded-md"
+                  className="w-full h-auto object-cover"
                   src={`${data.images && data.images[0]?.url}`}
-                  alt=""
+                  alt={data.name}
                 />
-                <div className="flex">
-                  <Link to={`/shop/preview/${data.shop._id}`} className="flex">
-                    <img
-                      src={`${data?.shop?.avatar?.url}`}
-                      alt=""
-                      className="w-[50px] h-[50px] rounded-full mr-2"
-                    />
-                    <div>
-                      <h3 className={`${styles.shop_name}`}>
-                        {data.shop.name}
-                      </h3>
-                      <h5 className="pb-3 text-[15px]">
-                        {data?.ratings} Ratings
-                      </h5>
-                    </div>
-                  </Link>
-                </div>
-                <div
-                  className={`${styles.button} bg-[#000] mt-3 w-[70%] ml-8 rounded-[2px] h-11`}
+                {data.shop?.isOnline === false && (
+                  <div className="absolute top-3 left-3">
+                    <span className="bg-red-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
+                      Offline
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Shop Info Card */}
+              <div className="bg-gradient-to-br from-orange-50 to-white rounded-xl p-4 border border-orange-100">
+                <Link
+                  to={`/shop/preview/${data.shop._id}`}
+                  className="flex items-center gap-3 group"
+                >
+                  <img
+                    src={`${data?.shop?.avatar?.url}`}
+                    alt={data.shop.name}
+                    className="w-14 h-14 rounded-full object-cover border-2 border-orange-200 group-hover:border-orange-400 transition-colors"
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                      {data.shop.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 flex items-center gap-1">
+                      <AiFillStar className="text-yellow-500" size={16} />
+                      {data?.ratings} Ratings
+                    </p>
+                  </div>
+                </Link>
+
+                <button
+                  className="w-full mt-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
                   onClick={handleMessageSubmit}
                 >
-                  <span className="text-[#fff] flex items-center">
-                    Send Message <AiOutlineMessage className="ml-1" />
-                  </span>
-                </div>
-                <span className="text-green-600 text-xs">
-                  ({data?.sold_out} sold)
-                </span>
+                  <AiOutlineMessage size={18} />
+                  Send Message
+                </button>
               </div>
 
-              <div className="w-full 800px:w-[50%] pt-5 pl-[5px] pr-[5px]">
-                <h1 className={`${styles.productTitle} text-[20px]`}>
+              {/* Orders Delivered */}
+              <div className="flex items-center gap-2 text-sm">
+                <svg
+                  className="w-5 h-5 text-green-500"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path
+                    fillRule="evenodd"
+                    d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-green-600 font-semibold">
+                  {data?.sold_out} Orders Delivered
+                </span>
+              </div>
+            </div>
+
+            {/* Right Column - Product Details */}
+            <div className="space-y-4">
+              {/* Title */}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
                   {data.name}
                 </h1>
-                <p>{data.description}</p>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {data.description}
+                </p>
+              </div>
 
-                <div className="flex pt-3">
-                  <h4 className={`${styles.productDiscountPrice}`}>
-                    {data.discountPrice}PKR
-                  </h4>
-                  <h3 className={`${styles.price}`}>
-                    {data.originalPrice ? data.originalPrice + "PKR" : null}
-                  </h3>
+              {/* Price */}
+              <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-lg p-4 border border-orange-200">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-orange-600">
+                    {data.discountPrice} PKR
+                  </span>
+                  {data.originalPrice && (
+                    <span className="text-lg text-gray-500 line-through">
+                      {data.originalPrice} PKR
+                    </span>
+                  )}
                 </div>
-                <div className="flex items-center mt-12 justify-between pr-3">
-                  <div>
+              </div>
+
+              {/* Quantity & Wishlist */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quantity
+                  </label>
+                  <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
                     <button
-                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-l px-4 py-2 shadow-lg hover:opacity-75 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-400"
                       onClick={decrementCount}
-                      disabled={data.shop?.isOnline === false}
+                      disabled={data.shop?.isOnline === false || count <= 1}
                     >
                       -
                     </button>
-                    <span className="bg-gray-200 text-gray-800 font-medium px-4 py-[11px]">
+                    <span className="flex-1 text-center py-2.5 bg-white font-semibold">
                       {count}
                     </span>
                     <button
-                      className="bg-gradient-to-r from-teal-400 to-teal-500 text-white font-bold rounded-l px-4 py-2 shadow-lg hover:opacity-75 transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-300 disabled:to-gray-400"
                       onClick={incrementCount}
                       disabled={data.shop?.isOnline === false}
                     >
                       +
                     </button>
                   </div>
-                  <div>
-                    {click ? (
-                      <AiFillHeart
-                        size={30}
-                        className="cursor-pointer"
-                        onClick={() => removeFromWishlistHandler(data)}
-                        color={click ? "red" : "#333"}
-                        title="Remove from wishlist"
-                      />
-                    ) : (
-                      <AiOutlineHeart
-                        size={30}
-                        className="cursor-pointer"
-                        onClick={() => addToWishlistHandler(data)}
-                        title="Add to wishlist"
-                      />
-                    )}
-                  </div>
                 </div>
-                <div
-                  className={`${
-                    styles.button
-                  } mt-10 ml-8 rounded-[2px] w-[70%] h-11 flex items-center justify-center ${
-                    data.shop?.isOnline === false
-                      ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer"
-                  }`}
-                  onClick={() =>
-                    data.shop?.isOnline !== false && addToCartHandler(data._id)
-                  }
-                >
-                  <span className="text-[#fff] flex items-center">
-                    {data.shop?.isOnline !== false ? (
-                      <>
-                        Add to cart <AiOutlineShoppingCart className="ml-1" />
-                      </>
+
+                {/* Wishlist Icon */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Wishlist
+                  </label>
+                  <button
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      click
+                        ? "bg-gradient-to-br from-orange-500 to-pink-500 border-orange-500"
+                        : "bg-white border-gray-200 hover:border-orange-300"
+                    }`}
+                    onClick={() =>
+                      click
+                        ? removeFromWishlistHandler(data)
+                        : addToWishlistHandler(data)
+                    }
+                    title={click ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    {click ? (
+                      <AiFillHeart size={24} className="text-white" />
                     ) : (
-                      "Restaurant Offline"
+                      <AiOutlineHeart size={24} className="text-orange-500" />
                     )}
-                  </span>
+                  </button>
                 </div>
               </div>
+
+              {/* Add to Cart Button */}
+              <button
+                className={`w-full py-3.5 px-6 rounded-lg font-bold text-white text-base transition-all flex items-center justify-center gap-2 ${
+                  data.shop?.isOnline === false
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                }`}
+                onClick={() =>
+                  data.shop?.isOnline !== false && addToCartHandler(data._id)
+                }
+                disabled={data.shop?.isOnline === false}
+              >
+                {data.shop?.isOnline !== false ? (
+                  <>
+                    <AiOutlineShoppingCart size={22} />
+                    Add to Cart
+                  </>
+                ) : (
+                  "Restaurant Offline"
+                )}
+              </button>
             </div>
           </div>
         </div>

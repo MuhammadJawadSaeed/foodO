@@ -219,6 +219,34 @@ const ProductDetails = ({ data }) => {
 
               {/* Right Column - Product Info */}
               <div className="space-y-4">
+                {/* Restaurant Offline Warning */}
+                {data.shop?.isOnline === false && (
+                  <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                    <div className="flex items-start">
+                      <svg
+                        className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <div>
+                        <h3 className="text-sm font-semibold text-red-800">
+                          Restaurant Currently Offline
+                        </h3>
+                        <p className="text-sm text-red-700 mt-1">
+                          This restaurant is not accepting orders at the moment.
+                          Please check back later.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Title */}
                 <div>
                   <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
@@ -262,8 +290,8 @@ const ProductDetails = ({ data }) => {
                     <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
                       <button
                         onClick={decrementCount}
-                        className="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-colors text-sm"
-                        disabled={count <= 1}
+                        className="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={count <= 1 || data.shop?.isOnline === false}
                       >
                         -
                       </button>
@@ -272,7 +300,8 @@ const ProductDetails = ({ data }) => {
                       </span>
                       <button
                         onClick={incrementCount}
-                        className="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-colors text-sm"
+                        className="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={data.shop?.isOnline === false}
                       >
                         +
                       </button>
@@ -303,11 +332,21 @@ const ProductDetails = ({ data }) => {
                 {/* Action Buttons */}
                 <div className="space-y-2 pt-2">
                   <button
-                    onClick={() => addToCartHandler(data._id)}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-sm transition-all bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    onClick={() =>
+                      data.shop?.isOnline !== false &&
+                      addToCartHandler(data._id)
+                    }
+                    disabled={data.shop?.isOnline === false}
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-sm transition-all ${
+                      data.shop?.isOnline === false
+                        ? "bg-gray-400 cursor-not-allowed text-white"
+                        : "bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    }`}
                   >
                     <AiOutlineShoppingCart size={18} />
-                    Add to Cart
+                    {data.shop?.isOnline === false
+                      ? "Restaurant Offline"
+                      : "Add to Cart"}
                   </button>
 
                   <Link
