@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { backend_url, server } from "../../server";
-import { AiOutlineCamera } from "react-icons/ai";
+import {
+  AiOutlineCamera,
+  AiOutlineCheckCircle,
+  AiOutlineCloseCircle,
+} from "react-icons/ai";
 import styles from "../../styles/styles";
 import axios from "axios";
 import { loadSeller } from "../../redux/actions/user";
@@ -134,23 +138,23 @@ const ShopSettings = () => {
   };
 
   return (
-    <div className="w-full p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen">
+    <div className="w-full p-3 sm:p-4 md:p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen">
       <div className="max-w-4xl mx-auto">
         {/* Shop Status Toggle Card */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-4 sm:mb-6">
           <div
-            className={`px-6 py-4 bg-gradient-to-r ${
+            className={`px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r ${
               isOnline
                 ? "from-green-500 to-green-600"
                 : "from-gray-500 to-gray-600"
             }`}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-white font-bold text-lg">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-white font-bold text-base sm:text-lg">
                   Restaurant Status
                 </h3>
-                <p className="text-white text-sm opacity-90 mt-1">
+                <p className="text-white text-xs sm:text-sm opacity-90 mt-1">
                   {isOnline
                     ? "Your restaurant is currently accepting orders"
                     : "Your restaurant is currently offline"}
@@ -158,47 +162,58 @@ const ShopSettings = () => {
               </div>
               <button
                 onClick={handleStatusToggle}
-                className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-7 w-14 sm:h-8 sm:w-16 items-center rounded-full transition-colors flex-shrink-0 ${
                   isOnline ? "bg-white" : "bg-gray-300"
                 }`}
+                aria-label="Toggle restaurant status"
               >
                 <span
-                  className={`inline-block h-6 w-6 transform rounded-full transition-transform ${
+                  className={`inline-block h-5 w-5 sm:h-6 sm:w-6 transform rounded-full transition-transform ${
                     isOnline
-                      ? "translate-x-9 bg-green-500"
+                      ? "translate-x-8 sm:translate-x-9 bg-green-500"
                       : "translate-x-1 bg-gray-500"
                   }`}
                 />
               </button>
             </div>
           </div>
-          <div className="px-6 py-4">
-            <p className="text-sm text-gray-600">
-              {isOnline
-                ? "✅ Customers can view and order from your menu"
-                : "❌ Customers cannot access your products when offline"}
+          <div className="px-4 sm:px-6 py-3 sm:py-4">
+            <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-2">
+              {isOnline ? (
+                <>
+                  <AiOutlineCheckCircle className="text-green-500" size={18} />
+                  <span>Customers can view and order from your menu</span>
+                </>
+              ) : (
+                <>
+                  <AiOutlineCloseCircle className="text-red-500" size={18} />
+                  <span>
+                    Customers cannot access your products when offline
+                  </span>
+                </>
+              )}
             </p>
           </div>
         </div>
 
         {/* Profile Header Card */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
-            <h2 className="text-white font-bold text-xl">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-4 sm:mb-6">
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 sm:px-6 py-3 sm:py-4">
+            <h2 className="text-white font-bold text-lg sm:text-xl">
               Shop Profile Settings
             </h2>
           </div>
 
-          <div className="p-8">
+          <div className="p-4 sm:p-6 md:p-8">
             {/* Avatar Section */}
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center mb-6 sm:mb-8">
               <div className="relative">
                 <img
                   src={avatar ? avatar : `${seller.avatar?.url}`}
                   alt="Shop Avatar"
-                  className="w-40 h-40 rounded-full object-cover border-4 border-orange-200 shadow-lg"
+                  className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-orange-200 shadow-lg"
                 />
-                <div className="absolute bottom-2 right-2 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-orange-600 transition-colors shadow-md">
+                <div className="absolute bottom-2 right-2 w-9 h-9 sm:w-10 sm:h-10 bg-orange-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-orange-600 transition-colors shadow-md">
                   <input
                     type="file"
                     id="image"

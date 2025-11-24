@@ -86,20 +86,160 @@ router.delete(
         return next(new ErrorHandler("Product is not found with this id", 404));
       }
 
-      for (let i = 0; 1 < product.images.length; i++) {
-        const result = await cloudinary.v2.uploader.destroy(
-          product.images[i].public_id
+      // Check if the product belongs to this seller
+      if (product.shopId !== req.seller._id.toString()) {
+        return next(
+          new ErrorHandler("You are not authorized to delete this product", 403)
         );
       }
 
-      await product.remove();
+      // Delete images from cloudinary (don't fail if cloudinary deletion fails)
+      if (product.images && product.images.length > 0) {
+        for (let i = 0; i < product.images.length; i++) {
+          try {
+            if (product.images[i].public_id) {
+              await cloudinary.v2.uploader.destroy(product.images[i].public_id);
+            }
+          } catch (cloudinaryError) {
+            console.error(
+              `Failed to delete image from cloudinary: ${cloudinaryError.message}`
+            );
+            // Continue with deletion even if cloudinary fails
+          }
+        }
+      }
 
-      res.status(201).json({
+      // Use findByIdAndDelete instead of deprecated remove()
+      await Product.findByIdAndDelete(req.params.id);
+
+      res.status(200).json({
         success: true,
         message: "Product Deleted successfully!",
       });
     } catch (error) {
-      return next(new ErrorHandler(error, 400));
+      console.error("Product deletion error:", error);
+      return next(
+        new ErrorHandler(error.message || "Failed to delete product", 400)
+      );
+    }
+  })
+);
+
+// toggle product availability status
+router.put(
+  "/toggle-product-availability/:id",
+  isSeller,
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const product = await Product.findById(req.params.id);
+
+      if (!product) {
+        return next(new ErrorHandler("Product not found with this id", 404));
+      }
+
+      // Check if the product belongs to this seller
+      if (product.shopId !== req.seller._id.toString()) {
+        return next(
+          new ErrorHandler("You are not authorized to update this product", 403)
+        );
+      }
+
+      // Toggle the availability status
+      product.isAvailable = !product.isAvailable;
+      await product.save();
+
+      res.status(200).json({
+        success: true,
+        message: `Product is now ${
+          product.isAvailable ? "available" : "unavailable"
+        }`,
+        isAvailable: product.isAvailable,
+      });
+    } catch (error) {
+      console.error("Toggle availability error:", error);
+      return next(
+        new ErrorHandler(
+          error.message || "Failed to update product availability",
+          400
+        )
+      );
+    }
+  })
+);
+
+// update product
+router.put(
+  "/update-product/:id",
+  isSeller,
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const productId = req.params.id;
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return next(new ErrorHandler("Product not found with this id", 404));
+      }
+
+      const {
+        name,
+        description,
+        category,
+        tags,
+        originalPrice,
+        discountPrice,
+        images,
+      } = req.body;
+
+      let imagesLinks = product.images;
+
+      // If new images are provided, upload them
+      if (images && images.length > 0) {
+        // Delete old images from cloudinary
+        for (let i = 0; i < product.images.length; i++) {
+          await cloudinary.v2.uploader.destroy(product.images[i].public_id);
+        }
+
+        imagesLinks = [];
+
+        let imageArray = [];
+        if (typeof images === "string") {
+          imageArray.push(images);
+        } else {
+          imageArray = images;
+        }
+
+        for (let i = 0; i < imageArray.length; i++) {
+          const result = await cloudinary.v2.uploader.upload(imageArray[i], {
+            folder: "products",
+          });
+
+          imagesLinks.push({
+            public_id: result.public_id,
+            url: result.secure_url,
+          });
+        }
+      }
+
+      const updatedProduct = await Product.findByIdAndUpdate(
+        productId,
+        {
+          name,
+          description,
+          category,
+          tags,
+          originalPrice,
+          discountPrice,
+          images: imagesLinks,
+        },
+        { new: true, runValidators: true }
+      );
+
+      res.status(200).json({
+        success: true,
+        product: updatedProduct,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 400));
     }
   })
 );

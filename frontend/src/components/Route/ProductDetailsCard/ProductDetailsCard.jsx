@@ -142,6 +142,36 @@ const ProductDetailsCard = ({ setOpen, data }) => {
             </div>
           )}
 
+          {/* Product Unavailable Warning */}
+          {data.shop?.isOnline !== false && data.isAvailable === false && (
+            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-500 p-4 m-6 mb-4 rounded-r-lg">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-6 w-6 text-orange-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-bold text-orange-800">
+                    Product Currently Unavailable
+                  </h3>
+                  <p className="text-xs text-orange-700 mt-1">
+                    This item is temporarily unavailable. Please check other
+                    items from this restaurant.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid md:grid-cols-2 gap-6 p-6">
             {/* Left Column - Image & Shop Info */}
             <div className="space-y-4">
@@ -159,6 +189,14 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                     </span>
                   </div>
                 )}
+                {data.shop?.isOnline !== false &&
+                  data.isAvailable === false && (
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
+                        Unavailable
+                      </span>
+                    </div>
+                  )}
               </div>
 
               {/* Shop Info Card */}
@@ -295,22 +333,28 @@ const ProductDetailsCard = ({ setOpen, data }) => {
               {/* Add to Cart Button */}
               <button
                 className={`w-full py-3.5 px-6 rounded-lg font-bold text-white text-base transition-all flex items-center justify-center gap-2 ${
-                  data.shop?.isOnline === false
+                  data.shop?.isOnline === false || data.isAvailable === false
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 }`}
                 onClick={() =>
-                  data.shop?.isOnline !== false && addToCartHandler(data._id)
+                  data.shop?.isOnline !== false &&
+                  data.isAvailable !== false &&
+                  addToCartHandler(data._id)
                 }
-                disabled={data.shop?.isOnline === false}
+                disabled={
+                  data.shop?.isOnline === false || data.isAvailable === false
+                }
               >
-                {data.shop?.isOnline !== false ? (
+                {data.shop?.isOnline === false ? (
+                  "Restaurant Offline"
+                ) : data.isAvailable === false ? (
+                  "Product Unavailable"
+                ) : (
                   <>
                     <AiOutlineShoppingCart size={22} />
                     Add to Cart
                   </>
-                ) : (
-                  "Restaurant Offline"
                 )}
               </button>
             </div>

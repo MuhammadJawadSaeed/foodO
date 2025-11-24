@@ -1,19 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import DashboardHeader from "../../components/Shop/Layout/DashboardHeader";
 import DashboardSideBar from "../../components/Shop/Layout/DashboardSideBar";
 import DashboardHero from "../../components/Shop/DashboardHero";
 
 const ShopDashboardPage = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-        <div>
-          <DashboardHeader />
-          <div className="flex items-start justify-between w-full">
-            <div className="w-[80px] 800px:w-[330px]">
-              <DashboardSideBar active={1} />
-            </div>
-            <DashboardHero />
-          </div>
+    <div>
+      <DashboardHeader toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <div className="flex">
+        {/* Sidebar Container */}
+        <DashboardSideBar
+          active={1}
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+        />
+        {/* Main Content with left margin to account for fixed sidebar on desktop */}
+        <div className="w-full lg:ml-64">
+          <DashboardHero />
         </div>
+      </div>
+    </div>
   );
 };
 

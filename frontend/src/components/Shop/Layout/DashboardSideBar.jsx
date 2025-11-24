@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { AiOutlineFolderAdd, AiOutlineGift } from "react-icons/ai";
 import { FiPackage, FiShoppingBag } from "react-icons/fi";
 import { MdOutlineLocalOffer } from "react-icons/md";
@@ -8,161 +8,103 @@ import { CiMoneyBill, CiSettings } from "react-icons/ci";
 import { Link } from "react-router-dom";
 import { BiMessageSquareDetail } from "react-icons/bi";
 import { HiOutlineReceiptRefund } from "react-icons/hi";
+import { FaBars, FaTimes } from "react-icons/fa";
 
-const DashboardSideBar = ({ active }) => {
+const DashboardSideBar = ({ active, isOpen, setIsOpen }) => {
+  const menuItems = [
+    { id: 1, name: "Dashboard", icon: RxDashboard, path: "/dashboard" },
+    {
+      id: 2,
+      name: "All Orders",
+      icon: FiShoppingBag,
+      path: "/dashboard-orders",
+    },
+    {
+      id: 3,
+      name: "All Food Items",
+      icon: FiPackage,
+      path: "/dashboard-products",
+    },
+    {
+      id: 4,
+      name: "Create Food Item",
+      icon: AiOutlineFolderAdd,
+      path: "/dashboard-create-product",
+    },
+    {
+      id: 7,
+      name: "Withdraw Money",
+      icon: CiMoneyBill,
+      path: "/dashboard-withdraw-money",
+    },
+    {
+      id: 8,
+      name: "Shop Inbox",
+      icon: BiMessageSquareDetail,
+      path: "/dashboard-messages",
+    },
+    {
+      id: 9,
+      name: "Discount Codes",
+      icon: AiOutlineGift,
+      path: "/dashboard-coupouns",
+    },
+    { id: 11, name: "Settings", icon: CiSettings, path: "/settings" },
+  ];
+
   return (
-    <div className="w-full h-[90vh] bg-white shadow-lg overflow-y-scroll sticky top-0 left-0 z-10 border-r border-gray-200">
-      {/* Dashboard */}
-      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
-        <Link to="/dashboard" className="w-full flex items-center gap-3">
-          <RxDashboard
-            size={26}
-            color={`${active === 1 ? "#f97316" : "#6b7280"}`}
-          />
-          <h5
-            className={`hidden 800px:block text-base font-medium ${
-              active === 1 ? "text-orange-500" : "text-gray-600"
-            }`}
-          >
-            Dashboard
-          </h5>
-        </Link>
-      </div>
+    <>
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-[40]"
+          onClick={() => setIsOpen(false)}
+        ></div>
+      )}
 
-      {/* All Orders */}
-      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
-        <Link to="/dashboard-orders" className="w-full flex items-center gap-3">
-          <FiShoppingBag
-            size={26}
-            color={`${active === 2 ? "#f97316" : "#6b7280"}`}
-          />
-          <h5
-            className={`hidden 800px:block text-base font-medium ${
-              active === 2 ? "text-orange-500" : "text-gray-600"
-            }`}
-          >
-            All Orders
-          </h5>
-        </Link>
-      </div>
+      {/* Sidebar */}
+      <div
+        className={`fixed top-0 lg:top-[5rem] left-0 h-screen lg:h-[calc(100vh-5rem)] bg-white overflow-hidden z-[45] lg:z-[20] transition-transform duration-300 ease-in-out border-r border-gray-200 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 w-64`}
+      >
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-4 flex items-center justify-between flex-shrink-0">
+          <h2 className="text-white font-bold text-lg">Menu</h2>
+          <button onClick={() => setIsOpen(false)} className="text-white">
+            <FaTimes size={20} />
+          </button>
+        </div>
 
-      {/* All Food Items */}
-      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
-        <Link
-          to="/dashboard-products"
-          className="w-full flex items-center gap-3"
-        >
-          <FiPackage
-            size={26}
-            color={`${active === 3 ? "#f97316" : "#6b7280"}`}
-          />
-          <h5
-            className={`hidden 800px:block text-base font-medium ${
-              active === 3 ? "text-orange-500" : "text-gray-600"
-            }`}
-          >
-            All Food Items
-          </h5>
-        </Link>
+        {/* Menu Items - Scrollable */}
+        <div className="overflow-y-auto h-[calc(100vh-4rem)] lg:h-full">
+          {menuItems.map((item) => {
+            const IconComponent = item.icon;
+            return (
+              <div
+                key={item.id}
+                className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                <Link to={item.path} className="w-full flex items-center gap-3">
+                  <IconComponent
+                    size={26}
+                    color={active === item.id ? "#f97316" : "#6b7280"}
+                  />
+                  <h5
+                    className={`text-base font-medium ${
+                      active === item.id ? "text-orange-500" : "text-gray-600"
+                    }`}
+                  >
+                    {item.name}
+                  </h5>
+                </Link>
+              </div>
+            );
+          })}
+        </div>
       </div>
-
-      {/* Create Food Item */}
-      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
-        <Link
-          to="/dashboard-create-product"
-          className="w-full flex items-center gap-3"
-        >
-          <AiOutlineFolderAdd
-            size={26}
-            color={`${active === 4 ? "#f97316" : "#6b7280"}`}
-          />
-          <h5
-            className={`hidden 800px:block text-base font-medium ${
-              active === 4 ? "text-orange-500" : "text-gray-600"
-            }`}
-          >
-            Create Food Item
-          </h5>
-        </Link>
-      </div>
-
-      {/* Withdraw Money */}
-      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
-        <Link
-          to="/dashboard-withdraw-money"
-          className="w-full flex items-center gap-3"
-        >
-          <CiMoneyBill
-            size={26}
-            color={`${active === 7 ? "#f97316" : "#6b7280"}`}
-          />
-          <h5
-            className={`hidden 800px:block text-base font-medium ${
-              active === 7 ? "text-orange-500" : "text-gray-600"
-            }`}
-          >
-            Withdraw Money
-          </h5>
-        </Link>
-      </div>
-
-      {/* Shop Inbox */}
-      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
-        <Link
-          to="/dashboard-messages"
-          className="w-full flex items-center gap-3"
-        >
-          <BiMessageSquareDetail
-            size={26}
-            color={`${active === 8 ? "#f97316" : "#6b7280"}`}
-          />
-          <h5
-            className={`hidden 800px:block text-base font-medium ${
-              active === 8 ? "text-orange-500" : "text-gray-600"
-            }`}
-          >
-            Shop Inbox
-          </h5>
-        </Link>
-      </div>
-
-      {/* Discount Codes */}
-      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
-        <Link
-          to="/dashboard-coupouns"
-          className="w-full flex items-center gap-3"
-        >
-          <AiOutlineGift
-            size={26}
-            color={`${active === 9 ? "#f97316" : "#6b7280"}`}
-          />
-          <h5
-            className={`hidden 800px:block text-base font-medium ${
-              active === 9 ? "text-orange-500" : "text-gray-600"
-            }`}
-          >
-            Discount Codes
-          </h5>
-        </Link>
-      </div>
-
-      {/* Settings */}
-      <div className="w-full flex items-center p-4 hover:bg-orange-50 transition-colors">
-        <Link to="/settings" className="w-full flex items-center gap-3">
-          <CiSettings
-            size={26}
-            color={`${active === 11 ? "#f97316" : "#6b7280"}`}
-          />
-          <h5
-            className={`hidden 800px:block text-base font-medium ${
-              active === 11 ? "text-orange-500" : "text-gray-600"
-            }`}
-          >
-            Settings
-          </h5>
-        </Link>
-      </div>
-    </div>
+    </>
   );
 };
 

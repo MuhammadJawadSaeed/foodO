@@ -87,34 +87,92 @@ const Checkout = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const name = couponCode;
 
-    await axios.get(`${server}/coupon/get-coupon-value/${name}`).then((res) => {
-      const shopId = res.data.couponCode?.shopId;
-      const couponCodeValue = res.data.couponCode?.value;
-      if (res.data.couponCode !== null) {
-        const isCouponValid =
-          cart && cart.filter((item) => item.shopId === shopId);
+    if (!couponCode || couponCode.trim() === "") {
+      toast.error("Please enter a coupon code!");
+      return;
+    }
 
-        if (isCouponValid.length === 0) {
-          toast.error("Coupon code is not valid for this shop");
-          setCouponCode("");
+    const name = couponCode.trim().toUpperCase();
+
+    await axios
+      .get(`${server}/coupon/get-coupon-value/${name}`)
+      .then((res) => {
+        const shopId = res.data.couponCode?.shopId;
+        const couponCodeValue = res.data.couponCode?.value;
+        const minAmount = res.data.couponCode?.minAmount;
+        const maxAmount = res.data.couponCode?.maxAmount;
+        const selectedProducts = res.data.couponCode?.selectedProducts || [];
+
+        if (res.data.couponCode !== null) {
+          const isCouponValid =
+            cart && cart.filter((item) => item.shopId === shopId);
+
+          if (isCouponValid.length === 0) {
+            toast.error("Coupon code is not valid for items in your cart");
+            setCouponCode("");
+          } else {
+            // Filter eligible items: if selectedProducts is empty, apply to all items
+            // Otherwise, only apply to items that match selectedProducts
+            const eligibleItems =
+              selectedProducts.length > 0
+                ? isCouponValid.filter((item) =>
+                    selectedProducts.includes(item.name)
+                  )
+                : isCouponValid;
+
+            if (eligibleItems.length === 0) {
+              toast.error("No eligible products in your cart for this coupon");
+              setCouponCode("");
+              return;
+            }
+
+            const eligiblePrice = eligibleItems.reduce(
+              (acc, item) => acc + item.qty * item.discountPrice,
+              0
+            );
+
+            // Check minimum amount requirement
+            if (minAmount && eligiblePrice < minAmount) {
+              toast.error(
+                `Minimum purchase of PKR ${minAmount} required for this coupon`
+              );
+              setCouponCode("");
+              return;
+            }
+
+            let discountPrice = (eligiblePrice * couponCodeValue) / 100;
+
+            // Apply maximum discount cap if specified
+            if (maxAmount && discountPrice > maxAmount) {
+              discountPrice = maxAmount;
+            }
+
+            setDiscountPrice(discountPrice);
+            setCouponCodeData(res.data.couponCode);
+            setCouponCode("");
+
+            const productsText =
+              selectedProducts.length > 0
+                ? ` on selected products (${eligibleItems.length} item${
+                    eligibleItems.length > 1 ? "s" : ""
+                  })`
+                : "";
+            toast.success(
+              `Coupon applied${productsText}! You saved PKR ${discountPrice.toFixed(
+                2
+              )}`
+            );
+          }
         } else {
-          const eligiblePrice = isCouponValid.reduce(
-            (acc, item) => acc + item.qty * item.discountPrice,
-            0
-          );
-          const discountPrice = (eligiblePrice * couponCodeValue) / 100;
-          setDiscountPrice(discountPrice);
-          setCouponCodeData(res.data.couponCode);
+          toast.error("Coupon code doesn't exist!");
           setCouponCode("");
         }
-      }
-      if (res.data.couponCode === null) {
-        toast.error("Coupon code doesn't exists!");
+      })
+      .catch((error) => {
+        toast.error("Failed to apply coupon code");
         setCouponCode("");
-      }
-    });
+      });
   };
 
   const discountPercentenge = couponCodeData ? discountPrice : "";
@@ -122,6 +180,12 @@ const Checkout = () => {
   const totalPrice = couponCodeData
     ? (subTotalPrice + shipping - discountPercentenge).toFixed(2)
     : (subTotalPrice + shipping).toFixed(2);
+
+  const removeCoupon = () => {
+    setCouponCodeData(null);
+    setDiscountPrice(null);
+    toast.info("Coupon removed");
+  };
 
   console.log(discountPercentenge);
 
@@ -160,6 +224,8 @@ const Checkout = () => {
             couponCode={couponCode}
             setCouponCode={setCouponCode}
             discountPercentenge={discountPercentenge}
+            couponCodeData={couponCodeData}
+            removeCoupon={removeCoupon}
           />
         </div>
       </div>
@@ -428,6 +494,8 @@ const CartData = ({
   couponCode,
   setCouponCode,
   discountPercentenge,
+  couponCodeData,
+  removeCoupon,
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden sticky top-6">
@@ -443,12 +511,38 @@ const CartData = ({
           </span>
         </div>
 
-        {discountPercentenge && (
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Discount</span>
-            <span className="text-base font-semibold text-green-600">
-              - PKR {discountPercentenge}
-            </span>
+        {discountPercentenge > 0 && (
+          <div className="bg-green-50 -mx-6 px-6 py-3 border-l-4 border-green-500">
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-green-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm text-green-700 font-semibold">
+                  Coupon "{couponCodeData?.name}" Applied
+                </span>
+              </div>
+              <button
+                onClick={removeCoupon}
+                className="text-red-600 hover:text-red-700 text-xs font-semibold"
+              >
+                Remove
+              </button>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-green-600">Discount</span>
+              <span className="text-base font-bold text-green-600">
+                - PKR {discountPercentenge.toFixed(2)}
+              </span>
+            </div>
           </div>
         )}
 
@@ -461,27 +555,54 @@ const CartData = ({
           </div>
         </div>
 
-        <div className="pt-4 border-t border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">
-            Have a coupon code?
-          </h3>
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <input
-              type="text"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
-              placeholder="Enter coupon code"
-              value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value)}
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm shadow-md"
-            >
-              Apply Coupon
-            </button>
-          </form>
-        </div>
+        {!couponCodeData && (
+          <div className="pt-4 border-t border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-orange-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Have a coupon code?
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                type="text"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm uppercase"
+                placeholder="Enter coupon code"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+              />
+              <button
+                type="submit"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors text-sm shadow-md flex items-center justify-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Apply Coupon
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

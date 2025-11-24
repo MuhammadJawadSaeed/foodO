@@ -9,7 +9,9 @@ import styles from "../styles/styles";
 
 const ProductsPage = () => {
   const [searchParams] = useSearchParams();
-  const categoryData = searchParams.get("category");
+  const categoryData = searchParams.get("category")
+    ? decodeURIComponent(searchParams.get("category"))
+    : null;
   const { allProducts, isLoading } = useSelector((state) => state.products);
   const [data, setData] = useState([]);
 

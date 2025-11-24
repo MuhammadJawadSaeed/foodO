@@ -102,7 +102,7 @@ const WithdrawMoney = () => {
   const availableBalance = seller?.availableBalance.toFixed(2);
 
   return (
-    <div className="w-full p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen flex items-center justify-center">
+    <div className="w-full p-3 sm:p-4 md:p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen flex items-center justify-center">
       <div className="w-full max-w-2xl bg-white rounded-xl shadow-md overflow-hidden">
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
           <h3 className="text-white font-bold text-lg">Withdraw Money</h3>

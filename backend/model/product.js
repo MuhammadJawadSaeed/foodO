@@ -75,6 +75,11 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  isAvailable: {
+    // New field to track if product is available for order
+    type: Boolean,
+    default: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),

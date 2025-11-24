@@ -398,6 +398,7 @@ const StartPage = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {[
+              "Sahiwal",
               "Lahore",
               "Karachi",
               "Islamabad",
@@ -413,7 +414,6 @@ const StartPage = () => {
               "Abbottabad",
               "Hyderabad",
               "Mirpur",
-              "Muzaffarabad",
             ].map((city) => (
               <div
                 key={city}
@@ -424,7 +424,7 @@ const StartPage = () => {
                   <OptimizedImage
                     src={assets[city]}
                     alt={city}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-4">

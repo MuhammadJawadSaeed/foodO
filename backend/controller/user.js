@@ -451,4 +451,184 @@ router.delete(
   })
 );
 
+// suspend user --- admin
+router.put(
+  "/suspend-user/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const user = await User.findByIdAndUpdate(
+        req.params.id,
+        { suspended: true },
+        { new: true }
+      );
+
+      if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "User suspended successfully!",
+        user,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// unsuspend user --- admin
+router.put(
+  "/unsuspend-user/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const user = await User.findByIdAndUpdate(
+        req.params.id,
+        { suspended: false },
+        { new: true }
+      );
+
+      if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "User activated successfully!",
+        user,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// send email to user --- admin
+router.post(
+  "/send-email/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const user = await User.findById(req.params.id);
+
+      if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+
+      const { subject, message } = req.body;
+
+      await sendMail({
+        email: user.email,
+        subject: subject,
+        message: message,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Email sent successfully!",
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// get user info by id --- admin
+router.get(
+  "/user-info/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const user = await User.findById(req.params.id);
+
+      if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+
+      res.status(200).json({
+        success: true,
+        user,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// get all cities with user counts --- admin
+router.get(
+  "/admin-all-cities",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const cities = await User.aggregate([
+        {
+          $match: { city: { $exists: true, $ne: null, $ne: "" } },
+        },
+        {
+          $group: {
+            _id: "$city",
+            userCount: { $sum: 1 },
+            activeUsers: {
+              $sum: { $cond: [{ $eq: ["$suspended", false] }, 1, 0] },
+            },
+            suspendedUsers: {
+              $sum: { $cond: [{ $eq: ["$suspended", true] }, 1, 0] },
+            },
+          },
+        },
+        {
+          $project: {
+            city: "$_id",
+            userCount: 1,
+            activeUsers: 1,
+            suspendedUsers: 1,
+            _id: 0,
+          },
+        },
+        {
+          $sort: { userCount: -1 },
+        },
+      ]);
+
+      res.status(200).json({
+        success: true,
+        cities,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// get users by city --- admin
+router.get(
+  "/admin-users-by-city/:city",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const { city } = req.params;
+      const users = await User.find({
+        city: city.toLowerCase().trim(),
+      }).sort({ createdAt: -1 });
+
+      res.status(200).json({
+        success: true,
+        users,
+        count: users.length,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
 module.exports = router;

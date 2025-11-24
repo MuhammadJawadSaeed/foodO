@@ -30,7 +30,7 @@ export const createProduct =
         discountPrice,
         stock,
         shopId,
-        images,
+        images
       );
       dispatch({
         type: "productCreateSuccess",
@@ -82,11 +82,45 @@ export const deleteProduct = (id) => async (dispatch) => {
 
     dispatch({
       type: "deleteProductSuccess",
-      payload: data.message,
+      payload: {
+        message: data.message,
+        productId: id,
+      },
     });
+
+    return Promise.resolve(data);
   } catch (error) {
     dispatch({
       type: "deleteProductFailed",
+      payload: error.response?.data?.message || "Failed to delete product",
+    });
+
+    return Promise.reject(error);
+  }
+};
+
+// update product
+export const updateProduct = (id, productData) => async (dispatch) => {
+  try {
+    dispatch({
+      type: "updateProductRequest",
+    });
+
+    const { data } = await axios.put(
+      `${server}/product/update-product/${id}`,
+      productData,
+      {
+        withCredentials: true,
+      }
+    );
+
+    dispatch({
+      type: "updateProductSuccess",
+      payload: data.product,
+    });
+  } catch (error) {
+    dispatch({
+      type: "updateProductFail",
       payload: error.response.data.message,
     });
   }

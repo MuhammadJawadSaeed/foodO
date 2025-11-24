@@ -38,11 +38,32 @@ export const productReducer = createReducer(initialState, {
   },
   deleteProductSuccess: (state, action) => {
     state.isLoading = false;
-    state.message = action.payload;
+    state.message = action.payload.message;
+    // Remove the deleted product from the products array
+    if (state.products && action.payload.productId) {
+      state.products = state.products.filter(
+        (product) => product._id !== action.payload.productId
+      );
+    }
   },
   deleteProductFailed: (state, action) => {
     state.isLoading = false;
     state.error = action.payload;
+  },
+
+  // update product
+  updateProductRequest: (state) => {
+    state.isLoading = true;
+  },
+  updateProductSuccess: (state, action) => {
+    state.isLoading = false;
+    state.product = action.payload;
+    state.success = true;
+  },
+  updateProductFail: (state, action) => {
+    state.isLoading = false;
+    state.error = action.payload;
+    state.success = false;
   },
 
   // get all products
@@ -57,7 +78,7 @@ export const productReducer = createReducer(initialState, {
     state.isLoading = false;
     state.error = action.payload;
   },
-  
+
   clearErrors: (state) => {
     state.error = null;
   },

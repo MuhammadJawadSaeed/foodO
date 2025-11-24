@@ -12,12 +12,15 @@ router.post(
   isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      const isCoupounCodeExists = await CoupounCode.find({
+      const isCoupounCodeExists = await CoupounCode.findOne({
         name: req.body.name,
+        shopId: req.seller._id.toString(),
       });
 
-      if (isCoupounCodeExists.length !== 0) {
-        return next(new ErrorHandler("Coupoun code already exists!", 400));
+      if (isCoupounCodeExists) {
+        return next(
+          new ErrorHandler("Coupon code already exists for this shop!", 400)
+        );
       }
 
       const coupounCode = await CoupounCode.create(req.body);
@@ -27,7 +30,9 @@ router.post(
         coupounCode,
       });
     } catch (error) {
-      return next(new ErrorHandler(error, 400));
+      return next(
+        new ErrorHandler(error.message || "Error creating coupon", 400)
+      );
     }
   })
 );
@@ -38,13 +43,15 @@ router.get(
   isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      const couponCodes = await CoupounCode.find({ shopId: req.seller.id });
-      res.status(201).json({
+      const couponCodes = await CoupounCode.find({
+        shopId: req.seller._id.toString(),
+      });
+      res.status(200).json({
         success: true,
         couponCodes,
       });
     } catch (error) {
-      return next(new ErrorHandler(error, 400));
+      return next(new ErrorHandler(error.message, 400));
     }
   })
 );
@@ -55,17 +62,27 @@ router.delete(
   isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      const couponCode = await CoupounCode.findByIdAndDelete(req.params.id);
+      const couponCode = await CoupounCode.findById(req.params.id);
 
       if (!couponCode) {
-        return next(new ErrorHandler("Coupon code dosen't exists!", 400));
+        return next(new ErrorHandler("Coupon code doesn't exist!", 404));
       }
-      res.status(201).json({
+
+      // Check if coupon belongs to this shop
+      if (couponCode.shopId !== req.seller._id.toString()) {
+        return next(
+          new ErrorHandler("You are not authorized to delete this coupon!", 403)
+        );
+      }
+
+      await CoupounCode.findByIdAndDelete(req.params.id);
+
+      res.status(200).json({
         success: true,
         message: "Coupon code deleted successfully!",
       });
     } catch (error) {
-      return next(new ErrorHandler(error, 400));
+      return next(new ErrorHandler(error.message, 400));
     }
   })
 );

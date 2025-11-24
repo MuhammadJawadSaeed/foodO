@@ -14,8 +14,9 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
+      "http://localhost:3000", // Main frontend (users & sellers)
+      "http://localhost:3001", // Admin frontend
+      "http://localhost:5173", // Ride frontend
       "http://localhost:5174",
       "http://localhost:5175",
     ],
@@ -57,6 +58,7 @@ const message = require("./controller/message");
 const withdraw = require("./controller/withdraw");
 const captain = require("./controller/captainRoutes");
 const ride = require("./controller/rideRoutes");
+const adminAnalytics = require("./controller/adminAnalytics");
 
 // Use routes
 app.use("/user", user);
@@ -71,6 +73,7 @@ app.use("/withdraw", withdraw);
 app.use("/captain", captain); // Singular for auth routes (login, register, profile)
 app.use("/captains", captain); // Plural for stats routes (stats, start-session, end-session)
 app.use("/rides", ride); // Changed from /ride to /rides to match frontend
+app.use("/admin-analytics", adminAnalytics); // Admin city-based analytics
 
 // Global Error Handling Middleware
 app.use(ErrorHandler);

@@ -60,9 +60,18 @@ const ProductCard = ({ data, isEvent }) => {
       <div className="w-[250px] bg-white border mx-auto rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 relative">
         {/* Shop Status Badge */}
         {data.shop?.isOnline === false && (
-          <div className="absolute top-2 left-2 z-10">
-            <span className="bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
+          <div className="absolute top-2 left-2 z-[5]">
+            <span className="bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
               Offline
+            </span>
+          </div>
+        )}
+
+        {/* Product Availability Badge */}
+        {data.shop?.isOnline !== false && data.isAvailable === false && (
+          <div className="absolute top-2 left-2 z-[5]">
+            <span className="bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
+              Unavailable
             </span>
           </div>
         )}
@@ -78,7 +87,9 @@ const ProductCard = ({ data, isEvent }) => {
             src={data.images && data.images[0]?.url}
             alt={data.name}
             className={`w-full h-[180px] object-cover ${
-              data.shop?.isOnline === false ? "opacity-60" : ""
+              data.shop?.isOnline === false || data.isAvailable === false
+                ? "opacity-60"
+                : ""
             }`}
           />
         </Link>
@@ -87,7 +98,12 @@ const ProductCard = ({ data, isEvent }) => {
           <Link to={`/shop/preview/${data?.shop._id}`}>
             <div className="flex justify-between items-center border-b pb-1">
               <h5 className="text-xs text-gray-600">{data.shop.name}</h5>
-              <Ratings rating={data?.ratings} />
+              <div className="flex items-center gap-1">
+                <span className="text-orange-500 text-sm font-bold">
+                  {data?.ratings?.toFixed(1) || "0.0"}
+                </span>
+                <AiFillStar size={14} className="text-orange-500" />
+              </div>
             </div>
           </Link>
 
@@ -172,28 +188,32 @@ const ProductCard = ({ data, isEvent }) => {
           {/* Add to Cart Button */}
           <button
             className={`group p-2.5 rounded-full shadow-lg transition-all duration-300 border ${
-              data.shop?.isOnline === false
+              data.shop?.isOnline === false || data.isAvailable === false
                 ? "bg-gray-300 border-gray-400 opacity-60 cursor-not-allowed"
                 : "bg-white border-gray-100 hover:shadow-xl transform hover:scale-110"
             }`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              if (data.shop?.isOnline !== false) {
+              if (data.shop?.isOnline !== false && data.isAvailable !== false) {
                 addToCartHandler(data._id);
               }
             }}
-            disabled={data.shop?.isOnline === false}
+            disabled={
+              data.shop?.isOnline === false || data.isAvailable === false
+            }
             title={
               data.shop?.isOnline === false
                 ? "Restaurant offline"
+                : data.isAvailable === false
+                ? "Product unavailable"
                 : "Add to cart"
             }
           >
             <AiOutlineShoppingCart
               size={18}
               className={
-                data.shop?.isOnline === false
+                data.shop?.isOnline === false || data.isAvailable === false
                   ? "text-gray-500"
                   : "text-orange-500 group-hover:text-orange-600 transition-colors"
               }

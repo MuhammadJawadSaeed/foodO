@@ -32,6 +32,10 @@ const shopSchema = new mongoose.Schema({
     type: String,
     default: "Seller",
   },
+  blocked: {
+    type: Boolean,
+    default: false,
+  },
   avatar: {
     public_id: {
       type: String,

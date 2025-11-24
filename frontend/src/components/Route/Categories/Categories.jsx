@@ -9,14 +9,21 @@ const Categories = () => {
   return (
     <>
       {/* Branding Section - hidden on xs, visible from sm and above */}
-      <div className={`${styles.section} hidden sm:block -mt-10 relative px-4 sm:px-6 lg:px-12`}>
+      <div
+        className={`${styles.section} hidden sm:block -mt-10 relative px-4 sm:px-6 lg:px-12`}
+      >
         <div className="mb-6 flex justify-between w-full border shadow-lg bg-white p-4 sm:p-6 rounded-md">
           {brandingData &&
             brandingData.map((item, index) => (
-              <div key={index} className="flex items-start space-x-3 sm:space-x-4">
+              <div
+                key={index}
+                className="flex items-start space-x-3 sm:space-x-4"
+              >
                 {item.icon}
                 <div>
-                  <h3 className="font-bold text-sm sm:text-base">{item.title}</h3>
+                  <h3 className="font-bold text-sm sm:text-base">
+                    {item.title}
+                  </h3>
                   <p className="text-xs sm:text-sm">{item.Description}</p>
                 </div>
               </div>
@@ -33,7 +40,9 @@ const Categories = () => {
           {categoriesData &&
             categoriesData.map((item) => {
               const handleSubmit = () => {
-                navigate(`/products?category=${item.title}`);
+                navigate(
+                  `/products?category=${encodeURIComponent(item.title)}`
+                );
               };
 
               return (

@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
   },
+  city: {
+    type: String,
+    lowercase: true,
+    trim: true,
+  },
   addresses: [
     {
       country: {
@@ -45,6 +50,10 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     default: "user",
+  },
+  suspended: {
+    type: Boolean,
+    default: false,
   },
   avatar: {
     public_id: {

@@ -78,7 +78,7 @@ const CreateProduct = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen">
+    <div className="w-full max-w-4xl mx-auto p-3 sm:p-4 md:p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen">
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
           <h2 className="text-white font-bold text-xl">Create Food Item</h2>

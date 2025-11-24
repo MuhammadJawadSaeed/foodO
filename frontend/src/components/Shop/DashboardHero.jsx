@@ -103,32 +103,35 @@ const DashboardHero = () => {
       });
     });
   return (
-    <div className="w-full p-6 bg-gradient-to-br from-gray-50 to-orange-50 min-h-screen">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6">
+    <div className="w-full p-3 sm:p-4 md:p-6 bg-gradient-to-br from-gray-50 to-orange-100 min-h-screen">
+      <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">
         Dashboard Overview
       </h3>
 
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
         {/* Account Balance Card */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-white font-semibold text-lg">
+              <h3 className="text-white font-semibold text-base sm:text-lg">
                 Account Balance
               </h3>
-              <AiOutlineMoneyCollect size={28} className="text-white" />
+              <AiOutlineMoneyCollect
+                size={24}
+                className="text-white sm:w-7 sm:h-7"
+              />
             </div>
           </div>
-          <div className="p-6">
-            <p className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="p-4 sm:p-6">
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               PKR {availableBalance}
             </p>
-            <p className="text-xs text-gray-500 mb-4">
+            <p className="text-xs text-gray-500 mb-3 sm:mb-4">
               (with 10% service charge)
             </p>
             <Link to="/dashboard-withdraw-money">
-              <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition-colors">
+              <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition-colors text-sm sm:text-base">
                 Withdraw Money
               </button>
             </Link>
@@ -137,21 +140,23 @@ const DashboardHero = () => {
 
         {/* Total Revenue Card */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-          <div className="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
+          <div className="bg-gradient-to-r from-green-500 to-green-600 px-4 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-white font-semibold text-lg">
+              <h3 className="text-white font-semibold text-base sm:text-lg">
                 Total Revenue
               </h3>
-              <BiDollar size={28} className="text-white" />
+              <BiDollar size={24} className="text-white sm:w-7 sm:h-7" />
             </div>
           </div>
-          <div className="p-6">
-            <p className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="p-4 sm:p-6">
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               PKR {totalRevenue.toFixed(2)}
             </p>
-            <p className="text-xs text-gray-500 mb-4">All time earnings</p>
+            <p className="text-xs text-gray-500 mb-3 sm:mb-4">
+              All time earnings
+            </p>
             <Link to="/dashboard-orders">
-              <button className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition-colors">
+              <button className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition-colors text-sm sm:text-base">
                 View Details
               </button>
             </Link>
@@ -160,19 +165,23 @@ const DashboardHero = () => {
 
         {/* All Orders Card */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-white font-semibold text-lg">All Orders</h3>
-              <FiShoppingBag size={28} className="text-white" />
+              <h3 className="text-white font-semibold text-base sm:text-lg">
+                All Orders
+              </h3>
+              <FiShoppingBag size={24} className="text-white sm:w-7 sm:h-7" />
             </div>
           </div>
-          <div className="p-6">
-            <p className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="p-4 sm:p-6">
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               {totalOrders}
             </p>
-            <p className="text-xs text-gray-500 mb-4">Total orders received</p>
+            <p className="text-xs text-gray-500 mb-3 sm:mb-4">
+              Total orders received
+            </p>
             <Link to="/dashboard-orders">
-              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition-colors">
+              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition-colors text-sm sm:text-base">
                 View Orders
               </button>
             </Link>
@@ -181,14 +190,14 @@ const DashboardHero = () => {
       </div>
 
       {/* Secondary Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Pending Orders */}
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <MdPending size={24} className="text-yellow-600" />
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-yellow-100 rounded-lg">
+              <MdPending size={20} className="text-yellow-600 sm:w-6 sm:h-6" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-xl sm:text-2xl font-bold text-gray-900">
               {pendingOrders}
             </span>
           </div>
@@ -197,12 +206,15 @@ const DashboardHero = () => {
         </div>
 
         {/* Delivered Orders */}
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <MdDeliveryDining size={24} className="text-green-600" />
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-green-100 rounded-lg">
+              <MdDeliveryDining
+                size={20}
+                className="text-green-600 sm:w-6 sm:h-6"
+              />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-xl sm:text-2xl font-bold text-gray-900">
               {deliveredOrders}
             </span>
           </div>
@@ -213,12 +225,12 @@ const DashboardHero = () => {
         </div>
 
         {/* Total Products */}
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <FiPackage size={24} className="text-purple-600" />
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-purple-100 rounded-lg">
+              <FiPackage size={20} className="text-purple-600 sm:w-6 sm:h-6" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-xl sm:text-2xl font-bold text-gray-900">
               {totalProducts}
             </span>
           </div>
@@ -227,12 +239,12 @@ const DashboardHero = () => {
         </div>
 
         {/* Items Sold */}
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <BsCart3 size={24} className="text-orange-600" />
+        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="p-2 sm:p-3 bg-orange-100 rounded-lg">
+              <BsCart3 size={20} className="text-orange-600 sm:w-6 sm:h-6" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-xl sm:text-2xl font-bold text-gray-900">
               {totalItemsSold}
             </span>
           </div>
@@ -242,14 +254,17 @@ const DashboardHero = () => {
       </div>
       {/* Latest Orders Section */}
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
-          <h3 className="text-white font-bold text-lg">Latest Orders</h3>
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 sm:px-6 py-3 sm:py-4">
+          <h3 className="text-white font-bold text-base sm:text-lg">
+            Latest Orders
+          </h3>
         </div>
-        <div className="p-6">
+        <div className="p-3 sm:p-6 overflow-x-auto">
           <DataGrid
             rows={row}
             columns={columns}
             pageSize={10}
+            rowsPerPageOptions={[10, 25, 50]}
             disableSelectionOnClick
             autoHeight
             className="border-0"

@@ -1,20 +1,26 @@
-import React from 'react'
-import DashboardHeader from '../../components/Shop/Layout/DashboardHeader'
+import React, { useState } from "react";
+import DashboardHeader from "../../components/Shop/Layout/DashboardHeader";
 import WithdrawMoney from "../../components/Shop/WithdrawMoney";
-import DashboardSideBar from '../../components/Shop/Layout/DashboardSideBar';
+import DashboardSideBar from "../../components/Shop/Layout/DashboardSideBar";
 
 const ShopWithDrawMoneyPage = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
     <div>
-    <DashboardHeader />
-    <div className="flex items-start justify-between w-full">
-      <div className="w-[80px] 800px:w-[330px]">
-        <DashboardSideBar active={7} />
+      <DashboardHeader toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <div className="flex">
+        <DashboardSideBar
+          active={7}
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+        />
+        <div className="w-full lg:ml-64 pt-4">
+          <WithdrawMoney />
+        </div>
       </div>
-       <WithdrawMoney />
     </div>
-  </div>
-  )
-}
+  );
+};
 
-export default ShopWithDrawMoneyPage
+export default ShopWithDrawMoneyPage;

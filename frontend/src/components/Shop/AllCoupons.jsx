@@ -17,8 +17,9 @@ const AllCoupons = () => {
   const [coupouns, setCoupouns] = useState([]);
   const [minAmount, setMinAmout] = useState(null);
   const [maxAmount, setMaxAmount] = useState(null);
-  const [selectedProducts, setSelectedProducts] = useState(null);
+  const [selectedProducts, setSelectedProducts] = useState([]);
   const [value, setValue] = useState(null);
+  const [searchProduct, setSearchProduct] = useState("");
   const { seller } = useSelector((state) => state.seller);
   const { products } = useSelector((state) => state.products);
 
@@ -48,18 +49,47 @@ const AllCoupons = () => {
     window.location.reload();
   };
 
+  const toggleProductSelection = (productName) => {
+    setSelectedProducts((prev) => {
+      if (prev.includes(productName)) {
+        return prev.filter((p) => p !== productName);
+      } else {
+        return [...prev, productName];
+      }
+    });
+  };
+
+  const selectAllProducts = () => {
+    if (selectedProducts.length === products.length) {
+      setSelectedProducts([]);
+    } else {
+      setSelectedProducts(products.map((p) => p.name));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate inputs
+    if (!name || name.trim() === "") {
+      toast.error("Please enter a coupon code name!");
+      return;
+    }
+
+    if (!value || value <= 0 || value > 100) {
+      toast.error("Please enter a valid discount percentage (1-100)!");
+      return;
+    }
 
     await axios
       .post(
         `${server}/coupon/create-coupon-code`,
         {
-          name,
+          name: name.trim().toUpperCase(),
           minAmount,
           maxAmount,
           selectedProducts,
-          value,
+          value: Number(value),
           shopId: seller._id,
         },
         { withCredentials: true }
@@ -70,7 +100,9 @@ const AllCoupons = () => {
         window.location.reload();
       })
       .catch((error) => {
-        toast.error(error.response.data.message);
+        toast.error(
+          error.response?.data?.message || "Failed to create coupon code"
+        );
       });
   };
 
@@ -141,6 +173,7 @@ const AllCoupons = () => {
                 rows={row}
                 columns={columns}
                 pageSize={10}
+                rowsPerPageOptions={[10, 25, 50]}
                 disableSelectionOnClick
                 autoHeight
                 className="border-0"
@@ -184,64 +217,137 @@ const AllCoupons = () => {
                       <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       name="value"
                       value={value}
                       required
+                      min="1"
+                      max="100"
+                      step="1"
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                       onChange={(e) => setValue(e.target.value)}
-                      placeholder="Enter discount percentage..."
+                      placeholder="Enter discount percentage (1-100)..."
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enter a value between 1 and 100
+                    </p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Min Amount
+                        Min Amount (Optional)
                       </label>
                       <input
                         type="number"
-                        name="value"
+                        name="minAmount"
                         value={minAmount}
+                        min="0"
+                        step="1"
                         className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                         onChange={(e) => setMinAmout(e.target.value)}
                         placeholder="Minimum order amount..."
                       />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Minimum purchase required
+                      </p>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Max Amount
+                        Max Discount (Optional)
                       </label>
                       <input
                         type="number"
-                        name="value"
+                        name="maxAmount"
                         value={maxAmount}
+                        min="0"
+                        step="1"
                         className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                         onChange={(e) => setMaxAmount(e.target.value)}
                         placeholder="Maximum discount amount..."
                       />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Cap on discount value
+                      </p>
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Selected Product
+                      Selected Products (Optional)
                     </label>
-                    <select
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
-                      value={selectedProducts}
-                      onChange={(e) => setSelectedProducts(e.target.value)}
-                    >
-                      <option value="Choose your selected products">
-                        Choose a selected product
-                      </option>
-                      {products &&
-                        products.map((i) => (
-                          <option value={i.name} key={i.name}>
-                            {i.name}
-                          </option>
-                        ))}
-                    </select>
+                    <p className="text-xs text-gray-500 mb-3">
+                      Leave empty to apply coupon on all products, or select
+                      specific products
+                    </p>
+
+                    {/* Search Box */}
+                    <input
+                      type="text"
+                      placeholder="Search products..."
+                      value={searchProduct}
+                      onChange={(e) => setSearchProduct(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm mb-2"
+                    />
+
+                    {/* Select All Button */}
+                    <div className="flex items-center justify-between mb-2">
+                      <button
+                        type="button"
+                        onClick={selectAllProducts}
+                        className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                      >
+                        {selectedProducts.length === products?.length
+                          ? "Deselect All"
+                          : "Select All"}
+                      </button>
+                      <span className="text-xs text-gray-500">
+                        {selectedProducts.length} selected
+                      </span>
+                    </div>
+
+                    {/* Products List with Checkboxes */}
+                    <div className="border border-gray-300 rounded-lg max-h-60 overflow-y-auto">
+                      {products && products.length > 0 ? (
+                        products
+                          .filter((product) =>
+                            product.name
+                              .toLowerCase()
+                              .includes(searchProduct.toLowerCase())
+                          )
+                          .map((product) => (
+                            <label
+                              key={product._id}
+                              className="flex items-center px-4 py-2.5 hover:bg-orange-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedProducts.includes(
+                                  product.name
+                                )}
+                                onChange={() =>
+                                  toggleProductSelection(product.name)
+                                }
+                                className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 mr-3"
+                              />
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-700">
+                                  {product.name}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Rs.{" "}
+                                  {product.discountPrice ||
+                                    product.originalPrice}
+                                </div>
+                              </div>
+                            </label>
+                          ))
+                      ) : (
+                        <div className="px-4 py-6 text-center text-gray-500 text-sm">
+                          No products available
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <button

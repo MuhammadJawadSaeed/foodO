@@ -1,20 +1,26 @@
-import React from 'react'
-import DashboardHeader from '../../components/Shop/Layout/DashboardHeader'
-import DashboardSideBar from '../../components/Shop/Layout/DashboardSideBar'
+import React, { useState } from "react";
+import DashboardHeader from "../../components/Shop/Layout/DashboardHeader";
+import DashboardSideBar from "../../components/Shop/Layout/DashboardSideBar";
 import DashboardMessages from "../../components/Shop/DashboardMessages";
 
 const ShopInboxPage = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
     <div>
-    <DashboardHeader />
-    <div className="flex items-start justify-between w-full">
-      <div className="w-[80px] 800px:w-[330px]">
-        <DashboardSideBar active={8} />
+      <DashboardHeader toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <div className="flex">
+        <DashboardSideBar
+          active={8}
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+        />
+        <div className="w-full lg:ml-64 pt-4">
+          <DashboardMessages />
+        </div>
       </div>
-       <DashboardMessages />
     </div>
-  </div>
-  )
-}
+  );
+};
 
-export default ShopInboxPage
+export default ShopInboxPage;

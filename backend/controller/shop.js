@@ -505,4 +505,221 @@ router.delete(
     }
   })
 );
+
+// block seller --- admin
+router.put(
+  "/block-seller/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const seller = await Shop.findByIdAndUpdate(
+        req.params.id,
+        { blocked: true },
+        { new: true }
+      );
+
+      if (!seller) {
+        return next(new ErrorHandler("Seller not found", 404));
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Seller blocked successfully!",
+        seller,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// unblock seller --- admin
+router.put(
+  "/unblock-seller/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const seller = await Shop.findByIdAndUpdate(
+        req.params.id,
+        { blocked: false },
+        { new: true }
+      );
+
+      if (!seller) {
+        return next(new ErrorHandler("Seller not found", 404));
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Seller unblocked successfully!",
+        seller,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// get all cities with shop counts --- admin
+router.get(
+  "/admin-all-shop-cities",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const cities = await Shop.aggregate([
+        {
+          $match: { city: { $exists: true, $ne: null, $ne: "" } },
+        },
+        {
+          $group: {
+            _id: "$city",
+            shopCount: { $sum: 1 },
+            activeShops: {
+              $sum: { $cond: [{ $eq: ["$blocked", false] }, 1, 0] },
+            },
+            blockedShops: {
+              $sum: { $cond: [{ $eq: ["$blocked", true] }, 1, 0] },
+            },
+            totalBalance: { $sum: "$availableBalance" },
+          },
+        },
+        {
+          $project: {
+            city: "$_id",
+            shopCount: 1,
+            activeShops: 1,
+            blockedShops: 1,
+            totalBalance: 1,
+            _id: 0,
+          },
+        },
+        {
+          $sort: { shopCount: -1 },
+        },
+      ]);
+
+      res.status(200).json({
+        success: true,
+        cities,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// get shops by city --- admin
+router.get(
+  "/admin-shops-by-city/:city",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const { city } = req.params;
+      const shops = await Shop.find({
+        city: city.toLowerCase().trim(),
+      }).sort({ createdAt: -1 });
+
+      res.status(200).json({
+        success: true,
+        shops,
+        count: shops.length,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// get full restaurant details --- admin
+router.get(
+  "/admin-restaurant-details/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const Product = require("../model/product");
+      const Order = require("../model/order");
+
+      const shop = await Shop.findById(req.params.id);
+
+      if (!shop) {
+        return next(new ErrorHandler("Restaurant not found", 404));
+      }
+
+      // Get all products for this shop
+      const products = await Product.find({ shopId: req.params.id });
+
+      // Get all orders for this shop
+      const orders = await Order.find({
+        "cart.shopId": req.params.id,
+      }).sort({ createdAt: -1 });
+
+      // Calculate statistics
+      const totalProducts = products.length;
+      const totalOrders = orders.length;
+
+      const totalRevenue = orders.reduce((sum, order) => {
+        const shopItems = order.cart.filter(
+          (item) => item.shopId === req.params.id
+        );
+        return (
+          sum +
+          shopItems.reduce(
+            (itemSum, item) => itemSum + item.discountPrice * item.qty,
+            0
+          )
+        );
+      }, 0);
+
+      const pendingOrders = orders.filter(
+        (o) =>
+          o.status === "Processing" ||
+          o.status === "Transferred to delivery partner"
+      ).length;
+
+      const completedOrders = orders.filter(
+        (o) => o.status === "Delivered"
+      ).length;
+
+      // Calculate average rating from products
+      const ratingsSum = products.reduce((sum, product) => {
+        const avgRating =
+          product.reviews && product.reviews.length > 0
+            ? product.reviews.reduce((r, review) => r + review.rating, 0) /
+              product.reviews.length
+            : 0;
+        return sum + avgRating;
+      }, 0);
+
+      const averageRating = totalProducts > 0 ? ratingsSum / totalProducts : 0;
+
+      res.status(200).json({
+        success: true,
+        restaurant: {
+          shop,
+          products,
+          orders: orders.slice(0, 20), // Latest 20 orders
+          statistics: {
+            totalProducts,
+            totalOrders,
+            totalRevenue,
+            pendingOrders,
+            completedOrders,
+            averageRating: averageRating.toFixed(2),
+            availableBalance: shop.availableBalance,
+            isBlocked: shop.blocked,
+            joinedDate: shop.createdAt,
+          },
+        },
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
 module.exports = router;

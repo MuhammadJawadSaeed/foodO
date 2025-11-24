@@ -1,18 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
 import Footer from "../../components/Layout/Footer";
 import ShopSettings from "../../components/Shop/ShopSettings";
 import DashboardHeader from "../../components/Shop/Layout/DashboardHeader";
 import DashboardSideBar from "../../components/Shop/Layout/DashboardSideBar";
 
 const ShopSettingsPage = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
     <div>
-      <DashboardHeader />
-      <div className="flex items-start justify-between w-full">
-        <div className="w-[80px] 800px:w-[330px]">
-          <DashboardSideBar active={11} />
+      <DashboardHeader toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <div className="flex">
+        <DashboardSideBar
+          active={11}
+          isOpen={isSidebarOpen}
+          setIsOpen={setIsSidebarOpen}
+        />
+        <div className="w-full lg:ml-64 pt-4">
+          <ShopSettings />
         </div>
-        <ShopSettings />
       </div>
     </div>
   );
