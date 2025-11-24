@@ -229,6 +229,19 @@ const FinishRide = (props) => {
             </h3>
 
             <div className="space-y-2">
+              {/* Payment Method */}
+              <div className="flex items-center justify-between p-2 bg-white rounded-md border border-gray-200">
+                <div className="flex items-center gap-2">
+                  <i className="ri-bank-card-line text-gray-600 text-sm"></i>
+                  <span className="text-xs font-medium text-gray-700">
+                    Payment Method
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                  {props.ride?.order?.paymentInfo?.type || "Cash On Delivery"}
+                </span>
+              </div>
+
               {/* Order Amount (Items Only) */}
               {props.ride?.order?.totalPrice && (
                 <div className="flex items-center justify-between p-2 bg-white rounded-md border border-gray-200">
@@ -275,7 +288,8 @@ const FinishRide = (props) => {
               </div>
 
               <p className="text-xs text-gray-600 mt-2 text-center font-medium">
-                <i className="ri-hand-coin-line"></i> Cash on Delivery
+                <i className="ri-hand-coin-line"></i>{" "}
+                {props.ride?.order?.paymentInfo?.type || "Cash on Delivery"}
               </p>
             </div>
           </div>

@@ -7,6 +7,10 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { server } from "../../server";
 import styles from "../../styles/styles";
+import {
+  validateAndFormatPhone,
+  getPhoneValidationError,
+} from "../../utils/phoneValidator";
 import { DataGrid } from "@material-ui/data-grid";
 import { Button } from "@material-ui/core";
 import { Link } from "react-router-dom";
@@ -30,6 +34,7 @@ const ProfileContent = ({ active }) => {
   const [name, setName] = useState(user && user.name);
   const [email, setEmail] = useState(user && user.email);
   const [phoneNumber, setPhoneNumber] = useState(user && user.phoneNumber);
+  const [phoneError, setPhoneError] = useState("");
   const [password, setPassword] = useState("");
   const [avatar, setAvatar] = useState(null);
   const dispatch = useDispatch();
@@ -47,7 +52,31 @@ const ProfileContent = ({ active }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(updateUserInformation(name, email, phoneNumber, password));
+
+    // Validate phone number
+    const phoneValidationError = getPhoneValidationError(phoneNumber);
+    if (phoneValidationError) {
+      toast.error(phoneValidationError);
+      setPhoneError(phoneValidationError);
+      return;
+    }
+
+    // Format phone number before sending
+    const { local } = validateAndFormatPhone(phoneNumber);
+    dispatch(updateUserInformation(name, email, local, password));
+  };
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    setPhoneNumber(value);
+
+    // Real-time validation
+    if (value) {
+      const error = getPhoneValidationError(value);
+      setPhoneError(error);
+    } else {
+      setPhoneError("");
+    }
   };
 
   const handleImage = async (e) => {
@@ -143,15 +172,25 @@ const ProfileContent = ({ active }) => {
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Phone Number
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="number"
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm"
+                    type="tel"
+                    className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm ${
+                      phoneError ? "border-red-500" : "border-gray-300"
+                    }`}
                     required
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={handlePhoneChange}
+                    placeholder="03001234567"
+                    maxLength="11"
                   />
+                  {phoneError && (
+                    <p className="text-red-500 text-xs mt-1">{phoneError}</p>
+                  )}
+                  <p className="text-gray-500 text-xs mt-1">
+                    Format: 03XXXXXXXXX (11 digits)
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">

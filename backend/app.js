@@ -16,6 +16,7 @@ app.use(
     origin: [
       "http://localhost:3000", // Main frontend (users & sellers)
       "http://localhost:3001", // Admin frontend
+      "http://localhost:3002", // Admin frontend alternate port
       "http://localhost:5173", // Ride frontend
       "http://localhost:5174",
       "http://localhost:5175",

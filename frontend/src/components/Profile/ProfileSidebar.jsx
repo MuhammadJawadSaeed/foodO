@@ -127,25 +127,6 @@ const ProfileSidebar = ({ setActive, active }) => {
           <span className="text-sm">Address</span>
         </button>
 
-        {user && user?.role === "Admin" && (
-          <Link to="/admin/dashboard">
-            <button
-              className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all mb-1 ${
-                active === 8
-                  ? "bg-orange-50 text-orange-600 font-semibold"
-                  : "text-gray-700 hover:bg-gray-50"
-              }`}
-              onClick={() => setActive(8)}
-            >
-              <MdOutlineAdminPanelSettings
-                size={18}
-                className={active === 8 ? "text-orange-600" : "text-gray-600"}
-              />
-              <span className="text-sm">Admin Dashboard</span>
-            </button>
-          </Link>
-        )}
-
         <div className="border-t border-gray-200 mt-3 pt-3">
           <button
             className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all text-red-600 hover:bg-red-50"

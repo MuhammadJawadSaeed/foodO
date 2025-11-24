@@ -594,16 +594,29 @@ const OrderDetails = () => {
           </h4>
           <div className="space-y-2 text-sm text-gray-700">
             <div className="flex justify-between items-center">
+              <span>Method:</span>
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                {data?.paymentInfo?.type || "N/A"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
               <span>Status:</span>
               <span
                 className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${
-                  data?.paymentInfo?.status === "Paid"
+                  data?.paymentInfo?.status === "paid" ||
+                  data?.paymentInfo?.status === "succeeded"
                     ? "bg-green-100 text-green-700"
                     : "bg-yellow-100 text-yellow-700"
                 }`}
               >
-                {data?.paymentInfo?.status === "Paid" && <MdCheckCircle />}
-                {data?.paymentInfo?.status || "Not Paid"}
+                {(data?.paymentInfo?.status === "paid" ||
+                  data?.paymentInfo?.status === "succeeded") && (
+                  <MdCheckCircle />
+                )}
+                {data?.paymentInfo?.status === "paid" ||
+                data?.paymentInfo?.status === "succeeded"
+                  ? "Paid"
+                  : "Not Paid"}
               </span>
             </div>
           </div>

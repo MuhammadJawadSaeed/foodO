@@ -347,9 +347,29 @@ module.exports.endRide = async (req, res) => {
     // Update order status to Delivered if ride has an order
     if (ride.order) {
       const Order = require("../model/order");
+
+      // Prepare update object - set status to Delivered and mark payment as paid for COD
+      const updateData = { status: "Delivered" };
+
+      // Get order to check payment method
+      const currentOrder = await Order.findById(ride.order);
+
+      // If payment method is Cash on Delivery, mark as paid
+      if (
+        currentOrder &&
+        currentOrder.paymentInfo &&
+        currentOrder.paymentInfo.type === "Cash On Delivery"
+      ) {
+        updateData.paymentInfo = {
+          ...currentOrder.paymentInfo,
+          status: "paid",
+        };
+        console.log("Cash on Delivery payment marked as paid");
+      }
+
       const updatedOrder = await Order.findByIdAndUpdate(
         ride.order,
-        { status: "Delivered" },
+        updateData,
         { new: true }
       ).populate("user");
 

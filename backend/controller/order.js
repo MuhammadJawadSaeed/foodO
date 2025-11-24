@@ -118,8 +118,17 @@ router.post(
       let rideData = null;
 
       if (shop && order.shippingAddress) {
-        const pickupAddress = `${shop.address}, ${shop.city}, ${shop.country}`;
-        const destinationAddress = `${order.shippingAddress.address1}, ${order.shippingAddress.city}, ${order.shippingAddress.country}`;
+        // Format addresses with full details including Pakistan
+        const pickupAddress = `${shop.address}, ${shop.city}, Pakistan`;
+        const destinationAddress = `${order.shippingAddress.address1}, ${
+          order.shippingAddress.address2
+            ? order.shippingAddress.address2 + ", "
+            : ""
+        }${order.shippingAddress.city}, Pakistan`;
+
+        console.log("Creating ride with addresses:");
+        console.log("Pickup:", pickupAddress);
+        console.log("Destination:", destinationAddress);
 
         // Create the ride
         const ride = await rideService.createRide({

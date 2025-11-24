@@ -40,3 +40,26 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Google Maps Controls z-index fix - Keep below popups */
+.gm-style-cc,
+.gm-style button[title*="Zoom"],
+.gm-style button[title*="zoom"],
+.gm-style .gmnoprint,
+.gm-control-active {
+  z-index: 1 !important;
+}
+
+/* Map container should be lowest */
+.gm-style > div:first-child > div:last-child {
+  z-index: 0 !important;
+}
+
+/* Ensure all Google Maps UI elements stay below app popups */
+.gm-style > div {
+  z-index: 1 !important;
+}
+
+.gm-style {
+  z-index: 0 !important;
+}

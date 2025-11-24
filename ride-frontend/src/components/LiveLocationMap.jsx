@@ -1,5 +1,34 @@
 import React, { useEffect, useRef, useState } from "react";
 
+// Pakistani cities coordinates for fallback
+const PAKISTANI_CITIES_COORDS = {
+  Sahiwal: { lat: 30.6682, lng: 73.1114 },
+  Lahore: { lat: 31.5204, lng: 74.3587 },
+  Karachi: { lat: 24.8607, lng: 67.0011 },
+  Islamabad: { lat: 33.6844, lng: 73.0479 },
+  Rawalpindi: { lat: 33.5651, lng: 73.0169 },
+  Faisalabad: { lat: 31.4504, lng: 73.135 },
+  Multan: { lat: 30.1575, lng: 71.5249 },
+  Gujranwala: { lat: 32.1877, lng: 74.1945 },
+  Peshawar: { lat: 34.0151, lng: 71.5249 },
+  Quetta: { lat: 30.1798, lng: 66.975 },
+  Sialkot: { lat: 32.4945, lng: 74.5229 },
+  Sargodha: { lat: 32.0836, lng: 72.6711 },
+};
+
+// Function to extract city from address
+const getCityFromAddress = (address) => {
+  if (!address) return null;
+
+  const addressLower = address.toLowerCase();
+  for (const [city, coords] of Object.entries(PAKISTANI_CITIES_COORDS)) {
+    if (addressLower.includes(city.toLowerCase())) {
+      return { city, coords };
+    }
+  }
+  return null;
+};
+
 const LiveLocationMap = ({ rideId, captainLocation, pickup, destination }) => {
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
@@ -11,8 +40,16 @@ const LiveLocationMap = ({ rideId, captainLocation, pickup, destination }) => {
   useEffect(() => {
     if (!mapRef.current || map) return;
 
-    // Default center (Lahore, Pakistan)
-    const defaultCenter = { lat: 31.5204, lng: 74.3587 };
+    // Try to determine default center from pickup or destination
+    let defaultCenter = { lat: 30.3753, lng: 69.3451 }; // Pakistan center
+
+    if (pickup) {
+      const cityInfo = getCityFromAddress(pickup);
+      if (cityInfo) {
+        defaultCenter = cityInfo.coords;
+        console.log(`Using ${cityInfo.city} as map center`);
+      }
+    }
 
     const newMap = new window.google.maps.Map(mapRef.current, {
       zoom: 13,
@@ -56,8 +93,11 @@ const LiveLocationMap = ({ rideId, captainLocation, pickup, destination }) => {
 
     // Geocode pickup address
     const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ address: pickup }, (results, status) => {
+    console.log("Geocoding pickup for user map:", pickup);
+
+    geocoder.geocode({ address: pickup + ", Pakistan" }, (results, status) => {
       if (status === "OK" && results[0]) {
+        console.log("✅ Pickup geocoded successfully");
         const marker = new window.google.maps.Marker({
           position: results[0].geometry.location,
           map: map,
@@ -68,6 +108,23 @@ const LiveLocationMap = ({ rideId, captainLocation, pickup, destination }) => {
           title: "Pickup Location",
         });
         setPickupMarker(marker);
+      } else {
+        console.error("❌ Geocoding pickup failed:", status);
+        // Use city-based fallback
+        const cityInfo = getCityFromAddress(pickup);
+        if (cityInfo) {
+          console.log(`Using ${cityInfo.city} coordinates for pickup marker`);
+          const marker = new window.google.maps.Marker({
+            position: cityInfo.coords,
+            map: map,
+            icon: {
+              url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+              scaledSize: new window.google.maps.Size(35, 35),
+            },
+            title: "Pickup Location (Approximate)",
+          });
+          setPickupMarker(marker);
+        }
       }
     });
   }, [map, pickup]);
@@ -78,20 +135,45 @@ const LiveLocationMap = ({ rideId, captainLocation, pickup, destination }) => {
 
     // Geocode destination address
     const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ address: destination }, (results, status) => {
-      if (status === "OK" && results[0]) {
-        const marker = new window.google.maps.Marker({
-          position: results[0].geometry.location,
-          map: map,
-          icon: {
-            url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-            scaledSize: new window.google.maps.Size(35, 35),
-          },
-          title: "Destination",
-        });
-        setDestinationMarker(marker);
+    console.log("Geocoding destination for user map:", destination);
+
+    geocoder.geocode(
+      { address: destination + ", Pakistan" },
+      (results, status) => {
+        if (status === "OK" && results[0]) {
+          console.log("✅ Destination geocoded successfully");
+          const marker = new window.google.maps.Marker({
+            position: results[0].geometry.location,
+            map: map,
+            icon: {
+              url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+              scaledSize: new window.google.maps.Size(35, 35),
+            },
+            title: "Destination",
+          });
+          setDestinationMarker(marker);
+        } else {
+          console.error("❌ Geocoding destination failed:", status);
+          // Use city-based fallback
+          const cityInfo = getCityFromAddress(destination);
+          if (cityInfo) {
+            console.log(
+              `Using ${cityInfo.city} coordinates for destination marker`
+            );
+            const marker = new window.google.maps.Marker({
+              position: cityInfo.coords,
+              map: map,
+              icon: {
+                url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                scaledSize: new window.google.maps.Size(35, 35),
+              },
+              title: "Destination (Approximate)",
+            });
+            setDestinationMarker(marker);
+          }
+        }
       }
-    });
+    );
   }, [map, destination]);
 
   return (

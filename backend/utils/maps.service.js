@@ -1,6 +1,35 @@
 const axios = require("axios");
 const captainModel = require("../model/captain.model");
 
+// Pakistani cities coordinates for fallback
+const PAKISTANI_CITIES_COORDS = {
+  sahiwal: { lat: 30.6682, lng: 73.1114 },
+  lahore: { lat: 31.5204, lng: 74.3587 },
+  karachi: { lat: 24.8607, lng: 67.0011 },
+  islamabad: { lat: 33.6844, lng: 73.0479 },
+  rawalpindi: { lat: 33.5651, lng: 73.0169 },
+  faisalabad: { lat: 31.4504, lng: 73.135 },
+  multan: { lat: 30.1575, lng: 71.5249 },
+  gujranwala: { lat: 32.1877, lng: 74.1945 },
+  peshawar: { lat: 34.0151, lng: 71.5249 },
+  quetta: { lat: 30.1798, lng: 66.975 },
+  sialkot: { lat: 32.4945, lng: 74.5229 },
+  sargodha: { lat: 32.0836, lng: 72.6711 },
+};
+
+// Function to extract city from address
+const getCityFromAddress = (address) => {
+  if (!address) return null;
+
+  const addressLower = address.toLowerCase();
+  for (const [city, coords] of Object.entries(PAKISTANI_CITIES_COORDS)) {
+    if (addressLower.includes(city)) {
+      return { city, coords };
+    }
+  }
+  return null;
+};
+
 module.exports.getAddressCoordinate = async (address) => {
   const apiKey = process.env.GOOGLE_MAPS_API;
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
@@ -11,6 +40,7 @@ module.exports.getAddressCoordinate = async (address) => {
     const response = await axios.get(url);
     if (response.data.status === "OK") {
       const location = response.data.results[0].geometry.location;
+      console.log(`✅ Geocoded "${address}":`, location);
       return {
         lat: location.lat,
         lng: location.lng,
@@ -19,11 +49,23 @@ module.exports.getAddressCoordinate = async (address) => {
       throw new Error("Unable to fetch coordinates");
     }
   } catch (error) {
-    console.error("Maps API error:", error.message);
-    // Return dummy coordinates for testing (Lahore, Pakistan)
+    console.error("❌ Maps API error for address:", address, error.message);
+
+    // Try to extract city and use fallback coordinates
+    const cityInfo = getCityFromAddress(address);
+    if (cityInfo) {
+      console.log(
+        `📍 Using ${cityInfo.city} coordinates as fallback for:`,
+        address
+      );
+      return cityInfo.coords;
+    }
+
+    // Ultimate fallback: Pakistan center
+    console.warn("⚠️ Could not determine location, using Pakistan center");
     return {
-      lat: 31.5204,
-      lng: 74.3587,
+      lat: 30.3753,
+      lng: 69.3451,
     };
   }
 };

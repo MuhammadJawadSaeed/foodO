@@ -232,9 +232,19 @@ router.put(
         );
       }
 
+      // Validate and format phone number
+      let formattedPhone = phoneNumber;
+      if (phoneNumber && phoneNumber !== user.phoneNumber) {
+        try {
+          formattedPhone = validateAndFormatPhone(phoneNumber);
+        } catch (error) {
+          return next(new ErrorHandler(error.message, 400));
+        }
+      }
+
       user.name = name;
       user.email = email;
-      user.phoneNumber = phoneNumber;
+      user.phoneNumber = formattedPhone;
 
       await user.save();
 

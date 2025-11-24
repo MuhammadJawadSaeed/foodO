@@ -9,6 +9,36 @@ import "leaflet/dist/leaflet.css";
 import io from "socket.io-client";
 import { server } from "../../server";
 
+// Pakistani cities coordinates for fallback
+const PAKISTANI_CITIES_COORDS = {
+  sahiwal: [30.6682, 73.1114],
+  lahore: [31.5204, 74.3587],
+  karachi: [24.8607, 67.0011],
+  islamabad: [33.6844, 73.0479],
+  rawalpindi: [33.5651, 73.0169],
+  faisalabad: [31.4504, 73.135],
+  multan: [30.1575, 71.5249],
+  gujranwala: [32.1877, 74.1945],
+  peshawar: [34.0151, 71.5249],
+  quetta: [30.1798, 66.975],
+  sialkot: [32.4945, 74.5229],
+  sargodha: [32.0836, 72.6711],
+};
+
+// Function to extract city coordinates from address
+const getCoordsFromAddress = (address) => {
+  if (!address) return null;
+
+  const addressLower = address.toLowerCase();
+  for (const [city, coords] of Object.entries(PAKISTANI_CITIES_COORDS)) {
+    if (addressLower.includes(city)) {
+      console.log(`📍 Found ${city} in address:`, address);
+      return coords;
+    }
+  }
+  return null;
+};
+
 // Fix leaflet default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -73,13 +103,56 @@ const TrackOrder = () => {
   const socketRef = useRef(null);
 
   const [captainLocation, setCaptainLocation] = useState(null);
-  const [mapCenter, setMapCenter] = useState([30.3753, 69.3451]); // Default Pakistan center
+  const [mapCenter, setMapCenter] = useState(null); // Will be set dynamically
 
   useEffect(() => {
     dispatch(getAllOrdersOfUser(user._id));
   }, [dispatch, user._id]);
 
   const data = orders && orders.find((item) => item._id === id);
+
+  // Initialize map center based on available data
+  useEffect(() => {
+    if (!data) return;
+
+    // Try to get coordinates from ride data or extract from addresses
+    let initialCenter = null;
+
+    if (data.ride?.pickupCoordinates) {
+      initialCenter = [
+        data.ride.pickupCoordinates.lat,
+        data.ride.pickupCoordinates.lng,
+      ];
+      console.log("📍 Using pickup coordinates from DB:", initialCenter);
+    } else if (data.ride?.pickup) {
+      const coords = getCoordsFromAddress(data.ride.pickup);
+      if (coords) {
+        initialCenter = coords;
+        console.log("📍 Using pickup city coordinates:", initialCenter);
+      }
+    }
+
+    if (!initialCenter && data.ride?.destinationCoordinates) {
+      initialCenter = [
+        data.ride.destinationCoordinates.lat,
+        data.ride.destinationCoordinates.lng,
+      ];
+      console.log("📍 Using destination coordinates from DB:", initialCenter);
+    } else if (!initialCenter && data.ride?.destination) {
+      const coords = getCoordsFromAddress(data.ride.destination);
+      if (coords) {
+        initialCenter = coords;
+        console.log("📍 Using destination city coordinates:", initialCenter);
+      }
+    }
+
+    if (!initialCenter) {
+      initialCenter = [30.3753, 69.3451]; // Pakistan center as last resort
+      console.log("📍 Using Pakistan center as fallback");
+    }
+
+    setMapCenter(initialCenter);
+  }, [data]);
 
   // Setup socket connection for live captain location updates
   useEffect(() => {
@@ -138,6 +211,8 @@ const TrackOrder = () => {
 
   // Update map center when captain location changes
   useEffect(() => {
+    if (!mapCenter) return; // Wait for initial center to be set
+
     console.log("🗺️ Updating map center...");
 
     if (captainLocation) {
@@ -153,34 +228,10 @@ const TrackOrder = () => {
         data.ride.captain.location.lat,
         data.ride.captain.location.lng,
       ]);
-    } else if (data?.ride?.pickupCoordinates) {
-      // If no captain location, center on pickup
-      console.log("📍 Using pickup coordinates:", data.ride.pickupCoordinates);
-      setMapCenter([
-        data.ride.pickupCoordinates.lat,
-        data.ride.pickupCoordinates.lng,
-      ]);
-    } else if (data?.ride?.destinationCoordinates) {
-      // Last resort: center on destination
-      console.log(
-        "📍 Using destination coordinates:",
-        data.ride.destinationCoordinates
-      );
-      setMapCenter([
-        data.ride.destinationCoordinates.lat,
-        data.ride.destinationCoordinates.lng,
-      ]);
-    } else {
-      // Ultimate fallback: Pakistan center
-      console.log("📍 Using default Pakistan center");
-      setMapCenter([30.3753, 69.3451]);
     }
-  }, [
-    captainLocation,
-    data?.ride?.captain?.location,
-    data?.ride?.pickupCoordinates,
-    data?.ride?.destinationCoordinates,
-  ]);
+    // Note: We don't update to pickup/destination here anymore
+    // as initial center is already set in the previous useEffect
+  }, [captainLocation, data?.ride?.captain?.location]);
 
   const getStatusMessage = () => {
     if (!data) return null;
@@ -233,9 +284,18 @@ const TrackOrder = () => {
     }
     if (data.status === "Delivered") {
       return {
-        title: "Delivered",
-        message: "Your order has been delivered successfully!",
-        color: "text-green-600",
+        title: "✅ Delivered Successfully",
+        message:
+          "Your order has been delivered successfully! Thank you for ordering.",
+        color: "text-green-700",
+      };
+    }
+    if (data.rideStatus === "completed") {
+      return {
+        title: "✅ Delivered Successfully",
+        message:
+          "Your order has been delivered successfully! Thank you for ordering.",
+        color: "text-green-700",
       };
     }
     return {
@@ -261,8 +321,13 @@ const TrackOrder = () => {
     destinationCoords: data?.ride?.destinationCoordinates,
   });
 
-  // ALWAYS show map if captain is assigned - SIMPLIFIED
-  const showMap = data?.ride?.captain ? true : false;
+  // ALWAYS show map if captain is assigned AND ride not delivered
+  const showMap =
+    data?.ride?.captain &&
+    data?.status !== "Delivered" &&
+    data?.rideStatus !== "completed"
+      ? true
+      : false;
 
   console.log("🗺️ Show Map Decision:", showMap);
   console.log("🗺️ Map will display:", showMap ? "✅ YES" : "❌ NO");
@@ -285,41 +350,76 @@ const TrackOrder = () => {
           <h2 className={`text-2xl font-bold mb-2 ${statusInfo?.color}`}>
             {statusInfo?.title}
           </h2>
-          <p className="text-gray-600">{statusInfo?.message}</p>
+          <p className="text-gray-600 text-lg">{statusInfo?.message}</p>
 
-          {/* Captain Info */}
-          {data?.ride?.captain && (
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="font-semibold text-lg mb-3 text-blue-900">
-                Delivery Partner Details
-              </h3>
+          {/* Delivered Success Message with Icon */}
+          {(data?.status === "Delivered" ||
+            data?.rideStatus === "completed") && (
+            <div className="mt-6 p-6 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border-2 border-green-500">
               <div className="flex items-center gap-4">
-                <img
-                  src={
-                    data.ride.captain.profileImage?.url ||
-                    "https://via.placeholder.com/60"
-                  }
-                  alt={data.ride.captain.fullname?.firstname}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-blue-300"
-                />
-                <div>
-                  <p className="font-medium text-gray-800">
-                    {data.ride.captain.fullname?.firstname}{" "}
-                    {data.ride.captain.fullname?.lastname}
-                  </p>
-                  <p className="text-sm text-gray-600 flex items-center gap-1">
-                    <FaPhoneAlt className="inline-block mr-1" />{" "}
-                    {data.ride.captain.phoneNumber}
-                  </p>
-                  <p className="text-sm text-gray-600 flex items-center gap-1">
-                    <FaMotorcycle className="inline-block mr-1" />{" "}
-                    {data.ride.captain.vehicle?.vehicleType} -{" "}
-                    {data.ride.captain.vehicle?.plate}
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-10 h-10 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-xl text-green-800 mb-1">
+                    Order Delivered!
+                  </h3>
+                  <p className="text-green-700 font-medium">
+                    Your order has been successfully delivered. Enjoy your meal!
+                    🍽️
                   </p>
                 </div>
               </div>
             </div>
           )}
+
+          {/* Captain Info - Only show if NOT delivered */}
+          {data?.ride?.captain &&
+            data?.status !== "Delivered" &&
+            data?.rideStatus !== "completed" && (
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 className="font-semibold text-lg mb-3 text-blue-900">
+                  Delivery Partner Details
+                </h3>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={
+                      data.ride.captain.profileImage?.url ||
+                      "https://via.placeholder.com/60"
+                    }
+                    alt={data.ride.captain.fullname?.firstname}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-blue-300"
+                  />
+                  <div>
+                    <p className="font-medium text-gray-800">
+                      {data.ride.captain.fullname?.firstname}{" "}
+                      {data.ride.captain.fullname?.lastname}
+                    </p>
+                    <p className="text-sm text-gray-600 flex items-center gap-1">
+                      <FaPhoneAlt className="inline-block mr-1" />{" "}
+                      {data.ride.captain.phoneNumber}
+                    </p>
+                    <p className="text-sm text-gray-600 flex items-center gap-1">
+                      <FaMotorcycle className="inline-block mr-1" />{" "}
+                      {data.ride.captain.vehicle?.vehicleType} -{" "}
+                      {data.ride.captain.vehicle?.plate}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
         </div>
 
         {/* Map */}
@@ -341,91 +441,123 @@ const TrackOrder = () => {
                 !data?.ride?.destinationCoordinates && (
                   <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-lg shadow-lg">
                     <p className="text-sm font-medium">
-                      ⚠️ Location data not available for this order. Only
-                      showing captain location.
+                      ⚠️ Using approximate city locations. Exact coordinates not
+                      available.
                     </p>
                   </div>
                 )}
 
-              <div className="w-full h-full overflow-hidden">
-                <MapContainer
-                  center={mapCenter}
-                  zoom={13}
-                  style={{ height: "100%", width: "100%" }}
-                >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  />
-                  <MapUpdater center={mapCenter} />
+              {mapCenter && (
+                <div className="w-full h-full overflow-hidden">
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={13}
+                    style={{ height: "100%", width: "100%" }}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <MapUpdater center={mapCenter} />
 
-                  {/* Captain Marker - Use live location or saved location */}
-                  {(captainLocation || data?.ride?.captain?.location) && (
-                    <Marker
-                      position={[
-                        captainLocation?.lat || data.ride.captain.location.lat,
-                        captainLocation?.lng || data.ride.captain.location.lng,
-                      ]}
-                      icon={captainIcon}
-                    >
-                      <Popup>
-                        <div className="text-center">
-                          <strong className="flex items-center justify-center gap-1">
-                            <FaMotorcycle /> Delivery Partner
+                    {/* Captain Marker - Use live location or saved location */}
+                    {(captainLocation || data?.ride?.captain?.location) && (
+                      <Marker
+                        position={[
+                          captainLocation?.lat ||
+                            data.ride.captain.location.lat,
+                          captainLocation?.lng ||
+                            data.ride.captain.location.lng,
+                        ]}
+                        icon={captainIcon}
+                      >
+                        <Popup>
+                          <div className="text-center">
+                            <strong className="flex items-center justify-center gap-1">
+                              <FaMotorcycle /> Delivery Partner
+                            </strong>
+                            <br />
+                            {data.ride.captain.fullname?.firstname}{" "}
+                            {data.ride.captain.fullname?.lastname}
+                            <br />
+                            <small className="text-gray-500">
+                              {captainLocation
+                                ? "Live Location"
+                                : "Last Known Location"}
+                            </small>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    )}
+
+                    {/* Pickup Location Marker */}
+                    {data?.ride?.pickupCoordinates ? (
+                      <Marker
+                        position={[
+                          data.ride.pickupCoordinates.lat,
+                          data.ride.pickupCoordinates.lng,
+                        ]}
+                        icon={pickupIcon}
+                      >
+                        <Popup>
+                          <strong className="flex items-center gap-1">
+                            <FaBox /> Pickup Location
                           </strong>
                           <br />
-                          {data.ride.captain.fullname?.firstname}{" "}
-                          {data.ride.captain.fullname?.lastname}
+                          {data.ride.pickup || "Shop"}
+                        </Popup>
+                      </Marker>
+                    ) : data?.ride?.pickup &&
+                      getCoordsFromAddress(data.ride.pickup) ? (
+                      <Marker
+                        position={getCoordsFromAddress(data.ride.pickup)}
+                        icon={pickupIcon}
+                      >
+                        <Popup>
+                          <strong className="flex items-center gap-1">
+                            <FaBox /> Pickup Location (Approximate)
+                          </strong>
                           <br />
-                          <small className="text-gray-500">
-                            {captainLocation
-                              ? "Live Location"
-                              : "Last Known Location"}
-                          </small>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  )}
+                          {data.ride.pickup || "Shop"}
+                        </Popup>
+                      </Marker>
+                    ) : null}
 
-                  {/* Pickup Location Marker */}
-                  {data?.ride?.pickupCoordinates && (
-                    <Marker
-                      position={[
-                        data.ride.pickupCoordinates.lat,
-                        data.ride.pickupCoordinates.lng,
-                      ]}
-                      icon={pickupIcon}
-                    >
-                      <Popup>
-                        <strong className="flex items-center gap-1">
-                          <FaBox /> Pickup Location
-                        </strong>
-                        <br />
-                        {data.ride.pickup || "Shop"}
-                      </Popup>
-                    </Marker>
-                  )}
-
-                  {/* Drop Location Marker */}
-                  {data?.ride?.destinationCoordinates && (
-                    <Marker
-                      position={[
-                        data.ride.destinationCoordinates.lat,
-                        data.ride.destinationCoordinates.lng,
-                      ]}
-                      icon={dropIcon}
-                    >
-                      <Popup>
-                        <strong className="flex items-center gap-1">
-                          <FaHome /> Delivery Location
-                        </strong>
-                        <br />
-                        {data.ride.destination || "Your address"}
-                      </Popup>
-                    </Marker>
-                  )}
-                </MapContainer>
-              </div>
+                    {/* Drop Location Marker */}
+                    {data?.ride?.destinationCoordinates ? (
+                      <Marker
+                        position={[
+                          data.ride.destinationCoordinates.lat,
+                          data.ride.destinationCoordinates.lng,
+                        ]}
+                        icon={dropIcon}
+                      >
+                        <Popup>
+                          <strong className="flex items-center gap-1">
+                            <FaHome /> Delivery Location
+                          </strong>
+                          <br />
+                          {data.ride.destination || "Your address"}
+                        </Popup>
+                      </Marker>
+                    ) : data?.ride?.destination &&
+                      getCoordsFromAddress(data.ride.destination) ? (
+                      <Marker
+                        position={getCoordsFromAddress(data.ride.destination)}
+                        icon={dropIcon}
+                      >
+                        <Popup>
+                          <strong className="flex items-center gap-1">
+                            <FaHome /> Delivery Location (Approximate)
+                          </strong>
+                          <br />
+                          {data.ride.destination || "Your address"}
+                        </Popup>
+                      </Marker>
+                    ) : null}
+                  </MapContainer>
+                </div>
+              )}
             </div>
           </div>
         ) : (
