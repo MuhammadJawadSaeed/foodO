@@ -77,14 +77,18 @@ export const cityReducer = createReducer(initialState, (builder) => {
     // Users By City
     .addCase("getUsersByCityRequest", (state) => {
       state.isLoading = true;
+      console.log("🔄 Loading users by city...");
     })
     .addCase("getUsersByCitySuccess", (state, action) => {
       state.isLoading = false;
-      state.usersByCity = action.payload;
+      state.usersByCity = Array.isArray(action.payload) ? action.payload : [];
+      console.log("✅ Redux: Stored", state.usersByCity.length, "users");
     })
     .addCase("getUsersByCityFail", (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
+      state.usersByCity = [];
+      console.error("❌ Redux: Failed to load users -", action.payload);
     })
 
     // Shops By City
@@ -93,11 +97,12 @@ export const cityReducer = createReducer(initialState, (builder) => {
     })
     .addCase("getShopsByCitySuccess", (state, action) => {
       state.isLoading = false;
-      state.shopsByCity = action.payload;
+      state.shopsByCity = Array.isArray(action.payload) ? action.payload : [];
     })
     .addCase("getShopsByCityFail", (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
+      state.shopsByCity = [];
     })
 
     // Captains By City
@@ -106,11 +111,14 @@ export const cityReducer = createReducer(initialState, (builder) => {
     })
     .addCase("getCaptainsByCitySuccess", (state, action) => {
       state.isLoading = false;
-      state.captainsByCity = action.payload;
+      state.captainsByCity = Array.isArray(action.payload)
+        ? action.payload
+        : [];
     })
     .addCase("getCaptainsByCityFail", (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
+      state.captainsByCity = [];
     })
 
     // Restaurant Details

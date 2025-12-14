@@ -65,6 +65,25 @@ const shopSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  commissionRate: {
+    type: Number,
+    default: 0,
+  },
+  ownerName: {
+    type: String,
+  },
+  bankName: {
+    type: String,
+  },
+  accountNumber: {
+    type: String,
+  },
+  accountHolderName: {
+    type: String,
+  },
+  cnic: {
+    type: String,
+  },
   isOnline: {
     type: Boolean,
     default: true,

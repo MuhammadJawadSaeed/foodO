@@ -79,18 +79,18 @@ router.get(
   catchAsyncErrors(async (req, res, next) => {
     try {
       const { city } = req.params;
-      const cityLower = city.toLowerCase().trim();
+      const cityRegex = { $regex: new RegExp(`^${city.trim()}$`, "i") };
 
       // Users in this city
-      const users = await User.find({ city: cityLower });
+      const users = await User.find({ city: cityRegex });
       const activeUsers = users.filter((u) => !u.suspended).length;
 
       // Shops in this city
-      const shops = await Shop.find({ city: cityLower });
+      const shops = await Shop.find({ city: cityRegex });
       const activeShops = shops.filter((s) => !s.blocked).length;
 
       // Captains in this city
-      const captains = await Captain.find({ city: cityLower });
+      const captains = await Captain.find({ city: cityRegex });
       const activeCaptains = captains.filter(
         (c) => c.status === "active"
       ).length;

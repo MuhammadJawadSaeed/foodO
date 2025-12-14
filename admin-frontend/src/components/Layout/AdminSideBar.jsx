@@ -147,10 +147,7 @@ const AdminSideBar = ({ active }) => {
           className="w-full flex items-center p-4 hover:bg-gray-50"
           onClick={() => setIsOpen(false)}
         >
-          <Link
-            to="/admin-withdraw-request"
-            className="w-full flex items-center"
-          >
+          <Link to="/admin-withdraw" className="w-full flex items-center">
             <CiMoneyBill
               size={28}
               color={`${active === 7 ? "crimson" : "#555"}`}

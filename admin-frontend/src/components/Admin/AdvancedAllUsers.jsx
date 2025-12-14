@@ -28,6 +28,15 @@ const AdvancedAllUsers = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [userDetails, setUserDetails] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+    phoneNumber: "",
+    city: "",
+    role: "User",
+  });
 
   useEffect(() => {
     dispatch(getAllUsers());
@@ -112,6 +121,38 @@ const AdvancedAllUsers = () => {
       })
       .catch((error) => {
         toast.error("Failed to load user details");
+      });
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    if (
+      !newUser.name ||
+      !newUser.email ||
+      !newUser.password ||
+      !newUser.phoneNumber
+    ) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    await axios
+      .post(`${server}/user/create-user`, newUser, { withCredentials: true })
+      .then((res) => {
+        toast.success("User created successfully");
+        setShowAddUser(false);
+        setNewUser({
+          name: "",
+          email: "",
+          password: "",
+          phoneNumber: "",
+          city: "",
+          role: "User",
+        });
+        dispatch(getAllUsers());
+      })
+      .catch((error) => {
+        toast.error(error.response?.data?.message || "Failed to create user");
       });
   };
 
@@ -286,7 +327,10 @@ const AdvancedAllUsers = () => {
               {filteredUsers?.length || 0}
             </p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
+          <button
+            onClick={() => setShowAddUser(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+          >
             <AiOutlineUserAdd size={20} />
             <span>Add User</span>
           </button>
@@ -405,81 +449,173 @@ const AdvancedAllUsers = () => {
       {/* User Details Modal */}
       {showDetails && userDetails && (
         <div className="w-full fixed top-0 left-0 z-[999] bg-[#00000039] flex items-center justify-center h-screen overflow-y-auto p-4">
-          <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
-            <div className="w-full flex justify-between items-center mb-4">
+          <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+            <div className="w-full flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold text-gray-800">User Details</h3>
               <RxCross1
                 size={25}
                 onClick={() => setShowDetails(false)}
-                className="cursor-pointer"
+                className="cursor-pointer hover:text-red-500"
               />
             </div>
 
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200">
               <img
                 src={userDetails.avatar?.url || "/default-avatar.png"}
-                alt={userDetails.name}
-                className="w-20 h-20 rounded-full object-cover"
+                alt={userDetails.name || "User"}
+                className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
               />
-              <div>
-                <h4 className="text-xl font-semibold">{userDetails.name}</h4>
-                <p className="text-gray-600">{userDetails.email}</p>
-                <span className="text-sm text-gray-500">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <h4 className="text-2xl font-semibold text-gray-800">
+                    {userDetails.name || "N/A"}
+                  </h4>
+                  {userDetails.verified && (
+                    <MdVerified className="text-blue-500" size={24} />
+                  )}
+                </div>
+                <p className="text-gray-600 text-lg mb-1">
+                  {userDetails.email || "N/A"}
+                </p>
+                <p className="text-sm text-gray-500">
                   Member since{" "}
-                  {new Date(userDetails.createdAt).toLocaleDateString()}
+                  {userDetails.createdAt
+                    ? new Date(userDetails.createdAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )
+                    : "N/A"}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                <p className="text-sm text-purple-700 font-medium mb-1">Role</p>
+                <p className="text-xl font-bold text-purple-900">
+                  {userDetails.role || "User"}
+                </p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-700 font-medium mb-1">
+                  Phone Number
+                </p>
+                <p className="text-xl font-bold text-blue-900">
+                  {userDetails.phoneNumber || "Not provided"}
+                </p>
+              </div>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <p className="text-sm text-green-700 font-medium mb-1">
+                  Total Orders
+                </p>
+                <p className="text-xl font-bold text-green-900">
+                  {userDetails.orders?.length || 0}
+                </p>
+              </div>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+                <p className="text-sm text-orange-700 font-medium mb-1">
+                  Account Status
+                </p>
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                    userDetails.suspended
+                      ? "bg-red-500 text-white"
+                      : "bg-green-500 text-white"
+                  }`}
+                >
+                  {userDetails.suspended ? "Suspended" : "Active"}
                 </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-gray-50 p-4 rounded">
-                <p className="text-sm text-gray-600">Role</p>
-                <p className="text-lg font-semibold">
-                  {userDetails.role || "User"}
-                </p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded">
-                <p className="text-sm text-gray-600">Phone</p>
-                <p className="text-lg font-semibold">
-                  {userDetails.phoneNumber || "N/A"}
-                </p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded">
-                <p className="text-sm text-gray-600">Total Orders</p>
-                <p className="text-lg font-semibold">
-                  {userDetails.orders?.length || 0}
-                </p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded">
-                <p className="text-sm text-gray-600">Status</p>
-                <p className="text-lg font-semibold">
-                  {userDetails.suspended ? "Suspended" : "Active"}
-                </p>
+            {/* Additional Information */}
+            <div className="mb-6">
+              <h5 className="text-lg font-bold text-gray-800 mb-3">
+                Additional Information
+              </h5>
+              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                  <span className="text-gray-600 font-medium">User ID:</span>
+                  <span className="text-gray-800 font-mono text-sm">
+                    {userDetails._id || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                  <span className="text-gray-600 font-medium">
+                    Email Verified:
+                  </span>
+                  <span
+                    className={`font-semibold ${
+                      userDetails.verified ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {userDetails.verified ? "Yes" : "No"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-gray-600 font-medium">
+                    Account Created:
+                  </span>
+                  <span className="text-gray-800">
+                    {userDetails.createdAt
+                      ? new Date(userDetails.createdAt).toLocaleString("en-US")
+                      : "N/A"}
+                  </span>
+                </div>
               </div>
             </div>
 
+            {/* Addresses Section */}
             <div className="mb-6">
-              <h5 className="font-semibold text-gray-700 mb-2">Addresses</h5>
+              <h5 className="text-lg font-bold text-gray-800 mb-3">
+                Saved Addresses
+              </h5>
               {userDetails.addresses?.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {userDetails.addresses.map((addr, index) => (
-                    <div key={index} className="bg-gray-50 p-3 rounded text-sm">
-                      <p className="font-medium">{addr.addressType}</p>
-                      <p className="text-gray-600">{`${addr.address1}, ${addr.city}, ${addr.country}`}</p>
+                    <div
+                      key={index}
+                      className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-bold text-gray-800">
+                          {addr.addressType || "Address"}
+                        </p>
+                        {addr.default && (
+                          <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded-full">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-gray-700 mb-1">
+                        {addr.address1 || ""}
+                        {addr.address2 ? `, ${addr.address2}` : ""}
+                      </p>
+                      <p className="text-gray-600 text-sm">
+                        {addr.city || ""}, {addr.zipCode || ""},{" "}
+                        {addr.country || ""}
+                      </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500">No addresses added</p>
+                <div className="bg-gray-50 p-6 rounded-lg text-center">
+                  <p className="text-gray-500">No addresses saved yet</p>
+                </div>
               )}
             </div>
 
-            <div className="flex gap-3">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
               <button
                 onClick={() => handleSendEmail(userDetails._id)}
-                className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2 font-semibold transition-colors"
               >
-                <AiOutlineMail />
+                <AiOutlineMail size={20} />
                 Send Email
               </button>
               {userDetails.suspended ? (
@@ -488,10 +624,10 @@ const AdvancedAllUsers = () => {
                     handleUnsuspend(userDetails._id);
                     setShowDetails(false);
                   }}
-                  className="flex-1 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center justify-center gap-2 font-semibold transition-colors"
                 >
-                  <BiCheckCircle />
-                  Activate
+                  <BiCheckCircle size={20} />
+                  Activate User
                 </button>
               ) : (
                 <button
@@ -499,13 +635,145 @@ const AdvancedAllUsers = () => {
                     handleSuspend(userDetails._id);
                     setShowDetails(false);
                   }}
-                  className="flex-1 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 flex items-center justify-center gap-2 font-semibold transition-colors"
                 >
-                  <BiBlock />
-                  Suspend
+                  <BiBlock size={20} />
+                  Suspend User
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {showAddUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
+              <h3 className="text-2xl font-bold text-gray-800">Add New User</h3>
+              <button
+                onClick={() => setShowAddUser(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <RxCross1 size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddUser} className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newUser.name}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, name: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="Enter full name"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, email: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="Enter email"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, password: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="Enter password"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={newUser.phoneNumber}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, phoneNumber: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="+92XXXXXXXXXX"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={newUser.city}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, city: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="Enter city"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Role
+                  </label>
+                  <select
+                    value={newUser.role}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, role: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="User">User</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowAddUser(false)}
+                  className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold transition-colors"
+                >
+                  Create User
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -350,7 +350,8 @@ const AdvancedAllSellers = () => {
                 <div className="flex items-center gap-4 mb-6">
                   <img
                     src={
-                      sellerDetails.fullData?.avatar?.url ||
+                      sellerDetails.avatar?.url ||
+                      sellerDetails.avatar ||
                       "/default-avatar.png"
                     }
                     alt={sellerDetails.name}
@@ -362,7 +363,8 @@ const AdvancedAllSellers = () => {
                     </h4>
                     <p className="text-gray-600">{sellerDetails.email}</p>
                     <span className="text-sm text-gray-500">
-                      Member since {sellerDetails.joinedAt}
+                      Member since{" "}
+                      {new Date(sellerDetails.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -371,20 +373,32 @@ const AdvancedAllSellers = () => {
                   <div className="bg-gray-50 p-4 rounded">
                     <p className="text-sm text-gray-600">Shop Name</p>
                     <p className="text-lg font-semibold">
-                      {sellerDetails.shopName}
+                      {sellerDetails.shopInfo?.name ||
+                        sellerDetails.name ||
+                        "N/A"}
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded">
                     <p className="text-sm text-gray-600">Phone</p>
                     <p className="text-lg font-semibold">
-                      {sellerDetails.phone}
+                      {sellerDetails.phoneNumber || "N/A"}
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded">
                     <p className="text-sm text-gray-600">Status</p>
-                    <p className="text-lg font-semibold">
-                      {sellerDetails.status}
-                    </p>
+                    <span
+                      className={`inline-block px-3 py-1 rounded text-sm font-semibold ${
+                        sellerDetails.blocked
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {sellerDetails.blocked ? "Blocked" : "Active"}
+                    </span>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded">
+                    <p className="text-sm text-gray-600">Email</p>
+                    <p className="text-sm break-all">{sellerDetails.email}</p>
                   </div>
                 </div>
               </div>
@@ -395,28 +409,38 @@ const AdvancedAllSellers = () => {
                   <div className="bg-gray-50 p-4 rounded">
                     <p className="text-sm text-gray-600">Available Balance</p>
                     <p className="text-2xl font-bold text-green-600">
-                      PKR {sellerDetails.balance?.toFixed(2)}
+                      PKR {(sellerDetails.availableBalance || 0).toFixed(2)}
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded">
                     <p className="text-sm text-gray-600">Total Products</p>
                     <p className="text-lg font-semibold">
-                      {sellerDetails.fullData?.products?.length || 0}
+                      {sellerDetails.products?.length || 0}
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded">
                     <p className="text-sm text-gray-600">Shop Address</p>
                     <p className="text-sm">
-                      {sellerDetails.fullData?.address || "Not provided"}
+                      {sellerDetails.address || "Not provided"}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded">
+                    <p className="text-sm text-gray-600">Zip Code</p>
+                    <p className="text-sm">{sellerDetails.zipCode || "N/A"}</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded">
+                    <p className="text-sm text-gray-600">Description</p>
+                    <p className="text-sm">
+                      {sellerDetails.description || "No description"}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-3">
-                  {sellerDetails.status === "Active" ? (
+                  {!sellerDetails.blocked ? (
                     <button
                       onClick={() => {
-                        handleBlockSeller(sellerDetails.id);
+                        handleBlockSeller(sellerDetails._id);
                         setShowDetails(false);
                       }}
                       className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center gap-2"
@@ -427,7 +451,7 @@ const AdvancedAllSellers = () => {
                   ) : (
                     <button
                       onClick={() => {
-                        handleUnblockSeller(sellerDetails.id);
+                        handleUnblockSeller(sellerDetails._id);
                         setShowDetails(false);
                       }}
                       className="flex-1 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center justify-center gap-2"
@@ -436,6 +460,17 @@ const AdvancedAllSellers = () => {
                       Unblock Seller
                     </button>
                   )}
+                  <button
+                    onClick={() =>
+                      window.open(
+                        `/admin-restaurant-details/${sellerDetails._id}`,
+                        "_blank"
+                      )
+                    }
+                    className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  >
+                    View Full Details
+                  </button>
                 </div>
               </div>
             </div>

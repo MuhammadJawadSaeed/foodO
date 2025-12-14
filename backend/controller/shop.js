@@ -367,10 +367,6 @@ router.put(
   isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      console.log("=== Update Shop Status Route ===");
-      console.log("Request body:", req.body);
-      console.log("Seller ID:", req.seller?._id);
-
       const { isOnline } = req.body;
 
       if (isOnline === undefined) {
@@ -380,12 +376,8 @@ router.put(
       const shop = await Shop.findById(req.seller._id);
 
       if (!shop) {
-        console.log("Shop not found for ID:", req.seller._id);
         return next(new ErrorHandler("Shop not found", 404));
       }
-
-      console.log("Current shop status:", shop.isOnline);
-      console.log("New status:", isOnline);
 
       shop.isOnline = isOnline;
       await shop.save();
@@ -397,15 +389,12 @@ router.put(
         { $set: { "shop.isOnline": isOnline } }
       );
 
-      console.log("Shop status and products updated successfully");
-
       res.status(200).json({
         success: true,
         shop,
         message: `Shop is now ${isOnline ? "online" : "offline"}`,
       });
     } catch (error) {
-      console.error("Error updating shop status:", error);
       return next(new ErrorHandler(error.message, 500));
     }
   })
@@ -619,9 +608,25 @@ router.get(
   catchAsyncErrors(async (req, res, next) => {
     try {
       const { city } = req.params;
-      const shops = await Shop.find({
-        city: city.toLowerCase().trim(),
+
+      // Try multiple query methods
+      let shops = await Shop.find({
+        city: { $regex: new RegExp(`^${city.trim()}$`, "i") },
       }).sort({ createdAt: -1 });
+
+      // If no shops found, try lowercase
+      if (shops.length === 0) {
+        shops = await Shop.find({
+          city: city.toLowerCase().trim(),
+        }).sort({ createdAt: -1 });
+      }
+
+      // If still no shops, try partial match
+      if (shops.length === 0) {
+        shops = await Shop.find({
+          city: { $regex: city.trim(), $options: "i" },
+        }).sort({ createdAt: -1 });
+      }
 
       res.status(200).json({
         success: true,
@@ -715,6 +720,69 @@ router.get(
             joinedDate: shop.createdAt,
           },
         },
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// Update shop commission rate ---admin
+router.put(
+  "/update-commission/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const { commissionRate } = req.body;
+      const shop = await Shop.findById(req.params.id);
+
+      if (!shop) {
+        return next(new ErrorHandler("Shop not found", 404));
+      }
+
+      shop.commissionRate = commissionRate;
+      await shop.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Commission rate updated successfully",
+        shop,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
+// Update shop balance ---admin
+router.put(
+  "/update-balance/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const { amount, action } = req.body;
+      const shop = await Shop.findById(req.params.id);
+
+      if (!shop) {
+        return next(new ErrorHandler("Shop not found", 404));
+      }
+
+      if (action === "add") {
+        shop.availableBalance = (shop.availableBalance || 0) + amount;
+      } else if (action === "deduct") {
+        shop.availableBalance = (shop.availableBalance || 0) - amount;
+      }
+
+      await shop.save();
+
+      res.status(200).json({
+        success: true,
+        message: `Balance ${
+          action === "add" ? "added" : "deducted"
+        } successfully`,
+        shop,
       });
     } catch (error) {
       return next(new ErrorHandler(error.message, 500));

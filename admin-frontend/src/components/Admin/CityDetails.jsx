@@ -40,11 +40,25 @@ const CityDetails = () => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    dispatch(getUsersByCity(city));
-    dispatch(getShopsByCity(city));
-    dispatch(getCaptainsByCity(city));
-    dispatch(getCityAnalytics(city));
+    if (city) {
+      dispatch(getUsersByCity(city));
+      dispatch(getShopsByCity(city));
+      dispatch(getCaptainsByCity(city));
+      dispatch(getCityAnalytics(city));
+    }
   }, [dispatch, city]);
+
+  useEffect(() => {
+    console.log(
+      "🎯 CityDetails - usersByCity updated:",
+      usersByCity?.length || 0
+    );
+    console.log("📊 CityDetails - shopsByCity:", shopsByCity?.length || 0);
+    console.log(
+      "🏍️ CityDetails - captainsByCity:",
+      captainsByCity?.length || 0
+    );
+  }, [usersByCity, shopsByCity, captainsByCity]);
 
   const handleViewDetails = (item, type) => {
     if (type === "shop") {
@@ -98,9 +112,10 @@ const CityDetails = () => {
   };
 
   const filterData = (data, type) => {
+    if (!data || !Array.isArray(data)) return [];
     if (!searchTerm) return data;
 
-    return data?.filter((item) => {
+    return data.filter((item) => {
       const searchLower = searchTerm.toLowerCase();
       if (type === "users") {
         return (
@@ -147,69 +162,76 @@ const CityDetails = () => {
           </div>
 
           {/* City Analytics Overview */}
-          {cityAnalytics && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
-              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 shadow-md border-l-4 border-blue-500">
-                <div className="flex items-center justify-between mb-2">
-                  <FaUsers className="text-xl sm:text-2xl text-blue-500" />
-                  <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
-                    USERS
-                  </span>
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">
-                  {cityAnalytics.users?.total || 0}
-                </h3>
-                <p className="text-xs sm:text-sm text-green-600 mt-1">
-                  {cityAnalytics.users?.active || 0} active
-                </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
+            <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 shadow-md border-l-4 border-blue-500">
+              <div className="flex items-center justify-between mb-2">
+                <FaUsers className="text-xl sm:text-2xl text-blue-500" />
+                <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
+                  USERS
+                </span>
               </div>
-
-              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 shadow-md border-l-4 border-orange-500">
-                <div className="flex items-center justify-between mb-2">
-                  <FaStore className="text-xl sm:text-2xl text-orange-500" />
-                  <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
-                    RESTAURANTS
-                  </span>
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">
-                  {cityAnalytics.shops?.total || 0}
-                </h3>
-                <p className="text-xs sm:text-sm text-green-600 mt-1">
-                  {cityAnalytics.shops?.active || 0} active
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 shadow-md border-l-4 border-purple-500">
-                <div className="flex items-center justify-between mb-2">
-                  <FaMotorcycle className="text-xl sm:text-2xl text-purple-500" />
-                  <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
-                    RIDERS
-                  </span>
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">
-                  {cityAnalytics.captains?.total || 0}
-                </h3>
-                <p className="text-xs sm:text-sm text-green-600 mt-1">
-                  {cityAnalytics.captains?.active || 0} active
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 shadow-md border-l-4 border-green-500">
-                <div className="flex items-center justify-between mb-2">
-                  <FaChartBar className="text-xl sm:text-2xl text-green-500" />
-                  <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
-                    REVENUE
-                  </span>
-                </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">
-                  Rs. {(cityAnalytics.orders?.revenue || 0).toLocaleString()}
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                  {cityAnalytics.orders?.total || 0} orders
-                </p>
-              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">
+                {cityAnalytics?.users?.total ?? (usersByCity?.length || 0)}
+              </h3>
+              <p className="text-xs sm:text-sm text-green-600 mt-1">
+                {cityAnalytics?.users?.active ??
+                  (usersByCity?.filter((u) => !u.suspended).length || 0)}{" "}
+                active
+              </p>
             </div>
-          )}
+
+            <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 shadow-md border-l-4 border-orange-500">
+              <div className="flex items-center justify-between mb-2">
+                <FaStore className="text-xl sm:text-2xl text-orange-500" />
+                <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
+                  RESTAURANTS
+                </span>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">
+                {cityAnalytics?.shops?.total ?? (shopsByCity?.length || 0)}
+              </h3>
+              <p className="text-xs sm:text-sm text-green-600 mt-1">
+                {cityAnalytics?.shops?.active ??
+                  (shopsByCity?.filter((s) => !s.blocked).length || 0)}{" "}
+                active
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 shadow-md border-l-4 border-purple-500">
+              <div className="flex items-center justify-between mb-2">
+                <FaMotorcycle className="text-xl sm:text-2xl text-purple-500" />
+                <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
+                  RIDERS
+                </span>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">
+                {cityAnalytics?.captains?.total ??
+                  (captainsByCity?.length || 0)}
+              </h3>
+              <p className="text-xs sm:text-sm text-green-600 mt-1">
+                {cityAnalytics?.captains?.active ??
+                  (captainsByCity?.filter((c) => c.status === "active")
+                    .length ||
+                    0)}{" "}
+                active
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 shadow-md border-l-4 border-green-500">
+              <div className="flex items-center justify-between mb-2">
+                <FaChartBar className="text-xl sm:text-2xl text-green-500" />
+                <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
+                  REVENUE
+                </span>
+              </div>
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">
+                Rs. {(cityAnalytics?.orders?.revenue || 0).toLocaleString()}
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                {cityAnalytics?.orders?.total || 0} orders
+              </p>
+            </div>
+          </div>
 
           {/* Tabs */}
           <div className="bg-white rounded-lg sm:rounded-xl shadow-md mb-4 sm:mb-6 overflow-hidden">
@@ -298,8 +320,15 @@ const CityDetails = () => {
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                               <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
                                 <img
-                                  src={user.avatar?.url}
+                                  src={
+                                    user.avatar?.url ||
+                                    "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                                  }
                                   alt={user.name}
+                                  onError={(e) => {
+                                    e.target.src =
+                                      "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                                  }}
                                   className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-orange-200 flex-shrink-0"
                                 />
                                 <div className="flex-1 min-w-0">
@@ -364,7 +393,23 @@ const CityDetails = () => {
                       ) : (
                         <div className="text-center py-20">
                           <FaUsers className="text-6xl text-gray-300 mx-auto mb-4" />
-                          <p className="text-gray-500">No users found</p>
+                          <p className="text-gray-500">
+                            {usersByCity === undefined
+                              ? "Loading users..."
+                              : usersByCity === null
+                              ? "Error loading users"
+                              : usersByCity?.length === 0
+                              ? `No users found in ${city}`
+                              : "No users match your search"}
+                          </p>
+                          {searchTerm && (
+                            <button
+                              onClick={() => setSearchTerm("")}
+                              className="mt-4 text-orange-600 hover:text-orange-700 underline"
+                            >
+                              Clear search
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

@@ -21,6 +21,8 @@ import CityDetails from "./components/Admin/CityDetails";
 import CityComparison from "./components/Admin/CityComparison";
 import RestaurantDetails from "./components/Admin/RestaurantDetails";
 import CaptainDetails from "./components/Admin/CaptainDetails";
+import AdminOrderDetails from "./components/Admin/AdminOrderDetails";
+import AdminProductDetails from "./components/Admin/AdminProductDetails";
 
 const App = () => {
   useEffect(() => {
@@ -144,6 +146,22 @@ const App = () => {
           element={
             <ProtectedAdminRoute>
               <CaptainDetails />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/order/:id"
+          element={
+            <ProtectedAdminRoute>
+              <AdminOrderDetails />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/product/:id"
+          element={
+            <ProtectedAdminRoute>
+              <AdminProductDetails />
             </ProtectedAdminRoute>
           }
         />

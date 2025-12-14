@@ -77,7 +77,6 @@ router.get(
 // delete product of a shop
 router.delete(
   "/delete-shop-product/:id",
-  isSeller,
   catchAsyncErrors(async (req, res, next) => {
     try {
       const product = await Product.findById(req.params.id);
@@ -86,8 +85,8 @@ router.delete(
         return next(new ErrorHandler("Product is not found with this id", 404));
       }
 
-      // Check if the product belongs to this seller
-      if (product.shopId !== req.seller._id.toString()) {
+      // Check authorization - either seller or admin
+      if (req.seller && product.shopId !== req.seller._id.toString()) {
         return next(
           new ErrorHandler("You are not authorized to delete this product", 403)
         );
@@ -391,6 +390,32 @@ router.delete(
       return next(
         new ErrorHandler(error.message || "Failed to delete product", 400)
       );
+    }
+  })
+);
+
+// Update product stock ---admin
+router.put(
+  "/update-product-stock/:id",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const { stock } = req.body;
+      const product = await Product.findById(req.params.id);
+
+      if (!product) {
+        return next(new ErrorHandler("Product not found", 404));
+      }
+
+      product.stock = stock;
+      await product.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Product stock updated successfully",
+        product,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
     }
   })
 );

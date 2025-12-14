@@ -91,17 +91,25 @@ export const getAllCaptainCities = () => async (dispatch) => {
 export const getUsersByCity = (city) => async (dispatch) => {
   try {
     dispatch({ type: "getUsersByCityRequest" });
+    console.log("📡 Fetching users for city:", city);
 
     const { data } = await axios.get(
       `${server}/user/admin-users-by-city/${city}`,
       { withCredentials: true }
     );
 
+    console.log("📥 Received users:", data.users?.length || 0, "users");
+    console.log("📦 Users data:", data.users);
+
     dispatch({
       type: "getUsersByCitySuccess",
       payload: data.users,
     });
   } catch (error) {
+    console.error(
+      "❌ Error fetching users:",
+      error.response?.data || error.message
+    );
     dispatch({
       type: "getUsersByCityFail",
       payload: error.response?.data?.message || error.message,
@@ -113,17 +121,24 @@ export const getUsersByCity = (city) => async (dispatch) => {
 export const getShopsByCity = (city) => async (dispatch) => {
   try {
     dispatch({ type: "getShopsByCityRequest" });
+    console.log("API Call: Fetching shops for city:", city);
 
     const { data } = await axios.get(
       `${server}/shop/admin-shops-by-city/${city}`,
       { withCredentials: true }
     );
 
+    console.log("API Response - Shops:", data);
+    console.log("Shops count:", data.shops?.length);
     dispatch({
       type: "getShopsByCitySuccess",
       payload: data.shops,
     });
   } catch (error) {
+    console.error(
+      "Error fetching shops by city:",
+      error.response?.data || error.message
+    );
     dispatch({
       type: "getShopsByCityFail",
       payload: error.response?.data?.message || error.message,

@@ -626,9 +626,36 @@ router.get(
   catchAsyncErrors(async (req, res, next) => {
     try {
       const { city } = req.params;
-      const users = await User.find({
-        city: city.toLowerCase().trim(),
+      console.log("🔍 Searching for users in city:", city);
+
+      // Get all distinct cities to help debug
+      const allCities = await User.distinct("city");
+      console.log("📍 All cities in database:", allCities);
+
+      // Try multiple query methods to ensure we find users
+      // Method 1: Case-insensitive regex
+      let users = await User.find({
+        city: { $regex: new RegExp(`^${city.trim()}$`, "i") },
       }).sort({ createdAt: -1 });
+      console.log("Method 1 (regex) found:", users.length);
+
+      // Method 2: If no users found, try exact lowercase match (since model has lowercase:true)
+      if (users.length === 0) {
+        users = await User.find({
+          city: city.toLowerCase().trim(),
+        }).sort({ createdAt: -1 });
+        console.log("Method 2 (lowercase exact) found:", users.length);
+      }
+
+      // Method 3: If still no users, try case-insensitive partial match
+      if (users.length === 0) {
+        users = await User.find({
+          city: { $regex: city.trim(), $options: "i" },
+        }).sort({ createdAt: -1 });
+        console.log("Method 3 (partial match) found:", users.length);
+      }
+
+      console.log("✅ Final result: Found", users.length, "users");
 
       res.status(200).json({
         success: true,
@@ -636,6 +663,7 @@ router.get(
         count: users.length,
       });
     } catch (error) {
+      console.error("❌ Error in getUsersByCity:", error);
       return next(new ErrorHandler(error.message, 500));
     }
   })
