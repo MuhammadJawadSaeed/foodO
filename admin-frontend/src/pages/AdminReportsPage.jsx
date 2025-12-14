@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminHeader from "../components/Layout/AdminHeader";
 import AdminSideBar from "../components/Layout/AdminSideBar";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   AiOutlineFileExcel,
   AiOutlineFilePdf,
@@ -10,12 +10,24 @@ import {
 import { BiCalendar } from "react-icons/bi";
 import { MdOutlineEmail } from "react-icons/md";
 import { toast } from "react-toastify";
+import { getAllUsers } from "../redux/actions/user";
+import { getAllSellers } from "../redux/actions/sellers";
+import { getAllOrdersOfAdmin } from "../redux/actions/order";
+import { getAllProducts } from "../redux/actions/product";
 
 const AdminReportsPage = () => {
+  const dispatch = useDispatch();
   const { users } = useSelector((state) => state.user);
   const { sellers } = useSelector((state) => state.seller);
   const { adminOrders } = useSelector((state) => state.order);
   const { products } = useSelector((state) => state.products);
+
+  useEffect(() => {
+    dispatch(getAllUsers());
+    dispatch(getAllSellers());
+    dispatch(getAllOrdersOfAdmin());
+    dispatch(getAllProducts());
+  }, [dispatch]);
 
   const [reportType, setReportType] = useState("sales");
   const [dateRange, setDateRange] = useState("month");

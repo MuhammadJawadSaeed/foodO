@@ -46,6 +46,19 @@ export const userReducer = createReducer(initialState, {
     state.error = action.payload;
   },
 
+  // get all users --- admin
+  getAllUsersRequest: (state) => {
+    state.usersLoading = true;
+  },
+  getAllUsersSuccess: (state, action) => {
+    state.usersLoading = false;
+    state.users = action.payload;
+  },
+  getAllUsersFailed: (state, action) => {
+    state.usersLoading = false;
+    state.error = action.payload;
+  },
+
   // delete user address
   deleteUserAddressRequest: (state) => {
     state.addressloading = true;
@@ -64,11 +77,11 @@ export const userReducer = createReducer(initialState, {
   getAllUsersRequest: (state) => {
     state.usersLoading = true;
   },
-  getAllUsersSuccess: (state,action) => {
+  getAllUsersSuccess: (state, action) => {
     state.usersLoading = false;
     state.users = action.payload;
   },
-  getAllUsersFailed: (state,action) => {
+  getAllUsersFailed: (state, action) => {
     state.usersLoading = false;
     state.error = action.payload;
   },

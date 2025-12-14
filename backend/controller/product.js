@@ -351,4 +351,48 @@ router.get(
     }
   })
 );
+
+// delete product --- admin
+router.delete(
+  "/delete-product/:id",
+  isAuthenticated,
+  isAdmin("Admin"),
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const product = await Product.findById(req.params.id);
+
+      if (!product) {
+        return next(new ErrorHandler("Product is not found with this id", 404));
+      }
+
+      // Delete images from cloudinary
+      if (product.images && product.images.length > 0) {
+        for (let i = 0; i < product.images.length; i++) {
+          try {
+            if (product.images[i].public_id) {
+              await cloudinary.v2.uploader.destroy(product.images[i].public_id);
+            }
+          } catch (cloudinaryError) {
+            console.error(
+              `Failed to delete image from cloudinary: ${cloudinaryError.message}`
+            );
+          }
+        }
+      }
+
+      await Product.findByIdAndDelete(req.params.id);
+
+      res.status(200).json({
+        success: true,
+        message: "Product deleted successfully!",
+      });
+    } catch (error) {
+      console.error("Product deletion error:", error);
+      return next(
+        new ErrorHandler(error.message || "Failed to delete product", 400)
+      );
+    }
+  })
+);
+
 module.exports = router;

@@ -4,6 +4,7 @@ import { sellerReducer } from "./reducers/seller";
 import { productReducer } from "./reducers/product";
 import { orderReducer } from "./reducers/order";
 import { cityReducer } from "./reducers/city";
+import { withdrawReducer } from "./reducers/withdraw";
 
 const Store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const Store = configureStore({
     products: productReducer,
     order: orderReducer,
     city: cityReducer,
+    withdraw: withdrawReducer,
   },
 });
 
